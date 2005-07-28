@@ -1,0 +1,60 @@
+<project name="phone-client" default="info" basedir="..">
+
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="classes.dir" value="${basedir}/classes"/>
+    <property name="etc.dir" value="${basedir}/etc"/>
+    <property name="lib.dir" value="${build.dir}/lib"/>
+    <property name="jar.file" value="${basedir}/asterisk-im-client.jar"/>
+
+    <target name="info">
+        <echo>
+            compile - compiles classes
+            jar - creates the asterisk-im-client.jar
+        </echo>
+    </target>
+
+    <path id="lib.path">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+
+        <javac srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               source="1.5"
+               target="1.5"
+               includeantruntime="no"
+               includejavaruntime="no"
+               debug="on">
+
+            <classpath refid="lib.path"/>
+        </javac>
+
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${jar.file}" basedir="${classes.dir}">
+            <metainf dir="${etc.dir}"/>
+        </jar>
+    </target>
+
+    <target name="client-debugger" depends="compile">
+
+        <java classname="org.jivesoftware.phone.client.PhoneClientDebugger" fork="yes">
+
+            <jvmarg value="-Dsmack.debug=true"/>
+
+            <classpath>
+                <path refid="lib.path"/>
+                <pathelement location="${classes.dir}"/>
+            </classpath>
+
+        </java>
+
+    </target>
+
+</project>
