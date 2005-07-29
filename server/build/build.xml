@@ -9,7 +9,7 @@
     <property name="web-inf.dir" value="${target.dir}/web/WEB-INF"/>
     <property name="classes.dir" value="${target.dir}/classes"/>
     <property name="java.src.dir" value="${basedir}/src/java"/>
-    <property name="lib.dir" value="${target.dir}/lib"/>
+    <property name="lib.dir" value="${basedir}/build/lib"/>
     <property name="work.src.dir" value="${basedir}/src/work"/>
     <property name="web.src.dir" value="${basedir}/src/web"/>
     <property name="jsp.package" value="org.jivesoftware.messenger.plugin.phone"/>
@@ -89,6 +89,16 @@
     </target>
 
     <target name="jar" depends="clean,compile">
+        <mkdir dir="${target.dir}/lib"/>
+        <copy todir="${target.dir}/lib"	>
+            <fileset dir="${lib.dir}"/>
+        </copy>
+
+        <mkdir dir="${target.dir}/web/images"/>
+        <copy todir="${target.dir}/web/images">
+            <fileset dir="${web.src.dir}/images"/>
+        </copy>
+	
 
         <jar file="${jar.file}" basedir="${target.dir}" update="false" />
 
@@ -100,6 +110,8 @@
         <delete dir="${work.src.dir}"/>
         <delete file="${jar.file}"/>
         <delete dir="${web-inf.dir}"/>
+	    <delete dir="${target.dir}/lib"/>
+        <delete dir="${target.dir}/web/images"/>
     </target>
 
 </project>
