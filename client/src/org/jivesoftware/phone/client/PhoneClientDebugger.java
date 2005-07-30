@@ -26,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Useful for testing the client api, however the user interface is currenlty horrible. I want to fix this one day.
+ *
  * @author Andrew Wright
  */
 public class PhoneClientDebugger extends JFrame implements ActionListener, PhoneEventListener {
