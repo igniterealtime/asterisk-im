@@ -18,6 +18,12 @@ public class ForwardAction extends PhoneActionPacket {
     public ForwardAction() {
     }
 
+    /**
+     * Constructs a new instance of this action.
+     *
+     * @param callID The current call session id (call we are in)
+     * @param extension The extension we want to forward. Can be a full phone number or local extension
+     */
     public ForwardAction(String callID, String extension) {
         super(callID);
         this.extension = extension;

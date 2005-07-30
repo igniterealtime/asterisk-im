@@ -24,10 +24,21 @@ public class DialAction extends PhoneActionPacket {
         
     }
 
+    /**
+     * The extension to be dialed. This can be a full phone number, or a local extension.
+     *
+     * @param extension extension to dial
+     */
     public void setExtension(String extension) {
         this.extension = extension;
     }
 
+    /**
+     * JID of the person we wish to dial. This JID must be registered in the Asterisk-IM plugin.
+     * The JID can be a bare or full JID.
+     *
+     * @param jid JID of the user to dial
+     */
     public void setJid(String jid) {
         this.jid = jid;
     }

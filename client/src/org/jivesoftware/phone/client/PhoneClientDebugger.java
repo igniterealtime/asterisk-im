@@ -140,11 +140,6 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
         button.addActionListener(this);
         buttonPanel.add(button);
 
-        button = new JButton("Invite");
-        button.setActionCommand("invite");
-        button.addActionListener(this);
-        buttonPanel.add(button);
-
         return panel;
     }
 
@@ -229,20 +224,6 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
             if(call != null && extensionText != null && !"".equals(extensionText)) {
                 try {
                     client.forward(call, extensionText);
-                }
-                catch (PhoneActionException e1) {
-                    log.log(Level.SEVERE, e1.getMessage(), e1);
-                }
-            }
-
-        }
-        else if ("invite".equals(command)) {
-
-            String extensionText = input.getText();
-
-            if(call != null && extensionText != null && !"".equals(extensionText)) {
-                try {
-                    client.invite(call, extensionText);
                 }
                 catch (PhoneActionException e1) {
                     log.log(Level.SEVERE, e1.getMessage(), e1);

@@ -168,21 +168,21 @@ public class PhoneClient {
     /**
      * Forwards the call to another extension.
      *
-     * @param call The call to forward
+     * @param call      The call to forward
      * @param extension exetension to forward the call to
      * @throws PhoneActionException thrown if there are problems forwarding the call
      */
     public void forward(Call call, String extension) throws PhoneActionException {
 
-        if(call == null) {
+        if (call == null) {
             throw new PhoneActionException("passed null call object");
         }
 
-        if(call.getId() == null) {
+        if (call.getId() == null) {
             throw new PhoneActionException("callID cannot be null");
         }
 
-        ForwardAction action = new ForwardAction(call.getId(), extension );
+        ForwardAction action = new ForwardAction(call.getId(), extension);
         action.setTo(component);
         action.setFrom(conn.getUser());
 
@@ -218,22 +218,31 @@ public class PhoneClient {
 
     /**
      * Used to invite another extension to the current call (three way calling)
+     * <p/>
+     * />
+     * Currently this does not behave in a way I would prefer. It will cause both channels to be forwarded to a device,
+     * making it look like the device is receiving two calls.
+     * <p/>
+     * This action works most effectively if you wish to transfer the call to a password free conference room.
+     * <p/>
+     * <p/>
+     * I have reduced the scope of this method to private, until we figure out how to deal with the case above.
      *
-     * @param call the call object to invite the extension too
+     * @param call      the call object to invite the extension too
      * @param extension the extension of the person to invite
      * @throws PhoneActionException Thrown if there are issues inviting someone
      */
-    public void invite(Call call, String extension) throws PhoneActionException {
+    private void invite(Call call, String extension) throws PhoneActionException {
 
-        if(call == null) {
+        if (call == null) {
             throw new PhoneActionException("passed null call object");
         }
 
-        if(call.getId() == null) {
+        if (call.getId() == null) {
             throw new PhoneActionException("callID cannot be null");
         }
 
-        InviteAction action = new InviteAction(call.getId(), extension );
+        InviteAction action = new InviteAction(call.getId(), extension);
         action.setTo(component);
         action.setFrom(conn.getUser());
 
@@ -274,12 +283,12 @@ public class PhoneClient {
      */
     public boolean isPhoneEnabled(String jid) throws XMPPException {
 
-        if(jid == null || "".equals(jid)) {
+        if (jid == null || "".equals(jid)) {
             return false;
         }
 
         DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component,
-                        StringUtils.parseName(StringUtils.parseName(jid)));
+                StringUtils.parseName(StringUtils.parseName(jid)));
 
 
         return info.containsFeature("http://jivesoftware.com/phone");
