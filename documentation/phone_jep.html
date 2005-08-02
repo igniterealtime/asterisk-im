@@ -2,20 +2,71 @@
 
 <html>
 <head>
-<title>Phone Integration JEP</title>
+	<title>Phone Integration Proto-JEP</title>
+    <style type="text/css">
+        BODY {
+            font-size : 100%;
+        }
+        BODY, TD, TH {
+            font-family : tahoma, verdana, arial, helvetica, sans-serif;
+            font-size : 0.8em;
+        }
+        H2 {
+             font-size : 10pt;
+             font-weight : bold;
+        }
+        A:hover {
+            text-decoration : none;
+        }
+        H1 {
+            font-family : tahoma, arial, helvetica, sans-serif;
+            font-size : 1.4em;
+            font-weight: bold;
+            border-bottom : 1px #ccc solid;
+            padding-bottom : 2px;
+        }
+        TT {
+            font-family : courier new;
+            font-weight : bold;
+            color : #060;
+        }
+        PRE {
+            font-family : courier new;
+            font-size : 100%;
+        }
+        .events TH {
+            font-size : 8pt;
+            font-family : verdana;
+            font-weight : bold;
+            text-align : left;
+            background-color : #eee;
+            border-bottom : 1px #ccc solid;
+        }
+        .events .event {
+            font-weight : bold;
+        }
+        .events .description {
+            font-size : 8pt;
+            font-family : verdana;
+        }
+        .events TD {
+            border-bottom : 1px #ccc dotted;
+            vertical-align : top;
+        }
+    </style>
 </head>
 <body>
 
 <h1>Phone Integration Proto-JEP</h1>
 
-<p>This document describes a protocol for phone 
+<p>This document describes a protocol for phone
 and instant messaging integration. It will eventually be
 turned into a JEP and submitted to the JSF once implementation
 details have been worked out.</p>
 
-
 <h2>Description</h2>
-<p>This document describes a protocol for exposing telephony features
+
+<p>This JEP describes a protocol for exposing telephony features
 through XMPP. This is not a VOIP/soft-phone protocol, but instead a method for
 integrating instant messaging with existing phone systems (eg Asterisk).<p>
 
@@ -29,9 +80,9 @@ integrating instant messaging with existing phone systems (eg Asterisk).<p>
 <p>The current implementation of this protocol specifically targets Asterisk
 and its available feature set. However, the final JEP will be phone system
 agnostic with a mechanism for discovering which features are available
-for each integration.</p> 
+for each integration.</p>
 
-<h2>Presence</h2>  
+<h2>Presence</h2>
 
 <p>A user's presence is updated when on a phone call. The Jive Messenger/Asterisk
 implementation will update the user's presence automatically by adding the following
@@ -42,19 +93,19 @@ packet extension to the user's presence:</p>
 <p>Adding a packet extension to presence is not the generally accepted method
 for handling extended presence information in XMPP. Instead, pubsub is
 used such as with JEP-0108: User Activity. However, Jive Messenger
-does not currently support pubsub. When this protocol is turned into an 
-official JEP, pubsub will likely be required so that we can publish 
+does not currently support pubsub. When this protocol is turned into an
+official JEP, pubsub will likely be required so that we can publish
 this extended presence information in the "correct" way.</p>
 
 <p>Jive Messenger can also be configured to change the user's availability
-to "Away -- on the phone" when the user is on a call (in addition to the 
+to "Away -- on the phone" when the user is on a call (in addition to the
 packet extension). This is useful when interacting with clients
-that don't understand the extended presence information or when using 
-transports to other IM networks where extended presence information is not available.</p>  
+that don't understand the extended presence information or when using
+transports to other IM networks where extended presence information is not available.</p>
 
 <h2>Events</h2>
 
-<p>Events are sent to the user when their phone is ringing, when a call ends, 
+<p>Events are sent to the user when their phone is ringing, when a call ends,
 etc. As with presence, pubsub should probably be the mechanism used for sending
 this information, but message packets are used to send events for the time being.</p>
 
@@ -87,7 +138,7 @@ stanza:</p>
     &lt;extension&gt;5035555555&lt;/extension&gt;
 &lt;/phone-action&gt;</pre>
 
-<p>Currently supported types are DIAL and FORWARD. 
+<p>Currently supported types are DIAL and FORWARD.
 
 <p> In most implementations, issuing
 a dial command will cause the user's phone to ring. Once the user picks up,
@@ -100,7 +151,7 @@ to an extension</p>
     &lt;jid&gt;andrew@jivesoftware.com&lt;/jid&gt;
 &lt;/phone-action&gt;</pre>
 
-<p>Issuing a action wth a type FORWARD should transfer a call that has already been established 
+<p>Issuing a action wth a type FORWARD should transfer a call that has already been established
 to a third party. The FORWARD type requires an extension child element</p>
 
 <pre>&lt;phone-action xmlns="http://jivesoftware.com/xmlns/phone" type="FORWARD"&gt;
@@ -185,6 +236,8 @@ contain the http://jivesoftware.com/phone feature:</p>
 
    &lt;/query&gt;
 &lt;/iq&gt;</pre>
+
+<br><br>
 
 </body>
 </html>
