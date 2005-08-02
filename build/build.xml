@@ -104,6 +104,10 @@
 
     </target>
 
+    <target name="deploy" depends="jar">
+        <copy file="${jar.file}" todir="${messenger.dir}/target/plugins"/>
+    </target>
+
 
     <target name="clean">
         <delete dir="${classes.dir}"/>
