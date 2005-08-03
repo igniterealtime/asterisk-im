@@ -248,7 +248,7 @@
 
 <jsp:useBean id="pageinfo" scope="request" class="org.jivesoftware.admin.AdminPageBean"/>
 <%
-    String title = "Asterisk Integration";
+    String title = "Phone Mappings";
     pageinfo.setTitle(title);
     pageinfo.getBreadcrumbs().add(new AdminPageBean.Breadcrumb(title, "phone-users.jsp"));
     pageinfo.setPageID("item-phone-users");
