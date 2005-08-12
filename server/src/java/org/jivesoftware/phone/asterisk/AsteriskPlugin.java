@@ -9,16 +9,15 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import org.jivesoftware.phone.PacketHandler;
-import org.jivesoftware.phone.database.HibernateUtil;
-import org.jivesoftware.phone.util.ThreadPool;
-import org.jivesoftware.phone.util.PhoneConstants;
 import net.sf.asterisk.manager.ManagerConnection;
 import org.jivesoftware.messenger.container.Plugin;
 import org.jivesoftware.messenger.container.PluginManager;
+import org.jivesoftware.phone.PacketHandler;
+import org.jivesoftware.phone.database.HibernateUtil;
+import org.jivesoftware.phone.util.PhoneConstants;
+import org.jivesoftware.phone.util.ThreadPool;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
-import org.jivesoftware.util.JiveConstants;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
@@ -28,6 +27,7 @@ import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 
 import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,7 +92,13 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
             // Attempts to setup the database if it hasn't been done already
             log.info("Checking to see if Asterisk-IM database schema is present");
-            HibernateUtil.initDB();
+            List<Exception> exceptions = HibernateUtil.initDB();
+            if(exceptions.size() > 0 ) {
+                log.warning("Asterisk-IM table contains errors exited with error, database may not behave properly");
+                for (Exception e : exceptions) {
+                    Log.warn("Asterisk-IM table creation --> "+e.getMessage(), e);
+                }
+            }
 
             log.info("Initializing Asterisk-IM thread Pool");
             ThreadPool.init(); //initialize the thread pols
