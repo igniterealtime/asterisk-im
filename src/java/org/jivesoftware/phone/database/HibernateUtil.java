@@ -19,6 +19,7 @@ import org.hibernate.dialect.*;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.database.JiveID;
+import org.jivesoftware.util.Log;
 
 import java.sql.*;
 import java.util.Collections;
@@ -209,7 +210,9 @@ public class HibernateUtil {
             con = DbConnectionManager.getConnection();
             DatabaseMetaData metaData = con.getMetaData();
 
-            rs = metaData.getTables(null, null, "phone%", new String[] { "TABLE" } );
+            // Because some tables seem to be case sensitive when try to select phone%
+            // I have changed to just go through all the tables.
+            rs = metaData.getTables(null, null, null, new String[] { "TABLE" } );
 
 
             while(rs.next()) {
@@ -253,7 +256,14 @@ public class HibernateUtil {
     }
 
     private static Configuration getFullConfiguration() {
-        String dialect = getDialect(DbConnectionManager.getDatabaseType()).getName();
+
+        DbConnectionManager.DatabaseType databaseType = DbConnectionManager.getDatabaseType();
+
+        Log.debug("Asterisk-IM: Messenger is using database type : "+databaseType);
+
+        String dialect = getDialect(databaseType).getName();
+
+        Log.debug("Asterisk-IM: Using Hibernate Dialect : "+dialect);
 
         return getConfiguration()
                         .setProperty("hibernate.order_updates", "true")
@@ -282,27 +292,31 @@ public class HibernateUtil {
      */
     private static Class getDialect(DbConnectionManager.DatabaseType type) {
 
+        Class dialect;
+
         if (type.equals(DbConnectionManager.DatabaseType.postgres)) {
-            return PostgreSQLDialect.class;
+            dialect =  PostgreSQLDialect.class;
         }
         else if (type.equals(DbConnectionManager.DatabaseType.mysql)) {
-            return MySQLDialect.class;
+            dialect =  MySQLDialect.class;
         }
         else if (type.equals(DbConnectionManager.DatabaseType.oracle)) {
-            return Oracle9Dialect.class;
+            dialect =  Oracle9Dialect.class;
         }
         else if (type.equals(DbConnectionManager.DatabaseType.hsqldb)) {
-            return HSQLDialect.class;
+            dialect =  HSQLDialect.class;
         }
         else if (type.equals(DbConnectionManager.DatabaseType.db2)) {
-            return DB2Dialect.class;
+            dialect =  DB2Dialect.class;
         }
         else if (type.equals(DbConnectionManager.DatabaseType.sqlserver)) {
-            return SQLServerDialect.class;
+            dialect =  SQLServerDialect.class;
         }
         else {
-            return GenericDialect.class;
+            dialect =  GenericDialect.class;
         }
+
+        return dialect;
     }
 
     /**
