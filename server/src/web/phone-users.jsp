@@ -516,11 +516,14 @@
                     <nobr><label for="usernametf">* Username:</label></nobr>
                 </td>
                 <td width="99%">
-                    <input type="text" name="username" size="35" value="<%= username != null ? username : ""%>"
-                           id="usernametf"/>
+                    <% if (phoneDevice == null) { %>
+                        <input type="text" name="username" size="35" value="<%= username != null ? username : ""%>" id="usernametf"/>
                     <% if (errors.containsKey("username")) { %>
-                    <br/>
-                    <span class="jive-error-text"><%=errors.get("username")%></span>
+                        <br/>
+                        <span class="jive-error-text"><%=errors.get("username")%></span>
+                        <% } %>
+                    <% } else { %>
+                        <%= username %>
                     <% } %>
                 </td>
             </tr>
