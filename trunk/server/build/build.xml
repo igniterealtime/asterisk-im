@@ -1,0 +1,121 @@
+<project name="phone" basedir=".." default="jar">
+
+
+    <!-- a build.properties file can be specified to override any properties -->
+    <property file="${basedir}/build.properties"/>
+
+
+    <property name="target.dir" value="${basedir}/target"/>
+    <property name="web-inf.dir" value="${target.dir}/web/WEB-INF"/>
+    <property name="classes.dir" value="${target.dir}/classes"/>
+    <property name="java.src.dir" value="${basedir}/src/java"/>
+    <property name="lib.dir" value="${basedir}/build/lib"/>
+    <property name="work.src.dir" value="${basedir}/src/work"/>
+    <property name="web.src.dir" value="${basedir}/src/web"/>
+    <property name="jsp.package" value="org.jivesoftware.messenger.plugin.phone"/>
+    <property name="messenger.dir" value="${basedir}/../../messenger"/>
+    <property name="jar.file" value="${basedir}/asterisk-im.jar"/>
+
+    <path id="lib.path">
+        <pathelement path="${classes.dir}"/>
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+         <fileset dir="${messenger.dir}/build/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+        <pathelement path="${messenger.dir}/target/classes"/>
+    </path>
+
+
+    <!-- Declare the jspc task with our plugin's classpath -->
+    <taskdef classname="org.apache.jasper.JspC" name="jasper2" loaderref="jasperB">
+        <classpath>
+            <path refid="lib.path"/>
+        </classpath>
+    </taskdef>
+
+    <target name="init">
+         <!-- Check for min build requirements -->
+        <condition property="ant.not.ok" value="true">
+            <not>
+                <contains string="${ant.version}" substring="1.6"/>
+            </not>
+        </condition>
+        <condition property="java.not.ok" value="true">
+            <not>
+                <contains string="${ant.java.version}" substring="1.5"/>
+            </not>
+        </condition>
+        <fail if="ant.not.ok" message="Must use Ant 1.6.x to build Jive Messenger"/>
+        <fail if="java.not.ok" message="Must use JDK 1.5.x to build Jive Messenger"/>
+    </target>
+
+    <target name="jspc" depends="init" >
+
+        <mkdir dir="${web-inf.dir}"/>
+        <!-- JSP to Java -->
+        <jasper2 validateXml="false"
+                uriroot="${web.src.dir}"
+                outputDir="${work.src.dir}"
+                package="${jsp.package}"
+                webXml="${web-inf.dir}/web.xml"/>
+
+    </target>
+
+
+    <target name="compile" depends="jspc">
+        <mkdir dir="${classes.dir}"/>
+
+        <javac srcdir="${java.src.dir}"
+               destdir="${classes.dir}"
+               source="1.5"
+               classpathref="lib.path"
+               debug="true"/>
+
+        <copy todir="${classes.dir}" overwrite="true">
+            <fileset dir="${java.src.dir}">
+                <include name="**/*.properties"/>
+                <include name="**/*.xml"/>
+            </fileset>
+        </copy>
+
+
+        <javac srcdir="${work.src.dir}"
+               destdir="${classes.dir}"
+               source="1.5"
+               classpathref="lib.path"
+               debug="true"/>
+    </target>
+
+    <target name="jar" depends="clean,compile">
+        <mkdir dir="${target.dir}/lib"/>
+        <copy todir="${target.dir}/lib"	>
+            <fileset dir="${lib.dir}"/>
+        </copy>
+
+        <mkdir dir="${target.dir}/web/images"/>
+        <copy todir="${target.dir}/web/images">
+            <fileset dir="${web.src.dir}/images"/>
+        </copy>
+	
+
+        <jar file="${jar.file}" basedir="${target.dir}" update="false" />
+
+    </target>
+
+    <target name="deploy" depends="jar">
+        <copy file="${jar.file}" todir="${messenger.dir}/target/plugins"/>
+    </target>
+
+
+    <target name="clean">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${work.src.dir}"/>
+        <delete file="${jar.file}"/>
+        <delete dir="${web-inf.dir}"/>
+	    <delete dir="${target.dir}/lib"/>
+        <delete dir="${target.dir}/web/images"/>
+    </target>
+
+</project>

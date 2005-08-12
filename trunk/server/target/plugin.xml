@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin>
+    <class>org.jivesoftware.phone.asterisk.AsteriskPlugin</class>
+    <name>Asterisk-IM</name>
+    <description>Integration for Asterisk and Jive Messenger.</description>
+    <author>Andrew Wright</author>
+    <version>1.0 Beta 2</version>
+    <minServerVersion>2.2.0</minServerVersion>
+
+    <adminconsole>
+        <tab id="tab-phone" name="Asterisk-IM" url="phone-settings.jsp"
+            description="Click to manage Asterisk integration settings">
+
+            <sidebar id="siderbar-phone" name="Asterisk-IM">
+                <item id="item-phone-settings" name="General Settings" description="phone admin tool" url="phone-settings.jsp"/>
+                <item id="item-phone-users" name="Phone Mappings" description="Mapping between usernames and phones" url="phone-users.jsp"/>
+            </sidebar>
+
+        </tab>
+    </adminconsole>
+
+</plugin>

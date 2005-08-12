@@ -1,0 +1,134 @@
+<project name="phone-client" default="info" basedir="..">
+
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="classes.dir" value="${basedir}/classes"/>
+    <property name="etc.dir" value="${basedir}/etc"/>
+    <property name="lib.dir" value="${build.dir}/lib"/>
+    <property name="target.dir" value="${basedir}/target"/>
+    <property name="jar.file" value="${target.dir}/asterisk-im-client.jar"/>
+    <property name="javadoc.dest.dir" value="${target.dir}/documentation/api"/>
+
+    <property name="version.major" value="1"/>
+    <property name="version.minor" value="0"/>
+    <property name="version.revision" value="0"/>
+    <property name="version.extra" value="b2"/>
+
+    <target name="info">
+        <echo>
+            compile - compiles classes
+            jar - creates the asterisk-im-client.jar
+        </echo>
+    </target>
+
+    <path id="lib.path">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${javadoc.dest.dir}"/>
+
+        <!-- Setup the full version property correctly -->
+
+        <property name="version" value="${version.major}.${version.minor}.${version.revision}.${version.extra}"/>
+        <property name="version.filename" value="asterisk-im-client_${version.major}_${version.minor}_${version.revision}_${version.extra}"/>
+    </target>
+
+    <target name="compile" depends="init">
+
+        <javac srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               source="1.5"
+               target="1.5"
+               includeantruntime="no"
+               includejavaruntime="no"
+               debug="on">
+
+            <classpath refid="lib.path"/>
+        </javac>
+
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${jar.file}" basedir="${classes.dir}">
+            <metainf dir="${etc.dir}"/>
+        </jar>
+    </target>
+
+    <target name="client-debugger" depends="compile">
+
+        <java classname="org.jivesoftware.phone.client.PhoneClientDebugger" fork="yes">
+
+            <jvmarg value="-Dsmack.debug=true"/>
+
+            <classpath>
+                <path refid="lib.path"/>
+                <pathelement location="${classes.dir}"/>
+            </classpath>
+
+        </java>
+
+    </target>
+
+    <target name="javadoc">
+        <javadoc
+            packagenames="org.jivesoftware.*, org.xmpp.*"
+            destdir="${javadoc.dest.dir}"
+            windowtitle="Jive Messenger ${version} Javadoc"
+            overview="${src.dir}/overview.html"
+            failonerror="yes"
+            >
+            <sourcepath>
+                <path location="${src.dir}"/>
+            </sourcepath>
+            <doctitle><![CDATA[<font face="arial,helvetica,sans-serif">Jive Messenger ${version} Javadoc</font>]]></doctitle>
+            <header><![CDATA[<b>Jive Messenger ${version} Javadoc</b>]]></header>
+            <bottom><![CDATA[<i>Copyright &copy; 1999-2004 Jive Software.</i>]]></bottom>
+            <classpath>
+                <path refid="lib.path"/>
+            </classpath>
+        </javadoc>
+
+    </target>
+
+    <target name="release" depends="clean,jar,javadoc">
+
+        <copy todir="${target.dir}/documentation">
+            <fileset dir="${basedir}/../documentation"/>
+        </copy>
+
+        <mkdir dir="${target.dir}/lib"/>
+
+        <copy todir="${target.dir}/lib">
+            <fileset dir="${lib.dir}/runtime" />
+        </copy>
+
+        <zip destfile="${version.filename}.zip">
+            <zipfileset dir="${target.dir}" prefix="${version.filename}"/>
+        </zip>
+
+        <!--
+        <mkdir dir="${version.filename}"/>
+
+        <copy todir="${version.filename}">
+            <fileset dir="${target.dir}"/>
+        </copy>
+
+
+        <zip file="${version.filename}.zip" basedir="${basedir}/${version.filename}"/>
+
+        <delete dir="${version.filename}"/>
+        -->
+    </target>
+
+    <target name="clean">
+        <delete dir="${target.dir}"/>
+        <delete dir="${classes.dir}"/>
+    </target>
+
+
+
+</project>
