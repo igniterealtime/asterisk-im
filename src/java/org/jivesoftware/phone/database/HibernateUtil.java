@@ -188,33 +188,7 @@ public class HibernateUtil {
         log.info("Installing phone plugin database");
         SchemaUpdate updater = new SchemaUpdate(getFullConfiguration());
         updater.execute(true, true);
-        List<Exception> exceptions = updater.getExceptions();
-
-        int phoneUserType = PhoneUser.class.getAnnotation(JiveID.class).value();
-        int phoneDeviceType = PhoneDevice.class.getAnnotation(JiveID.class).value();
-
-        Connection con = null;
-        PreparedStatement psmt = null;
-        boolean abortTransaction = false;
-
-        try {
-            con = DbConnectionManager.getTransactionConnection();
-
-            insertJiveID(con, phoneUserType);
-            insertJiveID(con, phoneDeviceType);
-        }
-        catch (SQLException e) {
-            exceptions.add(e);
-            abortTransaction = true;
-        }
-        finally {
-            DbConnectionManager.closeConnection(psmt, null);
-            DbConnectionManager.closeTransactionConnection(con, abortTransaction);
-        }
-
-
-        tablesExist = null; // value should be rechecked
-        return exceptions;
+        return (List<Exception>)updater.getExceptions();
 
     }
 
