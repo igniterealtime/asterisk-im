@@ -92,8 +92,16 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
             // Attempts to setup the database if it hasn't been done already
             log.info("Checking to see if Asterisk-IM database schema is present");
-            List<Exception> exceptions = HibernateUtil.initDB();
-            if(exceptions.size() > 0 ) {
+            List<Exception> exceptions = null;
+            if(!HibernateUtil.tablesExist()) {
+                exceptions = HibernateUtil.initDB();
+            }
+            else {
+                // Try updating the database
+                exceptions = HibernateUtil.updateDB();
+            }
+
+            if(exceptions != null && exceptions.size() > 0 ) {
                 log.warning("Asterisk-IM table contains errors exited with error, database may not behave properly");
                 for (Exception e : exceptions) {
                     Log.warn("Asterisk-IM table creation --> "+e.getMessage(), e);

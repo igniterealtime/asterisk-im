@@ -17,6 +17,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.*;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.database.JiveID;
 import org.jivesoftware.util.Log;
@@ -148,6 +149,46 @@ public class HibernateUtil {
         SchemaExport exporter = new SchemaExport(getFullConfiguration());
         exporter.create(true, true);
         List<Exception> exceptions = exporter.getExceptions();
+
+        int phoneUserType = PhoneUser.class.getAnnotation(JiveID.class).value();
+        int phoneDeviceType = PhoneDevice.class.getAnnotation(JiveID.class).value();
+
+        Connection con = null;
+        PreparedStatement psmt = null;
+        boolean abortTransaction = false;
+
+        try {
+            con = DbConnectionManager.getTransactionConnection();
+
+            insertJiveID(con, phoneUserType);
+            insertJiveID(con, phoneDeviceType);
+        }
+        catch (SQLException e) {
+            exceptions.add(e);
+            abortTransaction = true;
+        }
+        finally {
+            DbConnectionManager.closeConnection(psmt, null);
+            DbConnectionManager.closeTransactionConnection(con, abortTransaction);
+        }
+
+
+        tablesExist = null; // value should be rechecked
+        return exceptions;
+
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static List<Exception> updateDB() {
+
+        if(tablesExist()) {
+            return Collections.emptyList();
+        }
+
+        log.info("Installing phone plugin database");
+        SchemaUpdate updater = new SchemaUpdate(getFullConfiguration());
+        updater.execute(true, true);
+        List<Exception> exceptions = updater.getExceptions();
 
         int phoneUserType = PhoneUser.class.getAnnotation(JiveID.class).value();
         int phoneDeviceType = PhoneDevice.class.getAnnotation(JiveID.class).value();
