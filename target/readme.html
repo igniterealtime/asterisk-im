@@ -212,8 +212,8 @@
 <blockquote><tt>PhoneClient client = new PhoneClient(conn); <br>
     client.addEventListener(new BasePhoneEventListener() { <br><br>
 
-    &nbsp;&nbsp;&nbsp;// Override the onRing event to see when we are receiving a call <br>
-    &nbsp;&nbsp;&nbsp;public void onRing(RingEvent event) { <br>
+    &nbsp;&nbsp;&nbsp;// Override the handleRing event to see when we are receiving a call <br>
+    &nbsp;&nbsp;&nbsp;public void handleRing(RingEvent event) { <br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log.info("receiving a call from " + event.getCallerID()); <br>
     &nbsp;&nbsp;&nbsp;} <br><br>
 
