@@ -49,6 +49,11 @@ public class PhoneClient {
      */
     public PhoneClient(XMPPConnection conn) throws XMPPException {
         this.conn = conn;
+
+        if(!conn.isAuthenticated()) {
+            throw new PhoneException("Connection is not authenticated!");
+        }
+
         eventDispatcher = new PhoneEventDispatcher();
         conn.addPacketListener(new PhoneEventPacketListener(eventDispatcher),
                 new PacketExtensionFilter(PhoneEventPacketExtension.ELEMENT_NAME,
