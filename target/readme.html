@@ -116,8 +116,10 @@
 <p>
     The client API first requires that the Asterisk-IM server plugin is installed. To initialize the
     client do the following:
-    <blockquote><tt>XMPPConnection conn = new XMPPConnection("myserver.foo.com");<br>
+    <blockquote><tt>XMPPConnection conn = new XMPPConnection("myserver.foo.com", "user", "password");<br>
         PhoneClient client = new PhoneClient(conn);</tt></blockquote>
+    Note that the XMPPConnection passed in must be authenticated. If an unauthenticated connection is passed in an
+    exception will be thrown.
 </p>
 
 <h2>Phone Events</h2>
