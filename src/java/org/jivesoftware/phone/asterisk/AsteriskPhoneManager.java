@@ -9,68 +9,44 @@
  */
 package org.jivesoftware.phone.asterisk;
 
+import net.sf.asterisk.manager.ManagerConnection;
+import net.sf.asterisk.manager.action.*;
+import net.sf.asterisk.manager.response.CommandResponse;
+import net.sf.asterisk.manager.response.ManagerError;
+import net.sf.asterisk.manager.response.ManagerResponse;
 import org.jivesoftware.phone.*;
 import static org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory.getManagerConnectionPool;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
-import net.sf.asterisk.manager.ManagerConnection;
-import net.sf.asterisk.manager.TimeoutException;
-import net.sf.asterisk.manager.action.CommandAction;
-import net.sf.asterisk.manager.action.OriginateAction;
-import net.sf.asterisk.manager.action.RedirectAction;
-import net.sf.asterisk.manager.response.CommandResponse;
-import net.sf.asterisk.manager.response.ManagerError;
-import net.sf.asterisk.manager.response.ManagerResponse;
 import org.jivesoftware.util.JiveConstants;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.xmpp.packet.JID;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 
 /**
+ * Asterisk dependent implementation of {@link PhoneManager}
+ *
  * @author Andrew Wright
  */
 @PBXInfo(make = "Asterisk", version = "1.x")
-public class AsteriskPhoneManager implements PhoneManager, PhoneConstants {
+public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConstants {
+
     private static final Logger log = Logger.getLogger(AsteriskPhoneManager.class.getName());
 
-    private PhoneDAO dao;
+    private static final String DATE_FORMAT = "yyyy-MM-dd'_'HH-mm-ss";
 
     public AsteriskPhoneManager(PhoneDAO dao) {
-        this.dao = dao;
+        super(dao);
     }
-
-    public PhoneUser getByDevice(String device) {
-        return dao.getByDevice(device);
-    }
-
-    public PhoneUser getByUsername(String username) {
-        return dao.getByUsername(username);
-    }
-
-    public List<PhoneUser> getAll() {
-        return dao.getALL();
-    }
-
-    public void remove(PhoneUser phoneJid) {
-        dao.remove(phoneJid);
-    }
-
-    public void save(PhoneUser phoneJid) {
-        dao.save(phoneJid);
-    }
-
-
-    public PhoneUser getByID(long phoneUserID) {
-        return dao.getByID(phoneUserID);
-    }
-
 
     public void dial(String username, String extension) throws PhoneException {
 
@@ -181,6 +157,73 @@ public class AsteriskPhoneManager implements PhoneManager, PhoneConstants {
 
     }
 
+    public String monitor(String channel) throws PhoneException {
+
+        String fileName = buildFileName(channel);
+
+        MonitorAction action = new MonitorAction();
+        action.setChannel(channel);
+        action.setFile(fileName);
+        action.setMix(true);
+
+        ManagerConnection con = null;
+        try {
+
+            con = getManagerConnectionPool().getConnection();
+
+            ManagerResponse managerResponse = con.sendAction(action);
+
+            if (managerResponse instanceof ManagerError) {
+                log.warning(managerResponse.getMessage());
+                throw new PhoneException(managerResponse.getMessage());
+            }
+
+        }
+        catch (PhoneException pe) {
+            throw pe;
+        }
+        catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+            throw new PhoneException(e.getMessage());
+        }
+        finally {
+            close(con);
+        }
+
+        return fileName;
+    }
+
+    public void stopMonitor(String channel) throws PhoneException {
+
+        StopMonitorAction action = new StopMonitorAction();
+        action.setChannel(channel);
+
+
+        ManagerConnection con = null;
+        try {
+
+            con = getManagerConnectionPool().getConnection();
+
+            ManagerResponse managerResponse = con.sendAction(action);
+
+            if (managerResponse instanceof ManagerError) {
+                log.warning(managerResponse.getMessage());
+                throw new PhoneException(managerResponse.getMessage());
+            }
+
+        }
+        catch (PhoneException pe) {
+            throw pe;
+        }
+        catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+            throw new PhoneException(e.getMessage());
+        }
+        finally {
+            close(con);
+        }
+    }
+
     public void invite(String callSessionID, String extension) throws PhoneException {
 
         CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
@@ -235,26 +278,6 @@ public class AsteriskPhoneManager implements PhoneManager, PhoneConstants {
         return devices;
     }
 
-    public void close() {
-        dao.close();
-    }
-
-    private static void close(ManagerConnection con) {
-
-        if (con != null) {
-            try {
-                con.logoff();
-            }
-            catch (IOException e) {
-                log.log(Level.SEVERE, "trouble closing connection : " + e.getMessage(), e);
-            }
-            catch (TimeoutException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-
-    }
-
     @SuppressWarnings({"unchecked"})
     protected List<String> getSipDevices() throws PhoneException {
 
@@ -298,5 +321,28 @@ public class AsteriskPhoneManager implements PhoneManager, PhoneConstants {
 
     }
 
+    private static void close(ManagerConnection con) {
+
+        if (con != null) {
+            try {
+                con.logoff();
+            }
+            catch (Exception e) {
+                log.log(Level.SEVERE, "trouble closing connection : " + e.getMessage(), e);
+            }
+        }
+
+    }
+
+    private String buildFileName(String channel) {
+
+        StringBuffer name = new StringBuffer(channel.replaceAll("/","-"));
+        name.append("-");
+
+        DateFormat df = new SimpleDateFormat(DATE_FORMAT);
+        name.append(df.format(new Date()));
+
+        return name.toString();
+    }
 
 }

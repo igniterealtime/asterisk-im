@@ -20,7 +20,9 @@ public class PhoneDevice {
     private Long id;
     private String callerId;
     private String device;
-    private Boolean primary;
+    private Boolean primary = false;
+    private Boolean monitored = false;
+
     private String extension;
 
     public PhoneDevice() {
@@ -59,7 +61,31 @@ public class PhoneDevice {
     }
 
     public void setPrimary(Boolean primary) {
-        this.primary = primary;
+        // We don't really want null values
+        if(primary != null) {
+            this.primary = primary;
+        }
+    }
+
+    /**
+     * Returns true if this device should be monitored
+     *
+     * @return true if this device should be monitored
+     */
+    public Boolean isMonitored() {
+        return monitored;
+    }
+
+    /**
+     * set whether or not this device should be monitored
+     *
+     * @param monitored true if this device should be monitored
+     */
+    public void setMonitored(Boolean monitored) {
+        // We don't really want null values
+        if(monitored != null) {
+            this.monitored = monitored;
+        }
     }
 
     public String getExtension() {

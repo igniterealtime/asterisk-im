@@ -3,9 +3,9 @@
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping package="org.jivesoftware.phone" >
+<hibernate-mapping>
 
-    <class name="PhoneUser" table="phoneUser" >
+    <class name="org.jivesoftware.phone.PhoneUser" table="phoneUser" >
 
         <id name="id" column="userID" >
             <generator class="org.jivesoftware.phone.database.JiveIDGenerator"/>
@@ -19,7 +19,7 @@
 
         <set name="devices" cascade="all" order-by="device asc" lazy="false" >
             <key column="userID"/>
-            <one-to-many class="PhoneDevice" />
+            <one-to-many class="org.jivesoftware.phone.PhoneDevice" />
         </set>
     </class>
 

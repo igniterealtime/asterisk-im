@@ -17,6 +17,7 @@ public class CallSession {
     private String id;
     private String channel;
     private String linkedChannel;
+    private boolean isMonitored;
 
     CallSession(String id) {
         this.id = id;
@@ -40,6 +41,14 @@ public class CallSession {
 
     public void setLinkedChannel(String linkedChannel) {
         this.linkedChannel = linkedChannel;
+    }
+
+    public boolean isMonitored() {
+        return isMonitored;
+    }
+
+    public void setMonitored(boolean monitored) {
+        isMonitored = monitored;
     }
 
 
