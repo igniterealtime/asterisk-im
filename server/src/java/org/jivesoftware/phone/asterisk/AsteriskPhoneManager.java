@@ -262,6 +262,21 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         }
     }
 
+    public List mailboxStatuses(String username) {
+
+        PhoneUser phoneUser = getByUsername(username);
+
+        ArrayList statuses = new ArrayList();
+
+        // todo iterate through all devices grabbing mailbox
+
+
+
+        return statuses;
+
+
+    }
+
     public void invite(String callSessionID, String extension) throws PhoneException {
 
         CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
