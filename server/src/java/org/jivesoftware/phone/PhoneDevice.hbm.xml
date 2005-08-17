@@ -3,9 +3,9 @@
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping package="org.jivesoftware.phone">
+<hibernate-mapping>
 
-    <class name="PhoneDevice" table="phoneDevice" >
+    <class name="org.jivesoftware.phone.PhoneDevice" table="phoneDevice" >
 
         <id name="id" column="deviceID" >
             <generator class="org.jivesoftware.phone.database.JiveIDGenerator"/>
@@ -17,7 +17,9 @@
 
         <property name="callerId" />
 
-        <property name="primary" column="isPrimary" type="boolean" not-null="true"/>
+        <property name="primary" column="isPrimary" type="boolean" not-null="true" />
+
+        <property name="monitored" column="isMonitored" type="boolean" not-null="true"/>
 
     </class>
 

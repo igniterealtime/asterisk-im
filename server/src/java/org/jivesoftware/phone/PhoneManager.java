@@ -77,13 +77,38 @@ public interface PhoneManager {
     void dial(String username, JID target) throws PhoneException;
 
     /**
+     * Forwards a call to a different extension
+     *
+     * @param callSessionID the call session id to forward
+     * @param extension extension to forward too
+     * @throws PhoneException thrown if the forward cannot be completed
+     */
+    void forward(String callSessionID, String extension) throws PhoneException;
+
+    /**
      * Used to release resources this manager might be holding on too
      */
     void close();
 
+    /**
+     * Returns a list of all devices the system nows about.
+     *
+     * @return
+     * @throws PhoneException
+     */
     List<String> getDevices() throws PhoneException;
 
-    void forward(String callSessionID, String extension) throws PhoneException;
-
     void invite(String callSessionID, String extension) throws PhoneException;
+
+    /**
+     * Acquire a phone device by its name
+     *
+     * @param device name of the phone device
+     * @return the phone device object
+     */
+    PhoneDevice getDevice(String device);
+
+    String monitor(String channel) throws PhoneException;
+
+    void stopMonitor(String channel) throws PhoneException;
 }

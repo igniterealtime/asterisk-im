@@ -10,6 +10,7 @@
 package org.jivesoftware.phone.database;
 
 import org.jivesoftware.phone.PhoneUser;
+import org.jivesoftware.phone.PhoneDevice;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -50,6 +51,25 @@ public class HibernatePhoneDAO implements PhoneDAO {
             log.log(Level.SEVERE, e.getMessage(), e);
         }
         return phoneJID;
+    }
+
+    public PhoneDevice getDevice(String deviceName) {
+
+        PhoneDevice device = null;
+
+        try {
+
+            String queryString = "from PhoneDevice where device = ?";
+            Query query = session.createQuery(queryString);
+            query.setString(0, deviceName);
+
+            device = (PhoneDevice) query.uniqueResult();
+        }
+        catch (HibernateException e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+        }
+
+        return device;
     }
 
     public PhoneUser getByUsername(String username) {

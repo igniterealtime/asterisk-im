@@ -423,7 +423,7 @@
                 <td><%=isFirst ? currentUser.getUsername() : "&nbsp;"%></td>
                 <td><%=currentDevice.getDevice() %>
                     <% if (deviceListSize > 1) { %>
-                    <span class="phone-required"><%= (currentDevice.isPrimary().booleanValue() ? "(primary)" : "")%></span>
+                    <span class="phone-required"><%= (currentDevice.isPrimary() ? "(primary)" : "")%></span>
                     <% } %>
                 </td>
                 <td><%=currentDevice.getExtension()%></td>
@@ -639,8 +639,7 @@
         if (devices != null) {
             for (PhoneDevice current : devices) {
 
-                if (current.isPrimary() != null &&
-                        current.isPrimary().booleanValue() &&
+                if (current.isPrimary() &&
                         current.getId() != ignored.getId()) {
                     return true;
                 }

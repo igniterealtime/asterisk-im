@@ -46,6 +46,10 @@ public abstract class BasePhoneManager implements PhoneManager {
         return phoneDAO.getByID(phoneUserID);
     }
 
+    public PhoneDevice getDevice(String device) {
+        return phoneDAO.getDevice(device);
+    }
+
     public void close() {
         phoneDAO.close();
     }

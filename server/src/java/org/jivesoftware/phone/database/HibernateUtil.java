@@ -181,11 +181,7 @@ public class HibernateUtil {
     @SuppressWarnings({"unchecked"})
     public static List<Exception> updateDB() {
 
-        if(tablesExist()) {
-            return Collections.emptyList();
-        }
-
-        log.info("Installing phone plugin database");
+        log.info("Updating phone plugin database");
         SchemaUpdate updater = new SchemaUpdate(getFullConfiguration());
         updater.execute(true, true);
         return (List<Exception>)updater.getExceptions();

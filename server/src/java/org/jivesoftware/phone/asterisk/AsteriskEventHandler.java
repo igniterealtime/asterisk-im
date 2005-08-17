@@ -9,19 +9,24 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import org.jivesoftware.phone.CallSession;
-import org.jivesoftware.phone.PhoneManager;
-import org.jivesoftware.phone.PhoneUser;
+import net.sf.asterisk.manager.ManagerEventHandler;
+import net.sf.asterisk.manager.event.*;
+import org.dom4j.Attribute;
+import org.dom4j.Element;
+import org.jivesoftware.messenger.ClientSession;
+import org.jivesoftware.messenger.SessionManager;
+import org.jivesoftware.messenger.XMPPServer;
+import static org.jivesoftware.messenger.XMPPServer.getInstance;
+import org.jivesoftware.phone.*;
+import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
+import static org.jivesoftware.phone.PhoneManagerFactory.close;
+import static org.jivesoftware.phone.PhoneManagerFactory.getPhoneManager;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneEvent.Type;
 import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.element.PhoneStatus.Status;
 import org.jivesoftware.phone.util.PhoneConstants;
-import net.sf.asterisk.manager.ManagerEventHandler;
-import net.sf.asterisk.manager.event.*;
-import org.jivesoftware.messenger.ClientSession;
-import org.jivesoftware.messenger.SessionManager;
-import org.jivesoftware.messenger.XMPPServer;
+import static org.jivesoftware.phone.util.ThreadPool.getThreadPool;
 import org.jivesoftware.util.StringUtils;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
@@ -34,14 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.jivesoftware.messenger.XMPPServer.getInstance;
-import org.dom4j.Element;
-import org.dom4j.Attribute;
-import static org.jivesoftware.phone.util.ThreadPool.getThreadPool;
-import static org.jivesoftware.phone.PhoneManagerFactory.close;
-import static org.jivesoftware.phone.PhoneManagerFactory.getPhoneManager;
-import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 
 
 /**
@@ -72,8 +69,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         if (event instanceof ChannelEvent) {
             handleChannelEvent((ChannelEvent) event);
-        }
-        else if (event instanceof LinkEvent) {
+        } else if (event instanceof LinkEvent) {
             getThreadPool().execute(new LinkTask((LinkEvent) event));
         }
 
@@ -86,8 +82,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         if (executor == null) {
             log.severe("Phone Thread pool was not initialized, returning!");
             return;
-        }
-        else if (executor.isShutdown()) {
+        } else if (executor.isShutdown()) {
             log.warning("Phone Thread pool has been shutdown, plugin shutdown must be in progress! " +
                     "Not processing event");
             return;
@@ -100,8 +95,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 executor.execute(new OnPhoneTask(nsEvent));
             }
 
-        }
-        else if (event instanceof NewChannelEvent) {
+        } else if (event instanceof NewChannelEvent) {
             NewChannelEvent ncEvent = (NewChannelEvent) event;
             String state = ncEvent.getState();
 
@@ -111,13 +105,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             // Or keep it for both
             if (state.equals("Ringing")) {
                 executor.execute(new RingTask(ncEvent));
-            }
-            else if (state.equals("Ring")) {
+            } else if (state.equals("Ring")) {
                 executor.execute(new DialedTask(ncEvent));
             }
 
-        }
-        else if (event instanceof HangupEvent) {
+        } else if (event instanceof HangupEvent) {
             executor.execute(new HangupTask((HangupEvent) event));
         }
     }
@@ -154,7 +146,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 device = getDevice(event.getChannel2());
                 phoneUser = phoneManager.getByDevice(device);
 
-                if(phoneUser != null) {
+                if (phoneUser != null) {
                     CallSession callSession = getCallSessionFactory().getPhoneSession(event.getUniqueId2());
                     callSession.setChannel(event.getChannel2());
                     callSession.setLinkedChannel(event.getChannel1());
@@ -196,7 +188,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getByDevice(device);
 
-
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
                     log.finer("AnswerTask: Could not find device/jid mapping for device " +
@@ -204,13 +195,26 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     return;
                 }
 
+                CallSession callSession = getCallSessionFactory().getPhoneSession(event.getUniqueId());
+
+                // If the device should be monitored, then start monitoring
+                PhoneDevice phoneDevice = phoneManager.getDevice(device);
+                if (phoneDevice.isMonitored()) {
+                    PhoneManager mgr = PhoneManagerFactory.getPhoneManager();
+                    try {
+                        log.info("Staring monitoring on channel "+event.getChannel());
+                        mgr.monitor(event.getChannel());
+                        callSession.setMonitored(true);
+                    }
+                    finally {
+                        PhoneManagerFactory.close(mgr);
+                    }
+                }
 
                 JID jid = getJID(phoneUser);
 
-                CallSession callSession = getCallSessionFactory().getPhoneSession(event.getUniqueId());
 
                 XMPPServer server = getInstance();
-
 
                 // Notify the client that they have answered the phone
                 Message message = new Message();
@@ -224,7 +228,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 asteriskPlugin.sendPacket(message);
 
-
                 //Acquire the xmpp sessions for the user
                 SessionManager sessionManager = server.getSessionManager();
                 Collection<ClientSession> sessions = sessionManager.getSessions(jid.getNode());
@@ -235,7 +238,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 }
 
                 log.finer("AnswerTask: setting presence to away for " + jid);
-
 
                 // Iterate through all of the sessions sending out new presences for each
                 Presence presence = new Presence();
@@ -296,6 +298,20 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     return;
                 }
 
+                // Check and see if we are monitoring the call, if we are cancel the monitor
+                /*
+                CallSession callSession = CallSessionFactory.getCallSessionFactory().getPhoneSession(event.getUniqueId());
+                if (callSession.isMonitored()) {
+                    PhoneManager mgr = PhoneManagerFactory.getPhoneManager();
+                    try {
+                        mgr.stopMonitor(device);
+                    }
+                    finally {
+                        PhoneManagerFactory.close(mgr);
+                    }
+                }
+                */
+
                 JID jid = getJID(phoneUser);
 
                 Message message = new Message();
@@ -317,11 +333,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                         Element phoneStatusElement = presenceElement.element("phone-status");
                         // If the phone-status attribute exists check to see if the
-                        if(phoneStatusElement != null) {
+                        if (phoneStatusElement != null) {
 
                             Attribute statusAtt = phoneStatusElement.attribute("status");
 
-                            if(!Status.AVAILABLE.name().equals(statusAtt.getText())) {
+                            if (!Status.AVAILABLE.name().equals(statusAtt.getText())) {
                                 statusAtt.setText(Status.AVAILABLE.name());
                             }
 
@@ -371,7 +387,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getByDevice(device);
 
-
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
                     return;
@@ -406,7 +421,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
     }
 
 
-     /**
+    /**
      * Used to send a message to a user when their phone is ringing
      */
     private class DialedTask implements Runnable {
@@ -426,7 +441,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             try {
                 phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getByDevice(device);
-
 
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {

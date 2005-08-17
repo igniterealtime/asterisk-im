@@ -1,6 +1,7 @@
 package org.jivesoftware.phone.database;
 
 import org.jivesoftware.phone.PhoneUser;
+import org.jivesoftware.phone.PhoneDevice;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public interface PhoneDAO {
     List<PhoneUser> getALL();
 
     void close();
+
+    PhoneDevice getDevice(String deviceName);
 }
