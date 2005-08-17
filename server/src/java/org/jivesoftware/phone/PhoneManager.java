@@ -111,4 +111,13 @@ public interface PhoneManager {
     String monitor(String channel) throws PhoneException;
 
     void stopMonitor(String channel) throws PhoneException;
+
+    /**
+     * Used to see how many messages are in a mailbox
+     *
+     * @param mailbox the mailbox to check
+     * @return mailbox status object
+     * @throws PhoneException thrown if there are problems with the asterisk manager
+     */
+    MailboxStatus mailboxStatus(String mailbox) throws PhoneException;
 }

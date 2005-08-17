@@ -11,9 +11,7 @@ package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.ManagerConnection;
 import net.sf.asterisk.manager.action.*;
-import net.sf.asterisk.manager.response.CommandResponse;
-import net.sf.asterisk.manager.response.ManagerError;
-import net.sf.asterisk.manager.response.ManagerResponse;
+import net.sf.asterisk.manager.response.*;
 import org.jivesoftware.phone.*;
 import static org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory.getManagerConnectionPool;
 import org.jivesoftware.phone.database.PhoneDAO;
@@ -22,14 +20,14 @@ import org.jivesoftware.util.JiveConstants;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.xmpp.packet.JID;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -224,6 +222,46 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         }
     }
 
+    public MailboxStatus mailboxStatus(String mailbox) throws PhoneException {
+
+        MailboxCountAction action = new MailboxCountAction();
+        action.setMailbox(mailbox);
+
+        ManagerConnection con = null;
+        try {
+
+            con = getManagerConnectionPool().getConnection();
+
+            ManagerResponse managerResponse = con.sendAction(action);
+
+            if (managerResponse instanceof ManagerError) {
+                log.warning(managerResponse.getMessage());
+                throw new PhoneException(managerResponse.getMessage());
+            }
+            else if (managerResponse instanceof MailboxCountResponse ) {
+                MailboxCountResponse mailboxStatus = (MailboxCountResponse) managerResponse;
+                int oldMessages = mailboxStatus.getOldMessages();
+                int newMessages = mailboxStatus.getNewMessages();
+                return new MailboxStatus(mailbox, oldMessages, newMessages);
+            }
+            else {
+                log.severe("Did not receive a MailboxCountResponseEvent!");
+                throw new PhoneException("Did not receive a MailboxCountResponseEvent!");
+            }
+
+        }
+        catch (PhoneException pe) {
+            throw pe;
+        }
+        catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+            throw new PhoneException(e.getMessage());
+        }
+        finally {
+            close(con);
+        }
+    }
+
     public void invite(String callSessionID, String extension) throws PhoneException {
 
         CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
@@ -336,7 +374,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     private String buildFileName(String channel) {
 
-        StringBuffer name = new StringBuffer(channel.replaceAll("/","-"));
+        StringBuffer name = new StringBuffer(channel.replaceAll("/", "-"));
         name.append("-");
 
         DateFormat df = new SimpleDateFormat(DATE_FORMAT);
