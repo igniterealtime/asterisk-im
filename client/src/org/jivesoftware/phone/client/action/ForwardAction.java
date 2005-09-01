@@ -14,6 +14,7 @@ package org.jivesoftware.phone.client.action;
 public class ForwardAction extends PhoneActionPacket {
 
     private String extension;
+    private String jid;
 
     public ForwardAction() {
     }
@@ -22,11 +23,25 @@ public class ForwardAction extends PhoneActionPacket {
      * Constructs a new instance of this action.
      *
      * @param callID The current call session id (call we are in)
-     * @param extension The extension we want to forward. Can be a full phone number or local extension
      */
-    public ForwardAction(String callID, String extension) {
+    public ForwardAction(String callID) {
         super(callID);
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
         this.extension = extension;
+    }
+
+    public String getJID() {
+        return jid;
+    }
+
+    public void setJID(String jid) {
+        this.jid = jid;
     }
 
     /**
@@ -38,18 +53,25 @@ public class ForwardAction extends PhoneActionPacket {
         return ActionType.FORWARD;
     }
 
+
     /**
      * returns an extension element or a jid element depending on which was specified
      *
      * @return an extension element or a jid element, depending on which was specified
      */
     protected String getActionChildElementXML() {
-
-        return new StringBuffer()
-            .append("<extension>")
-            .append(extension)
-            .append("</extension>")
-            .toString();
+        if(jid != null) {
+            return new StringBuffer()
+                .append("<jid>")
+                .append(jid)
+                .append("</jid>")
+                .toString();
+        } else {
+            return new StringBuffer()
+                .append("<extension>")
+                .append(extension)
+                .append("</extension>")
+                .toString();
+        }
     }
-
 }

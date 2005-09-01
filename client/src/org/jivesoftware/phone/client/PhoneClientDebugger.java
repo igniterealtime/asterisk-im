@@ -130,11 +130,6 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
         button.addActionListener(this);
         buttonPanel.add(button);
 
-        button = new JButton("Call JID");
-        button.setActionCommand("callJID");
-        button.addActionListener(this);
-        buttonPanel.add(button);
-
         button = new JButton("Forward");
         button.setActionCommand("forward");
         button.addActionListener(this);
@@ -165,29 +160,19 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
 
             if (extensionText != null && !"".equals(extensionText)) {
                 try {
-                    client.dialByExtension(extensionText);
+
+                    if(extensionText.contains("@")) {
+                        client.dialByJID(extensionText);
+                    }
+                    else {
+                        client.dialByExtension(extensionText);
+                    }
                 }
                 catch (PhoneActionException ex) {
                     log.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             }
 
-
-        }
-        else if ("callJID".equals(command)) {
-
-            String jidText = input.getText();
-
-            if (jidText != null && !"".equals(jidText)) {
-
-                try {
-                    client.dialByJID(jidText);
-                }
-                catch (PhoneActionException ex) {
-                    log.log(Level.SEVERE, ex.getMessage(), ex);
-                }
-
-            }
 
         }
         else if ("connect".equals(command)) {
@@ -223,7 +208,12 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
 
             if(call != null && extensionText != null && !"".equals(extensionText)) {
                 try {
-                    client.forward(call, extensionText);
+                    if(extensionText.contains("@")) {
+                        client.forwardByJID(call, extensionText);
+                    }
+                    else {
+                        client.forward(call, extensionText);
+                    }
                 }
                 catch (PhoneActionException e1) {
                     log.log(Level.SEVERE, e1.getMessage(), e1);

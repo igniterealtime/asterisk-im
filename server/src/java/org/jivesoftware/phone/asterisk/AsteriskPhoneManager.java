@@ -11,7 +11,10 @@ package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.ManagerConnection;
 import net.sf.asterisk.manager.action.*;
-import net.sf.asterisk.manager.response.*;
+import net.sf.asterisk.manager.response.CommandResponse;
+import net.sf.asterisk.manager.response.MailboxCountResponse;
+import net.sf.asterisk.manager.response.ManagerError;
+import net.sf.asterisk.manager.response.ManagerResponse;
 import org.jivesoftware.phone.*;
 import static org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory.getManagerConnectionPool;
 import org.jivesoftware.phone.database.PhoneDAO;
@@ -72,47 +75,24 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
     }
 
     public void forward(String callSessionID, String extension) throws PhoneException {
+        forward(callSessionID, extension, null);
+    }
 
+    public void forward(String callSessionID, JID target) throws PhoneException {
 
-        CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
-                .getPhoneSession(callSessionID);
+        PhoneUser targetUser = getByUsername(target.getNode());
 
-        RedirectAction action = new RedirectAction();
-
-        // the channel should be the person that called us
-        action.setChannel(phoneSession.getLinkedChannel());
-        action.setExten(extension);
-        action.setPriority(1);
-
-        String context = getProperty(Properties.CONTEXT, DEFAULT_CONTEXT);
-        if ("".equals(context)) {
-            context = DEFAULT_CONTEXT;
+        if (targetUser == null) {
+            throw new PhoneException("User is not configured on this server");
         }
 
-        action.setContext(context);
+        String extension = targetUser.getPrimaryDevice().getExtension();
 
-        ManagerConnection con = null;
-        try {
-            con = getManagerConnectionPool().getConnection();
-            ManagerResponse managerResponse = con.sendAction(action);
+        if (extension == null) {
+            throw new PhoneException("User has not identified a number with himself");
+        }
 
-
-            if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
-                throw new PhoneException(managerResponse.getMessage());
-            }
-
-        }
-        catch (PhoneException pe) {
-            throw pe;
-        }
-        catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
-            throw new PhoneException(e.getMessage());
-        }
-        finally {
-            close(con);
-        }
+        forward(callSessionID, targetUser.getPrimaryDevice().getExtension(), target);
 
     }
 
@@ -198,14 +178,12 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             if (managerResponse instanceof ManagerError) {
                 log.warning(managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
-            }
-            else if (managerResponse instanceof MailboxCountResponse ) {
+            } else if (managerResponse instanceof MailboxCountResponse) {
                 MailboxCountResponse mailboxStatus = (MailboxCountResponse) managerResponse;
                 int oldMessages = mailboxStatus.getOldMessages();
                 int newMessages = mailboxStatus.getNewMessages();
                 return new MailboxStatus(mailbox, oldMessages, newMessages);
-            }
-            else {
+            } else {
                 log.severe("Did not receive a MailboxCountResponseEvent!");
                 throw new PhoneException("Did not receive a MailboxCountResponseEvent!");
             }
@@ -230,7 +208,6 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         ArrayList statuses = new ArrayList();
 
         // todo iterate through all devices grabbing mailbox
-
 
 
         return statuses;
@@ -397,7 +374,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getPhoneSession(primaryDevice.getDevice());
             phoneSession.setCallerID(extension);
 
-            if(jid != null) {
+            if (jid != null) {
                 phoneSession.setDialedJID(jid);
             }
 
@@ -409,6 +386,56 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         finally {
             close(con);
         }
+
+    }
+
+    public void forward(String callSessionID, String extension, JID jid) throws PhoneException {
+
+
+        CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
+                .getPhoneSession(callSessionID);
+
+        phoneSession.setForwardedExtension(extension);
+        phoneSession.setForwardedJID(jid);
+
+        RedirectAction action = new RedirectAction();
+
+        // the channel should be the person that called us
+        action.setChannel(phoneSession.getLinkedChannel());
+        action.setExten(extension);
+        action.setPriority(1);
+
+
+        String context = getProperty(Properties.CONTEXT, DEFAULT_CONTEXT);
+        if ("".equals(context)) {
+            context = DEFAULT_CONTEXT;
+        }
+
+        action.setContext(context);
+
+        ManagerConnection con = null;
+        try {
+            con = getManagerConnectionPool().getConnection();
+            ManagerResponse managerResponse = con.sendAction(action);
+
+
+            if (managerResponse instanceof ManagerError) {
+                log.warning(managerResponse.getMessage());
+                throw new PhoneException(managerResponse.getMessage());
+            }
+
+        }
+        catch (PhoneException pe) {
+            throw pe;
+        }
+        catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+            throw new PhoneException(e.getMessage());
+        }
+        finally {
+            close(con);
+        }
+
 
     }
 

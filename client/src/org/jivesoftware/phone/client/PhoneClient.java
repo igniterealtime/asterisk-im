@@ -187,9 +187,61 @@ public class PhoneClient {
             throw new PhoneActionException("callID cannot be null");
         }
 
-        ForwardAction action = new ForwardAction(call.getId(), extension);
+        ForwardAction action = new ForwardAction(call.getId());
+        action.setExtension(extension);
         action.setTo(component);
         action.setFrom(conn.getUser());
+
+        // Wait for a response packet back from the server.
+        PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
+        PacketCollector response = conn.createPacketCollector(responseFilter);
+
+        // do iq stuff here
+        // packet reply timeout
+        conn.sendPacket(action);
+
+        // Wait up to a certain number of seconds for a reply.
+        IQ iq = (IQ) response.nextResult(SmackConfiguration.getPacketReplyTimeout());
+
+        // Stop queuing results
+        response.cancel();
+
+
+        if (iq == null) {
+            throw new PhoneActionException("No response received from the server");
+        }
+
+        if (iq.getError() != null) {
+            throw new PhoneActionException(iq.getError());
+        }
+
+        if (!(iq instanceof ForwardAction)) {
+            throw new PhoneActionException("Did not acquire the proper response!");
+        }
+
+    }
+
+    /**
+     * Forwards the call to another extension.
+     *
+     * @param call      The call to forward
+     * @param jid jid of the person to forward too.
+     * @throws PhoneActionException thrown if there are problems forwarding the call
+     */
+    public void forwardByJID(Call call, String jid) throws PhoneActionException {
+
+        if (call == null) {
+            throw new PhoneActionException("passed null call object");
+        }
+
+        if (call.getId() == null) {
+            throw new PhoneActionException("callID cannot be null");
+        }
+
+        ForwardAction action = new ForwardAction(call.getId());
+        action.setTo(component);
+        action.setFrom(conn.getUser());
+        action.setJID(jid);
 
         // Wait for a response packet back from the server.
         PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
