@@ -9,6 +9,8 @@
  */
 package org.jivesoftware.phone;
 
+import org.xmpp.packet.JID;
+
 /**
  * @author Andrew Wright
  */
@@ -17,6 +19,8 @@ public class CallSession {
     private String id;
     private String channel;
     private String linkedChannel;
+    private String callerID;
+    private JID dialedJID;
     private boolean isMonitored;
 
     CallSession(String id) {
@@ -49,6 +53,22 @@ public class CallSession {
 
     public void setMonitored(boolean monitored) {
         isMonitored = monitored;
+    }
+
+    public String getCallerID() {
+        return callerID;
+    }
+
+    public void setCallerID(String callerID) {
+        this.callerID = callerID;
+    }
+
+    public JID getDialedJID() {
+        return dialedJID;
+    }
+
+    public void setDialedJID(JID dialedJID) {
+        this.dialedJID = dialedJID;
     }
 
 

@@ -71,6 +71,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             handleChannelEvent((ChannelEvent) event);
         } else if (event instanceof LinkEvent) {
             getThreadPool().execute(new LinkTask((LinkEvent) event));
+        } else if (event instanceof NewExtenEvent) {
+            NewExtenEvent neEvent = (NewExtenEvent) event;
+
+            if ("Dial".equals(neEvent.getApplication())) {
+                getThreadPool().execute(new DialedTask(neEvent));
+            }
         }
 
     }
@@ -105,13 +111,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             // Or keep it for both
             if (state.equals("Ringing")) {
                 executor.execute(new RingTask(ncEvent));
-            } else if (state.equals("Ring")) {
-                executor.execute(new DialedTask(ncEvent));
             }
 
         } else if (event instanceof HangupEvent) {
             executor.execute(new HangupTask((HangupEvent) event));
         }
+
     }
 
     /**
@@ -202,7 +207,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 if (phoneDevice.isMonitored()) {
                     PhoneManager mgr = PhoneManagerFactory.getPhoneManager();
                     try {
-                        log.info("Staring monitoring on channel "+event.getChannel());
+                        log.info("Staring monitoring on channel " + event.getChannel());
                         mgr.monitor(event.getChannel());
                         callSession.setMonitored(true);
                     }
@@ -220,10 +225,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Message message = new Message();
                 message.setFrom(asteriskPlugin.getComponentJID());
                 message.setTo(jid);
+                message.setID(event.getUniqueId());
 
                 PhoneEvent phoneEvent =
                         new PhoneEvent(callSession.getId(), Type.ON_PHONE, device);
-                phoneEvent.addElement("callerID").setText(StringUtils.stripTags(event.getCallerId()));
+                phoneEvent.addElement("callerID").setText(callSession.getCallerID());
                 message.getElement().add(phoneEvent);
 
                 asteriskPlugin.sendPacket(message);
@@ -317,6 +323,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Message message = new Message();
                 message.setFrom(asteriskPlugin.getComponentJID());
                 message.setTo(jid);
+                message.setID(event.getUniqueId());
 
                 PhoneEvent phoneEvent =
                         new PhoneEvent(event.getUniqueId(), Type.HANG_UP, device);
@@ -392,6 +399,10 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     return;
                 }
 
+                // try and see if we have a fake call session
+                // This will be created if there was an originated call
+                CallSession fakeSession = getCallSessionFactory().destroyPhoneSession(device);
+
 
                 CallSession callSession = getCallSessionFactory()
                         .getPhoneSession(event.getUniqueId());
@@ -401,13 +412,35 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 JID jid = getJID(phoneUser);
 
                 Message message = new Message();
+                message.setID(event.getUniqueId()); //just put something in here
                 message.setFrom(asteriskPlugin.getComponentJID());
                 message.setTo(jid);
 
-                PhoneEvent phoneEvent =
-                        new PhoneEvent(event.getUniqueId(), Type.RING, device);
-                phoneEvent.addElement("callerID").setText(StringUtils.stripTags(event.getCallerId()));
-                message.getElement().add(phoneEvent);
+                if (fakeSession != null) {
+
+                    callSession.setCallerID(fakeSession.getCallerID());
+                    callSession.setDialedJID(fakeSession.getDialedJID());
+
+                    PhoneEvent dialEvent =
+                            new PhoneEvent(event.getUniqueId(), Type.DIALED, device);
+
+                    dialEvent.addElement("callerID").setText(fakeSession.getCallerID());
+                    callSession.setCallerID(fakeSession.getCallerID());
+
+                    if (fakeSession.getDialedJID() != null) {
+                        dialEvent.addElement("jid", fakeSession.getDialedJID().toString());
+                    }
+                    message.getElement().add(dialEvent);
+
+                } else {
+                    PhoneEvent phoneEvent =
+                            new PhoneEvent(event.getUniqueId(), Type.RING, device);
+                    String callerID = StringUtils.stripTags(event.getCallerId());
+                    phoneEvent.addElement("callerID").setText(callerID);
+                    callSession.setCallerID(callerID);
+
+                    message.getElement().add(phoneEvent);
+                }
 
                 asteriskPlugin.sendPacket(message);
             }
@@ -423,12 +456,15 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
     /**
      * Used to send a message to a user when their phone is ringing
+     *
+     * This is based of the NewExten event because we needed to use appdata information
+     * for coming up with a usable callerID from things like Zap devices
      */
     private class DialedTask implements Runnable {
 
-        private NewChannelEvent event;
+        private NewExtenEvent event;
 
-        public DialedTask(NewChannelEvent event) {
+        public DialedTask(NewExtenEvent event) {
             this.event = event;
         }
 
@@ -448,20 +484,67 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 }
 
 
-                CallSession callSession = getCallSessionFactory()
-                        .getPhoneSession(event.getUniqueId());
+                CallSession callSession = getCallSessionFactory().getPhoneSession(event.getUniqueId());
+                if (callSession.getCallerID() != null) {
+                    // We have already reported a Dial event to the user, no need to do it gain
+                    return;
+                }
+
 
                 callSession.setChannel(event.getChannel());
 
                 JID jid = getJID(phoneUser);
 
                 Message message = new Message();
+                message.setID(event.getUniqueId());
                 message.setFrom(asteriskPlugin.getComponentJID());
                 message.setTo(jid);
+
+                String appData = event.getAppData();
+
+                String callerID;
+
+                if (appData != null) {
+                    if (appData.contains("Zap/")) {
+                        String[] tokens = appData.split("/");
+                        callerID = tokens[tokens.length - 1];
+                    } else if (appData.contains("IAX/") || appData.contains("SIP/")) {
+
+                        // Hopefully they used useful names like SIP/exten
+                        String name = getDevice(appData);
+
+                        // string may be like this SIP/6131&SIP/232|20
+                        int index = name.indexOf("|");
+                        if (index > 0) {
+                            name = name.substring(0, index);
+                        }
+
+                        // string may be like SIP/6131&SIP/232
+                        index = name.indexOf("&");
+                        if (index > 0) {
+                            name = name.substring(0, index);
+                        }
+
+                        // string will be like SIP/6131
+                        index = name.indexOf("/");
+                        name = name.substring(index + 1);
+
+                        callerID = name;
+                    } else {
+                        // Whatever it is use it (hack)
+                        callerID = appData;
+                    }
+                } else {
+                    //finally just put something in there (hack)
+                    callerID = event.getUniqueId();
+                }
+                callSession.setCallerID(callerID);
 
                 PhoneEvent phoneEvent =
                         new PhoneEvent(event.getUniqueId(), Type.DIALED, device);
                 message.getElement().add(phoneEvent);
+
+                phoneEvent.addElement("callerID").setText(callerID);
 
                 asteriskPlugin.sendPacket(message);
             }

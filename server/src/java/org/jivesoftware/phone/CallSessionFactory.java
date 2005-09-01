@@ -50,8 +50,8 @@ public class CallSessionFactory {
      *
      * @param id id of the session to destory
      */
-    public void destroyPhoneSession(String id) {
-        sessionMap.remove(id);
+    public CallSession destroyPhoneSession(String id) {
+        return sessionMap.remove(id);
     }
 
     /**
