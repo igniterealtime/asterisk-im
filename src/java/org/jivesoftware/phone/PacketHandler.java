@@ -126,15 +126,22 @@ public class PacketHandler implements PhoneConstants {
             String callSessionID = phoneElement.attributeValue("id");
 
             if(callSessionID == null || "".equals(callSessionID)) {
-                throw new PhoneException("id is a required attribute for type FORWARD");
+                throw new PhoneException("a call 'id' is a required attribute for type FORWARD");
             }
 
             String extension = phoneElement.elementText("extension");
-            if(extension == null || "".equals(extension)) {
-                throw new PhoneException("Extension is a required element for type FORWARD");
+            if(extension != null && !"".equals(extension)) {
+                phoneManager.forward(callSessionID, extension);
             }
+            // try dialing by jid
+            else {
+                String targetJID = phoneElement.elementText("jid");
+                if(targetJID == null) {
+                    throw new PhoneException("No extension or jid was specified");
+                }
 
-            phoneManager.forward(callSessionID, extension);
+                phoneManager.forward(callSessionID, new JID(targetJID));
+            }
 
             //send reply
             IQ reply = IQ.createResultIQ(iq);

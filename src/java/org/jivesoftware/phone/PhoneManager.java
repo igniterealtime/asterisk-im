@@ -120,4 +120,6 @@ public interface PhoneManager {
      * @throws PhoneException thrown if there are problems with the asterisk manager
      */
     MailboxStatus mailboxStatus(String mailbox) throws PhoneException;
+
+    void forward(String callSessionID, JID target) throws PhoneException;
 }

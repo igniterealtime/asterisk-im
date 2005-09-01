@@ -20,6 +20,8 @@ public class CallSession {
     private String channel;
     private String linkedChannel;
     private String callerID;
+    private String forwardedExtension;
+    private JID forwardedJID;
     private JID dialedJID;
     private boolean isMonitored;
 
@@ -69,6 +71,22 @@ public class CallSession {
 
     public void setDialedJID(JID dialedJID) {
         this.dialedJID = dialedJID;
+    }
+
+    public String getForwardedExtension() {
+        return forwardedExtension;
+    }
+
+    public void setForwardedExtension(String forwardedExtension) {
+        this.forwardedExtension = forwardedExtension;
+    }
+
+    public JID getForwardedJID() {
+        return forwardedJID;
+    }
+
+    public void setForwardedJID(JID forwardedJID) {
+        this.forwardedJID = forwardedJID;
     }
 
 

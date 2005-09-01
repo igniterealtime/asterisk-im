@@ -21,6 +21,7 @@ import org.jivesoftware.phone.*;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 import static org.jivesoftware.phone.PhoneManagerFactory.close;
 import static org.jivesoftware.phone.PhoneManagerFactory.getPhoneManager;
+import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneEvent.Type;
 import org.jivesoftware.phone.element.PhoneStatus;
@@ -456,7 +457,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
     /**
      * Used to send a message to a user when their phone is ringing
-     *
+     * <p/>
      * This is based of the NewExten event because we needed to use appdata information
      * for coming up with a usable callerID from things like Zap devices
      */
@@ -557,22 +558,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         }
     }
 
-    /**
-     * Strips the hyphen out of fullChannel names. Asterisk will pass fullChannel names such as
-     * SIP/6131-53f. The -53f is unique per call, not per user. So will strip this part out
-     * to get the correct fullChannel.
-     *
-     * @param fullChannel full Channel
-     * @return the fullChannel with out the final hyphen section
-     */
-    private String getDevice(String fullChannel) {
-        return fullChannel.split("-")[0];
-    }
-
-
     private JID getJID(PhoneUser user) {
         String serverName = getInstance().getServerInfo().getName();
         return new JID(user.getUsername(), serverName, null);
     }
-
 }
