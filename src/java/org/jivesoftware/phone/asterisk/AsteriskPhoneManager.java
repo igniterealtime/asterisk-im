@@ -42,54 +42,15 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     private static final String DATE_FORMAT = "yyyy-MM-dd'_'HH-mm-ss";
 
+    private int actionID = 0;
+
     public AsteriskPhoneManager(PhoneDAO dao) {
         super(dao);
     }
 
+
     public void dial(String username, String extension) throws PhoneException {
-
-        //acquire the jidUser object
-        PhoneUser user = getByUsername(username);
-
-        ManagerConnection con = null;
-
-        try {
-            con = getManagerConnectionPool().getConnection();
-
-            PhoneDevice primaryDevice = user.getPrimaryDevice();
-
-            OriginateAction action = new OriginateAction();
-            action.setChannel(primaryDevice.getDevice());
-            action.setCallerId(primaryDevice.getCallerId() != null ? primaryDevice.getCallerId() :
-                    getProperty(Properties.DEFAULT_CALLER_ID));
-            action.setExten(extension);
-            String context = getProperty(Properties.CONTEXT, DEFAULT_CONTEXT);
-            if ("".equals(context)) {
-                context = DEFAULT_CONTEXT;
-            }
-
-            action.setContext(context);
-            action.setPriority(1);
-
-            ManagerResponse managerResponse = con.sendAction(action, 5 * JiveConstants.SECOND);
-
-            if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
-                throw new PhoneException(managerResponse.getMessage());
-            }
-
-        }
-        catch (PhoneException pe) {
-            throw pe;
-        }
-        catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
-            throw new PhoneException("Unabled to dial extention " + extension, e);
-        }
-        finally {
-            close(con);
-        }
-
+        dial(username, extension, null);
     }
 
     public void dial(String username, JID target) throws PhoneException {
@@ -107,7 +68,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         }
 
 
-        dial(username, extension);
+        dial(username, extension, target);
     }
 
     public void forward(String callSessionID, String extension) throws PhoneException {
@@ -397,5 +358,59 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
         return name.toString();
     }
+
+    private synchronized String getActionID() {
+        return "asterisk-im" + String.valueOf(actionID++);
+    }
+
+    public void dial(String username, String extension, JID jid) throws PhoneException {
+
+        //acquire the jidUser object
+        PhoneUser user = getByUsername(username);
+
+        ManagerConnection con = null;
+
+        try {
+            con = getManagerConnectionPool().getConnection();
+
+            PhoneDevice primaryDevice = user.getPrimaryDevice();
+
+            OriginateAction action = new OriginateAction();
+            action.setChannel(primaryDevice.getDevice());
+            action.setCallerId(primaryDevice.getCallerId() != null ? primaryDevice.getCallerId() :
+                    getProperty(Properties.DEFAULT_CALLER_ID));
+            action.setExten(extension);
+            String context = getProperty(Properties.CONTEXT, DEFAULT_CONTEXT);
+            if ("".equals(context)) {
+                context = DEFAULT_CONTEXT;
+            }
+
+            action.setVariable("test");
+            action.setAsync(true);
+            action.setContext(context);
+            action.setPriority(1);
+
+            con.sendAction(action, 5 * JiveConstants.SECOND);
+
+            // BEWARE EVIL HACK, when you can actually get a uniqueID from the response we should use that instead
+            // We will create a call session for this device and then later parse out the info
+            CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getPhoneSession(primaryDevice.getDevice());
+            phoneSession.setCallerID(extension);
+
+            if(jid != null) {
+                phoneSession.setDialedJID(jid);
+            }
+
+        }
+        catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+            throw new PhoneException("Unabled to dial extention " + extension, e);
+        }
+        finally {
+            close(con);
+        }
+
+    }
+
 
 }
