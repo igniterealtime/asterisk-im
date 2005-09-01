@@ -225,15 +225,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 // Notify the client that they have answered the phone
                 Message message = new Message();
                 message.setFrom(asteriskPlugin.getComponentJID());
-                message.setTo(jid);
                 message.setID(event.getUniqueId());
 
                 PhoneEvent phoneEvent =
                         new PhoneEvent(callSession.getId(), Type.ON_PHONE, device);
                 phoneEvent.addElement("callerID").setText(callSession.getCallerID());
                 message.getElement().add(phoneEvent);
-
-                asteriskPlugin.sendPacket(message);
 
                 //Acquire the xmpp sessions for the user
                 SessionManager sessionManager = server.getSessionManager();
@@ -257,6 +254,10 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Collection<Presence> prevPresences = new ArrayList<Presence>();
 
                 for (ClientSession session : sessions) {
+
+                    message.setTo(session.getAddress());
+                    asteriskPlugin.sendPacket(message);
+
 
                     Presence prevPresence = session.getPresence();
                     prevPresences.add(prevPresence);
@@ -323,14 +324,19 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 Message message = new Message();
                 message.setFrom(asteriskPlugin.getComponentJID());
-                message.setTo(jid);
                 message.setID(event.getUniqueId());
 
                 PhoneEvent phoneEvent =
                         new PhoneEvent(event.getUniqueId(), Type.HANG_UP, device);
                 message.getElement().add(phoneEvent);
 
-                asteriskPlugin.sendPacket(message);
+                // Send the message to each of jids for this user
+                SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+                Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
+                for (ClientSession session : sessions) {
+                    message.setTo(session.getAddress());
+                    asteriskPlugin.sendPacket(message);
+                }
 
                 // Set the user's presence back to what it was before the phone call
                 Collection<Presence> presences = previousPresenceMap.remove(jid);
@@ -410,12 +416,9 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 callSession.setChannel(event.getChannel());
 
-                JID jid = getJID(phoneUser);
-
                 Message message = new Message();
                 message.setID(event.getUniqueId()); //just put something in here
                 message.setFrom(asteriskPlugin.getComponentJID());
-                message.setTo(jid);
 
                 if (fakeSession != null) {
 
@@ -443,7 +446,13 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     message.getElement().add(phoneEvent);
                 }
 
-                asteriskPlugin.sendPacket(message);
+                // Send the message to each of jids for this user
+                SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+                Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
+                for (ClientSession session : sessions) {
+                    message.setTo(session.getAddress());
+                    asteriskPlugin.sendPacket(message);
+                }
             }
             catch (Exception e) {
                 log.log(Level.SEVERE, e.getMessage(), e);
@@ -491,15 +500,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     return;
                 }
 
-
                 callSession.setChannel(event.getChannel());
-
-                JID jid = getJID(phoneUser);
 
                 Message message = new Message();
                 message.setID(event.getUniqueId());
                 message.setFrom(asteriskPlugin.getComponentJID());
-                message.setTo(jid);
 
                 String appData = event.getAppData();
 
@@ -547,7 +552,13 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 phoneEvent.addElement("callerID").setText(callerID);
 
-                asteriskPlugin.sendPacket(message);
+                // Send the message to each of jids for this user
+                SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+                Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
+                for (ClientSession session : sessions) {
+                    message.setTo(session.getAddress());
+                    asteriskPlugin.sendPacket(message);
+                }
             }
             catch (Exception e) {
                 log.log(Level.SEVERE, e.getMessage(), e);
