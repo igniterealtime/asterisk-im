@@ -6,13 +6,13 @@
             <xs:sequence>
                 <xs:element name="callerID" minOccurs="0" maxOccurs="1" type="xs:string"/>
             </xs:sequence>
-            <xs:attribute name="status">
+            <xs:attribute name="type">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="ON_PHONE"/>
                         <xs:enumeration value="HANG_UP"/>
                         <xs:enumeration value="RING"/>
-                        <xs:enumeration value="DIALING"/>
+                        <xs:enumeration value="DIALED"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
