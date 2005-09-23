@@ -105,7 +105,8 @@
     <li><b>Password: </b>Password to use when connecting to the Asterisk Manager Proxy. This field is required.</li>
     <li><b>Pool Size: </b>How many connection to the Asterisk Manager Proxy we should make. This will default to
         5 if not specified. Atleast 2 connections are required (one for reading, one for writing)</li>
-    <li><b>Asterisk Context: </b> The Asterisk context that users will be dialing from. If this field is not specified it
+    <li><b>Asterisk Context: </b> The Asterisk context that users will be dialing from. If this field is not specified
+        it
         will default to "from-sip". Please note that this default value may change for the final release.</li>
     <li><b>Default Caller ID: </b>The caller id to default to if there is non specified for a particular user.
         This field will default to an empty value.</li>
@@ -205,6 +206,26 @@
                 Contains a callerID child element containg the caller id of the caller.
             </td>
         </tr>
+        <tr>
+            <td>
+                <span class="event">
+            DIALED
+            </span>
+                <br>
+                <span class="description">
+            Signifies that the user has dialed a number.
+            </span>
+            </td>
+            <td>
+                Message Packet
+            </td>
+            <td>
+                org.jivesoftware.phone.client.DialedEvent
+            </td>
+            <td>
+                Contains a callerID child element containg the caller id of the caller.
+            </td>
+        </tr>
     </tbody>
 </table>
 
@@ -251,7 +272,9 @@
             </span>
             </td>
             <td>
-                Contains an element extension which contains the number to be dialed.
+                Contains an element extension which contains the number to be dialed, or an element jid which contains
+                the jid of the person to dial. If jid is used the jid must be registered with asterisk-im on the same
+                server.
             </td>
         </tr>
         <tr>
@@ -265,7 +288,9 @@
             </span>
             </td>
             <td>
-                Contains an element extension which contains the number to be dialed.
+                Contains an element extension which contains the number to be dialed, or an element jid which contains
+                the jid of the person to dial. If jid is used the jid must be registered with asterisk-im on the same
+                server.
             </td>
         </tr>
     </tbody>
@@ -274,11 +299,11 @@
 <br><br>
 
 <h2>Links</h2>
-<a href="http://jivesoftware.org/asterisk-im/">The Asterisk-IM home page.</a><br />
-<a href="http://jivesoftware.org/messenger/">The Jive Messenger home page.</a><br />
-<a href="http://asterisk.org">The Asterisk PBX Home page.</a><br />
-<a href="http://asterisk-java.sourceforge.net/">The Asterisk-Java API. Asterisk-IM is implemented using this.</a><br />
-<a href="http://www.voip-info.org">The VOIP wiki, a great Asterisk resource.</a><br />
+<a href="http://jivesoftware.org/asterisk-im/">The Asterisk-IM home page.</a><br/>
+<a href="http://jivesoftware.org/messenger/">The Jive Messenger home page.</a><br/>
+<a href="http://asterisk.org">The Asterisk PBX Home page.</a><br/>
+<a href="http://asterisk-java.sourceforge.net/">The Asterisk-Java API. Asterisk-IM is implemented using this.</a><br/>
+<a href="http://www.voip-info.org">The VOIP wiki, a great Asterisk resource.</a><br/>
 
 </body>
 </html>
