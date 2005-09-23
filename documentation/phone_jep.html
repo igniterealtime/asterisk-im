@@ -115,12 +115,12 @@ this information, but message packets are used to send events for the time being
     &lt;callerID&gt;5037061376&lt;/callerID&gt;
 &lt;/phone-event&gt;</pre>
 
-<p>The current event statuses are RING, ON_PHONE, HANG_UP. The device is
+<p>The current event statuses are RING, DIALED, ON_PHONE, HANG_UP. The device is
 the phone device that the event was generated for. In this case, it's a SIP
 phone. Users may have several devices, such as when their phone rings
 for their personal number and for a sales line. The id attribute is a
-unique ID for the phone call. For a normal call, RING, ON_PHONE, and HANG_UP
-events will all be generated for the same id.</p>
+unique ID for the phone call. For a normal call events received for the same id will include;
+RING or DIALED, ON_PHONE, and HANG_UP.</p>
 
 <p>Information contained inside phone events is still evolving. At the moment,
 callerID is optionally available for RING events. In the future, additional
@@ -152,7 +152,7 @@ to an extension</p>
 &lt;/phone-action&gt;</pre>
 
 <p>Issuing a action wth a type FORWARD should transfer a call that has already been established
-to a third party. The FORWARD type requires an extension child element</p>
+to a third party. The FORWARD type requires an extension or jid child element</p>
 
 <pre>&lt;phone-action xmlns="http://jivesoftware.com/xmlns/phone" type="FORWARD"&gt;
     &lt;extension&gt;5035555555&lt;/extension&gt;
@@ -174,11 +174,11 @@ to a third party. The FORWARD type requires an extension child element</p>
 server does not support this feature</p>
 
 <pre>&lt;iq from="jivesoftware.com" type="result" to="test@jivesoftware.com/Psi" id="items1" &gt;
-&lt;query xmlns="http/jabber.org/protocol/disco#items"&gt;
-&lt;item name="Public Chatrooms" jid="conference.jivesoftware.com" /&gt;
-&lt;item name="phone" jid="phone.jivesoftware.com" /&gt;
-&lt;item name="User Search" jid="search.jivesoftware.com" /&gt;
-&lt;/query&gt;
+   &lt;query xmlns="http/jabber.org/protocol/disco#items"&gt;
+      &lt;item name="Public Chatrooms" jid="conference.jivesoftware.com" /&gt;
+      &lt;item name="phone" jid="phone.jivesoftware.com" /&gt;
+      &lt;item name="User Search" jid="search.jivesoftware.com" /&gt;
+   &lt;/query&gt;
 &lt;/iq&gt;</pre>
 
 
