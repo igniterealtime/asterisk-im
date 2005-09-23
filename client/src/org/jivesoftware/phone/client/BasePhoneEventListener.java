@@ -28,6 +28,9 @@ public class BasePhoneEventListener implements PhoneEventListener {
         else if (event instanceof HangUpEvent) {
             handleHangUp((HangUpEvent) event);
         }
+        else if (event instanceof DialedEvent) {
+            handleDialed((DialedEvent) event);
+        }
 
     }
 
@@ -40,6 +43,10 @@ public class BasePhoneEventListener implements PhoneEventListener {
     }
 
     public void handleRing(RingEvent event) {
+
+    }
+
+    public void handleDialed(DialedEvent event) {
 
     }
 }
