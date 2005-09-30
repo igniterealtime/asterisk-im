@@ -33,6 +33,7 @@
     boolean enabled = ParamUtils.getBooleanParameter(request, "enabled", false);
     String callerID = request.getParameter("callerID");
     String context = request.getParameter("context");
+    String dialVariables = request.getParameter("dialVariables");
 
     HashMap<String, String> errors = new HashMap<String, String>();
 
@@ -83,6 +84,9 @@
                 JiveGlobals.setProperty(AsteriskPlugin.Properties.PORT, String.valueOf(port));
             }
 
+
+            JiveGlobals.setProperty(AsteriskPlugin.Properties.DIAL_VARIABLES, dialVariables);
+
             try {
                 // if we were not enabled before and we are now restart the plugin
                 PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
@@ -118,6 +122,7 @@
         enabled = JiveGlobals.getBooleanProperty(AsteriskPlugin.Properties.ENABLED, false);
         callerID = JiveGlobals.getProperty(AsteriskPlugin.Properties.DEFAULT_CALLER_ID);
         context = JiveGlobals.getProperty(AsteriskPlugin.Properties.CONTEXT);
+        dialVariables = JiveGlobals.getProperty(AsteriskPlugin.Properties.DIAL_VARIABLES);
 
     }
 
@@ -354,6 +359,19 @@
             <% if (errors.containsKey("callerID")) { %>
             <br/>
             <span class="jive-error-text"><%=errors.get("callerID")%></span>
+            <% } %>
+        </td>
+    </tr>
+    <tr>
+        <td width="1%">
+            <nobr><label for="dialVariablestf">Dial Command Variables:</label></nobr>
+        </td>
+        <td witdh="99%">
+            <input type="text" name="dialVariables" size="30" maxlength="100" value="<%= dialVariables != null ? dialVariables : "" %>"
+                   id="dialVariablestf"/>
+            <% if (errors.containsKey("dialVariables")) { %>
+            <br/>
+            <span class="jive-error-text"><%=errors.get("dialVariables")%></span>
             <% } %>
         </td>
     </tr>

@@ -108,8 +108,6 @@ public interface PhoneManager {
      */
     PhoneDevice getDevice(String device);
 
-    String monitor(String channel) throws PhoneException;
-
     void stopMonitor(String channel) throws PhoneException;
 
     /**

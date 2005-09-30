@@ -76,6 +76,11 @@ public interface PhoneConstants {
          */
         public static final String DEVICE_DROP_DOWN = "asterisk.manager.userDeviceDropDown";
 
+        /**
+         * Variables that are used when executing the dial command (orginate)
+         */
+        public static final String DIAL_VARIABLES = "asterisk.manager.dialVariables";
+
 
         private Properties() {
         }
