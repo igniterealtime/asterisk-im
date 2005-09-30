@@ -23,11 +23,8 @@ import org.jivesoftware.util.JiveConstants;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.xmpp.packet.JID;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,10 +39,6 @@ import java.util.logging.Logger;
 public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConstants {
 
     private static final Logger log = Logger.getLogger(AsteriskPhoneManager.class.getName());
-
-    private static final String DATE_FORMAT = "yyyy-MM-dd'_'HH-mm-ss";
-
-    private int actionID = 0;
 
     public AsteriskPhoneManager(PhoneDAO dao) {
         super(dao);
@@ -94,42 +87,6 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
         forward(callSessionID, targetUser.getPrimaryDevice().getExtension(), target);
 
-    }
-
-    public String monitor(String channel) throws PhoneException {
-
-        String fileName = buildFileName(channel);
-
-        MonitorAction action = new MonitorAction();
-        action.setChannel(channel);
-        action.setFile(fileName);
-        action.setMix(true);
-
-        ManagerConnection con = null;
-        try {
-
-            con = getManagerConnectionPool().getConnection();
-
-            ManagerResponse managerResponse = con.sendAction(action);
-
-            if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
-                throw new PhoneException(managerResponse.getMessage());
-            }
-
-        }
-        catch (PhoneException pe) {
-            throw pe;
-        }
-        catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
-            throw new PhoneException(e.getMessage());
-        }
-        finally {
-            close(con);
-        }
-
-        return fileName;
     }
 
     public void stopMonitor(String channel) throws PhoneException {
@@ -199,20 +156,6 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         finally {
             close(con);
         }
-    }
-
-    public List mailboxStatuses(String username) {
-
-        PhoneUser phoneUser = getByUsername(username);
-
-        ArrayList statuses = new ArrayList();
-
-        // todo iterate through all devices grabbing mailbox
-
-
-        return statuses;
-
-
     }
 
     public void invite(String callSessionID, String extension) throws PhoneException {
@@ -325,21 +268,6 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     }
 
-    private String buildFileName(String channel) {
-
-        StringBuffer name = new StringBuffer(channel.replaceAll("/", "-"));
-        name.append("-");
-
-        DateFormat df = new SimpleDateFormat(DATE_FORMAT);
-        name.append(df.format(new Date()));
-
-        return name.toString();
-    }
-
-    private synchronized String getActionID() {
-        return "asterisk-im" + String.valueOf(actionID++);
-    }
-
     public void dial(String username, String extension, JID jid) throws PhoneException {
 
         //acquire the jidUser object
@@ -355,17 +283,30 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             OriginateAction action = new OriginateAction();
             action.setChannel(primaryDevice.getDevice());
             action.setCallerId(primaryDevice.getCallerId() != null ? primaryDevice.getCallerId() :
-                    getProperty(Properties.DEFAULT_CALLER_ID));
+                    getProperty(Properties.DEFAULT_CALLER_ID, ""));
             action.setExten(extension);
             String context = getProperty(Properties.CONTEXT, DEFAULT_CONTEXT);
             if ("".equals(context)) {
                 context = DEFAULT_CONTEXT;
             }
 
-            action.setVariable("test");
             action.setAsync(true);
             action.setContext(context);
             action.setPriority(1);
+
+            String variables = getProperty(Properties.DIAL_VARIABLES);
+
+            if(variables != null) {
+
+                String[] varArray = variables.split(",");
+
+                StringBuffer buff = new StringBuffer();
+                for (String aVarArray : varArray) {
+                    buff.append(aVarArray);
+                }
+
+                action.setVariable(buff.toString());
+            }
 
             con.sendAction(action, 5 * JiveConstants.SECOND);
 
@@ -400,7 +341,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
         RedirectAction action = new RedirectAction();
 
-        // the channel should be the person that called us
+        // The channel should be the person that called us
         action.setChannel(phoneSession.getLinkedChannel());
         action.setExten(extension);
         action.setPriority(1);

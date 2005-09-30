@@ -203,20 +203,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 CallSession callSession = getCallSessionFactory().getPhoneSession(event.getUniqueId());
 
-                // If the device should be monitored, then start monitoring
-                PhoneDevice phoneDevice = phoneManager.getDevice(device);
-                if (phoneDevice.isMonitored()) {
-                    PhoneManager mgr = PhoneManagerFactory.getPhoneManager();
-                    try {
-                        log.info("Staring monitoring on channel " + event.getChannel());
-                        mgr.monitor(event.getChannel());
-                        callSession.setMonitored(true);
-                    }
-                    finally {
-                        PhoneManagerFactory.close(mgr);
-                    }
-                }
-
                 JID jid = getJID(phoneUser);
 
 
@@ -305,20 +291,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 if (phoneUser == null) {
                     return;
                 }
-
-                // Check and see if we are monitoring the call, if we are cancel the monitor
-                /*
-                CallSession callSession = CallSessionFactory.getCallSessionFactory().getPhoneSession(event.getUniqueId());
-                if (callSession.isMonitored()) {
-                    PhoneManager mgr = PhoneManagerFactory.getPhoneManager();
-                    try {
-                        mgr.stopMonitor(device);
-                    }
-                    finally {
-                        PhoneManagerFactory.close(mgr);
-                    }
-                }
-                */
 
                 JID jid = getJID(phoneUser);
 
