@@ -67,11 +67,11 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         dial(username, extension, target);
     }
 
-    public void forward(String callSessionID, String extension) throws PhoneException {
-        forward(callSessionID, extension, null);
+    public void forward(String callSessionID, String username, String extension) throws PhoneException {
+        forward(callSessionID, username, extension, null);
     }
 
-    public void forward(String callSessionID, JID target) throws PhoneException {
+    public void forward(String callSessionID, String username, JID target) throws PhoneException {
 
         PhoneUser targetUser = getByUsername(target.getNode());
 
@@ -85,7 +85,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             throw new PhoneException("User has not identified a number with himself");
         }
 
-        forward(callSessionID, targetUser.getPrimaryDevice().getExtension(), target);
+        forward(callSessionID, username, targetUser.getPrimaryDevice().getExtension(), target);
 
     }
 
@@ -156,51 +156,6 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         finally {
             close(con);
         }
-    }
-
-    public void invite(String callSessionID, String extension) throws PhoneException {
-
-        CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
-                .getPhoneSession(callSessionID);
-
-        RedirectAction action = new RedirectAction();
-
-        // the channel should be the person that called us
-        action.setChannel(phoneSession.getLinkedChannel());
-        action.setExtraChannel(phoneSession.getChannel());
-        action.setExten(extension);
-        action.setPriority(1);
-
-        String context = getProperty(Properties.CONTEXT, DEFAULT_CONTEXT);
-        if ("".equals(context)) {
-            context = DEFAULT_CONTEXT;
-        }
-
-        action.setContext(context);
-
-        ManagerConnection con = null;
-        try {
-            con = getManagerConnectionPool().getConnection();
-            ManagerResponse managerResponse = con.sendAction(action);
-
-
-            if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
-                throw new PhoneException(managerResponse.getMessage());
-            }
-
-        }
-        catch (PhoneException pe) {
-            throw pe;
-        }
-        catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
-            throw new PhoneException(e.getMessage());
-        }
-        finally {
-            close(con);
-        }
-
     }
 
     public List<String> getDevices() throws PhoneException {
@@ -296,7 +251,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
             String variables = getProperty(Properties.DIAL_VARIABLES);
 
-            if(variables != null) {
+            if (variables != null) {
 
                 String[] varArray = variables.split(",");
 
@@ -312,7 +267,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
             // BEWARE EVIL HACK, when you can actually get a uniqueID from the response we should use that instead
             // We will create a call session for this device and then later parse out the info
-            CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getPhoneSession(primaryDevice.getDevice());
+            CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(primaryDevice.getDevice(), username);
             phoneSession.setCallerID(extension);
 
             if (jid != null) {
@@ -330,11 +285,11 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     }
 
-    public void forward(String callSessionID, String extension, JID jid) throws PhoneException {
+    private void forward(String callSessionID, String username, String extension, JID jid) throws PhoneException {
 
 
         CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
-                .getPhoneSession(callSessionID);
+                .getCallSession(callSessionID, username);
 
         phoneSession.setForwardedExtension(extension);
         phoneSession.setForwardedJID(jid);

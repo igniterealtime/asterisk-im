@@ -11,6 +11,9 @@ package org.jivesoftware.phone;
 
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -21,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CallSessionFactory {
 
     private Map<String,CallSession> sessionMap = new ConcurrentHashMap<String,CallSession>();
+    private Map<String, Collection<CallSession>> userSessionMap = new ConcurrentHashMap<String, Collection<CallSession>>();
 
     private static final CallSessionFactory INSTANCE = new CallSessionFactory();
 
@@ -31,15 +35,23 @@ public class CallSessionFactory {
      * Acquire a call session by its id
      *
      * @param id the call session id
+     * @param username user who the session belongs too.
      * @return the call session object with a specific id, else null
      */
-    public CallSession getPhoneSession(String id) {
+    public CallSession getCallSession(String id, String username) {
 
         CallSession session = sessionMap.get(id);
 
         if(session == null) {
-            session = new CallSession(id);
+            session = new CallSession(id, username);
             sessionMap.put(id, session);
+
+            Collection<CallSession> sessions = userSessionMap.get(username);
+            if(sessions == null) {
+                sessions = Collections.synchronizedList(new ArrayList<CallSession>());
+                userSessionMap.put(username, sessions);
+            }
+            sessions.add(session);
         }
 
         return session;
@@ -51,7 +63,36 @@ public class CallSessionFactory {
      * @param id id of the session to destory
      */
     public CallSession destroyPhoneSession(String id) {
-        return sessionMap.remove(id);
+        CallSession session = sessionMap.remove(id);
+
+        if(session != null) {
+            Collection<CallSession> sessions = userSessionMap.get(session.getUsername());
+            // should never be null
+            sessions.remove(session);
+
+            // Remove the map if there are nolonger any session for this user
+            if(sessions.size() == 0) {
+                userSessionMap.remove(session.getUsername());
+            }
+        }
+        return session;
+    }
+
+    /**
+     * Returns all sessions for a specific user
+     *
+     * @param username there user who's call sessions to grab
+     * @return collection of call sessions that belong to a specific user
+     */
+    public Collection<CallSession> getUserCallSessions(String username) {
+
+        Collection<CallSession> sessions = userSessionMap.get(username);
+
+        if (sessions == null) {
+            sessions = Collections.emptyList();
+        }
+
+        return sessions;
     }
 
     /**
@@ -62,6 +103,5 @@ public class CallSessionFactory {
     public static CallSessionFactory getCallSessionFactory() {
         return INSTANCE;
     }
-
 
 }

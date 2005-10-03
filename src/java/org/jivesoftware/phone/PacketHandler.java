@@ -46,9 +46,6 @@ public class PacketHandler implements PhoneConstants {
             else if(PhoneAction.Type.FORWARD.name().equals(type)) {
                 handleForward(iq);
             }
-            else if (PhoneAction.Type.INVITE.name().equals(type)) {
-                handleInvite(iq);
-            }
 
         }
         else if ("http://jabber.org/protocol/disco#info".equals(namespace)) {
@@ -131,7 +128,7 @@ public class PacketHandler implements PhoneConstants {
 
             String extension = phoneElement.elementText("extension");
             if(extension != null && !"".equals(extension)) {
-                phoneManager.forward(callSessionID, extension);
+                phoneManager.forward(callSessionID, iq.getFrom().getNode(), extension);
             }
             // try dialing by jid
             else {
@@ -140,7 +137,9 @@ public class PacketHandler implements PhoneConstants {
                     throw new PhoneException("No extension or jid was specified");
                 }
 
-                phoneManager.forward(callSessionID, new JID(targetJID));
+                iq.getFrom().getNode();
+
+                phoneManager.forward(callSessionID, iq.getFrom().getNode(), new JID(targetJID));
             }
 
             //send reply
@@ -167,53 +166,6 @@ public class PacketHandler implements PhoneConstants {
         }
 
     }
-
-    public void handleInvite(IQ iq) {
-
-        Element phoneElement = iq.getChildElement();
-
-        PhoneManager phoneManager = null;
-        try {
-            phoneManager = PhoneManagerFactory.getPhoneManager();
-
-            String callSessionID = phoneElement.attributeValue("id");
-
-            if(callSessionID == null || "".equals(callSessionID)) {
-                throw new PhoneException("id is a required attribute for type INVITE");
-            }
-
-            String extension = phoneElement.elementText("extension");
-            if(extension == null || "".equals(extension)) {
-                throw new PhoneException("Extension is a required element for type INVITE");
-            }
-
-            phoneManager.invite(callSessionID, extension);
-
-            //send reply
-            IQ reply = IQ.createResultIQ(iq);
-            reply.setType(IQ.Type.result);
-
-            PhoneAction phoneAction = new PhoneAction(PhoneAction.Type.INVITE);
-            reply.setChildElement(phoneAction);
-
-            send(reply);
-
-        }
-        catch (PhoneException e) {
-            IQ reply = IQ.createResultIQ(iq);
-            reply.setType(IQ.Type.error);
-            PacketError error = new PacketError(PacketError.Condition.unexpected_condition,
-                    PacketError.Type.cancel,
-                    e.getMessage());
-            reply.setError(error);
-            send(reply);
-        }
-        finally {
-            PhoneManagerFactory.close(phoneManager);
-        }
-
-    }
-
 
     public void handleDisco(IQ iq) {
 
