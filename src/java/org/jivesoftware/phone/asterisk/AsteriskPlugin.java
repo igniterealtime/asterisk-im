@@ -28,8 +28,6 @@ import org.xmpp.packet.Packet;
 
 import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Plugin for integrating Asterisk with messenger. This plugin will create a new connection pull
@@ -73,8 +71,6 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     // Current instance of the component manager
     private ComponentManager componentManager = null;
 
-    private static Logger log = Logger.getLogger(AsteriskPlugin.class.getName());
-
     private boolean isComponentReady = false;
 
     private PacketHandler packetHandler;
@@ -84,51 +80,51 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     }
 
     public void init() {
-        log.info("Initializing Asterisk-IM Plugin");
+        Log.info("Initializing Asterisk-IM Plugin");
 
         try {
-            log.info("Initializing Hibernate for Asterisk-IM");
+            Log.info("Initializing Hibernate for Asterisk-IM");
             HibernateUtil.init();
 
             // Attempts to setup the database if it hasn't been done already
-            log.info("Checking to see if Asterisk-IM database schema is present");
-            List<Exception> exceptions = null;
+            Log.info("Checking to see if Asterisk-IM database schema is present");
+            List<Exception> exceptions;
             if(!HibernateUtil.tablesExist()) {
-                log.info("Installing Asterisk-IM database schema");
+                Log.info("Installing Asterisk-IM database schema");
                 exceptions = HibernateUtil.initDB();
             }
             else {
                 // Try updating the database
-                log.info("Ensuring Asterisk-IM schema is up to date");
+                Log.info("Ensuring Asterisk-IM schema is up to date");
                 exceptions = HibernateUtil.updateDB();
             }
 
             if(exceptions != null && exceptions.size() > 0 ) {
-                log.warning("Asterisk-IM table contains errors exited with error, database may not behave properly");
+                Log.warn("Asterisk-IM table contains errors exited with error, database may not behave properly");
                 for (Exception e : exceptions) {
                     Log.warn("Asterisk-IM table creation --> "+e.getMessage(), e);
                 }
             }
 
-            log.info("Initializing Asterisk-IM thread Pool");
+            Log.info("Initializing Asterisk-IM thread Pool");
             ThreadPool.init(); //initialize the thread pols
             initAsteriskManager();
 
         } catch (RuntimeException e) {
-            // Make sure we catch all exceptions show we can log anything that might be
+            // Make sure we catch all exceptions show we can Log anything that might be
             // going on
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             throw e;
         }
 
         // only register the component if we are enabled
         if(JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
             try {
-                log.info("Registering phone plugin as a component");
+                Log.info("Registering phone plugin as a component");
                 ComponentManagerFactory.getComponentManager().addComponent(NAME, this);
             }
             catch (ComponentException e) {
-                log.log(Level.SEVERE, e.getMessage(), e);
+                Log.error(e.getMessage(), e);
                 // Do nothing. Should never happen.
                 ComponentManagerFactory.getComponentManager().getLog().error(e);
             }
@@ -142,30 +138,30 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
     public void destroy() {
 
-        log.info("unloading asterisk-im plugin resources");
+        Log.info("unloading asterisk-im plugin resources");
 
         try {
-            log.info("Registering asterisk-im plugin as a component");
+            Log.info("Registering asterisk-im plugin as a component");
             ComponentManagerFactory.getComponentManager().removeComponent(NAME);
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             // Do nothing. Should never happen.
             ComponentManagerFactory.getComponentManager().getLog().error(e);
         }
 
         try {
             closeManagerConnection();
-            log.info("Shutting down Asterisk-IM Thread Pool");
+            Log.info("Shutting down Asterisk-IM Thread Pool");
             ThreadPool.shutdown();
-            log.info("Shutting down Hibernate for Asterisk-IM");
+            Log.info("Shutting down Hibernate for Asterisk-IM");
             HibernateUtil.close();
 
         }
         catch (Exception e) {
-            // Make sure we catch all exceptions show we can log anything that might be
+            // Make sure we catch all exceptions show we can Log anything that might be
             // going on
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             ComponentManagerFactory.getComponentManager().getLog().error(e);
         }
 
@@ -248,7 +244,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         // Only initialize things if the plugin is enabled
         if(JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
 
-            log.info("Initializing Asterisk Manager connection");
+            Log.info("Initializing Asterisk Manager connection");
 
             // Populate the manager configuration
             ManagerConfig asteriskManagerConfig = new ManagerConfig();
@@ -282,6 +278,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
                             .getConnection();
 
                     // Start handling events
+                    Log.debug("Adding AsteriskEventHandler");
                     managerConnection.addEventHandler(new AsteriskEventHandler(this));
                 }
                 catch (Exception e) {
@@ -321,7 +318,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
     private void closeManagerConnection() {
 
-        log.info("Closing Asterisk Manager Connection");
+        Log.info("Closing Asterisk Manager Connection");
 
         try {
             if(managerConnection != null) {
@@ -330,7 +327,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             ManagerConnectionPoolFactory.close();
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, "problem closing connection pool", e);
+            Log.error("problem closing connection pool", e);
         }
 
 

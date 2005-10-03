@@ -95,5 +95,54 @@ public class CallSession {
         this.forwardedJID = forwardedJID;
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        final CallSession that = (CallSession) o;
+
+        if (isMonitored != that.isMonitored) return false;
+        if (callerID != null ? !callerID.equals(that.callerID) : that.callerID != null) return false;
+        if (channel != null ? !channel.equals(that.channel) : that.channel != null) return false;
+        if (dialedJID != null ? !dialedJID.equals(that.dialedJID) : that.dialedJID != null) return false;
+        if (forwardedExtension != null ? !forwardedExtension.equals(that.forwardedExtension) : that.forwardedExtension != null)
+            return false;
+        if (forwardedJID != null ? !forwardedJID.equals(that.forwardedJID) : that.forwardedJID != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel) : that.linkedChannel != null) return false;
+        if (username != null ? !username.equals(that.username) : that.username != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (id != null ? id.hashCode() : 0);
+        result = 29 * result + (channel != null ? channel.hashCode() : 0);
+        result = 29 * result + (linkedChannel != null ? linkedChannel.hashCode() : 0);
+        result = 29 * result + (callerID != null ? callerID.hashCode() : 0);
+        result = 29 * result + (forwardedExtension != null ? forwardedExtension.hashCode() : 0);
+        result = 29 * result + (forwardedJID != null ? forwardedJID.hashCode() : 0);
+        result = 29 * result + (dialedJID != null ? dialedJID.hashCode() : 0);
+        result = 29 * result + (username != null ? username.hashCode() : 0);
+        result = 29 * result + (isMonitored ? 1 : 0);
+        return result;
+    }
+
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("CallSession");
+        sb.append("{id='").append(id).append('\'');
+        sb.append(", channel='").append(channel).append('\'');
+        sb.append(", linkedChannel='").append(linkedChannel).append('\'');
+        sb.append(", callerID='").append(callerID).append('\'');
+        sb.append(", forwardedExtension='").append(forwardedExtension).append('\'');
+        sb.append(", forwardedJID=").append(forwardedJID);
+        sb.append(", dialedJID=").append(dialedJID);
+        sb.append(", username='").append(username).append('\'');
+        sb.append(", isMonitored=").append(isMonitored);
+        sb.append('}');
+        return sb.toString();
+    }
 }
