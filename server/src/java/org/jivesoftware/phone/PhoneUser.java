@@ -76,5 +76,35 @@ public class PhoneUser implements java.io.Serializable {
         devices.add(channel);
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        final PhoneUser phoneUser = (PhoneUser) o;
+
+        if (devices != null ? !devices.equals(phoneUser.devices) : phoneUser.devices != null) return false;
+        if (id != null ? !id.equals(phoneUser.id) : phoneUser.id != null) return false;
+        if (username != null ? !username.equals(phoneUser.username) : phoneUser.username != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (id != null ? id.hashCode() : 0);
+        result = 29 * result + (username != null ? username.hashCode() : 0);
+        result = 29 * result + (devices != null ? devices.hashCode() : 0);
+        return result;
+    }
+
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("PhoneUser");
+        sb.append("{id=").append(id);
+        sb.append(", username='").append(username).append('\'');
+        sb.append(", devices=").append(devices);
+        sb.append('}');
+        return sb.toString();
+    }
 }

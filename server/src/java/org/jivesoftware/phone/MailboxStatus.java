@@ -54,4 +54,36 @@ public class MailboxStatus {
     public int getNewMessages() {
         return newMessages;
     }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final MailboxStatus that = (MailboxStatus) o;
+
+        if (newMessages != that.newMessages) return false;
+        if (oldMessages != that.oldMessages) return false;
+        if (mailbox != null ? !mailbox.equals(that.mailbox) : that.mailbox != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (mailbox != null ? mailbox.hashCode() : 0);
+        result = 29 * result + oldMessages;
+        result = 29 * result + newMessages;
+        return result;
+    }
+
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("MailboxStatus");
+        sb.append("{mailbox='").append(mailbox).append('\'');
+        sb.append(", oldMessages=").append(oldMessages);
+        sb.append(", newMessages=").append(newMessages);
+        sb.append('}');
+        return sb.toString();
+    }
 }

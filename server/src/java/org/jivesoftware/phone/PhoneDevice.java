@@ -96,4 +96,44 @@ public class PhoneDevice {
         this.extension = extension;
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final PhoneDevice that = (PhoneDevice) o;
+
+        if (callerId != null ? !callerId.equals(that.callerId) : that.callerId != null) return false;
+        if (device != null ? !device.equals(that.device) : that.device != null) return false;
+        if (extension != null ? !extension.equals(that.extension) : that.extension != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (monitored != null ? !monitored.equals(that.monitored) : that.monitored != null) return false;
+        if (primary != null ? !primary.equals(that.primary) : that.primary != null) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (id != null ? id.hashCode() : 0);
+        result = 29 * result + (callerId != null ? callerId.hashCode() : 0);
+        result = 29 * result + (device != null ? device.hashCode() : 0);
+        result = 29 * result + (primary != null ? primary.hashCode() : 0);
+        result = 29 * result + (monitored != null ? monitored.hashCode() : 0);
+        result = 29 * result + (extension != null ? extension.hashCode() : 0);
+        return result;
+    }
+
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("PhoneDevice");
+        sb.append("{id=").append(id);
+        sb.append(", callerId='").append(callerId).append('\'');
+        sb.append(", device='").append(device).append('\'');
+        sb.append(", primary=").append(primary);
+        sb.append(", monitored=").append(monitored);
+        sb.append(", extension='").append(extension).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

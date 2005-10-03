@@ -18,12 +18,12 @@ import org.jivesoftware.messenger.SessionManager;
 import org.jivesoftware.messenger.XMPPServer;
 import static org.jivesoftware.messenger.XMPPServer.getInstance;
 import org.jivesoftware.phone.CallSession;
+import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 import org.jivesoftware.phone.PhoneManager;
 import static org.jivesoftware.phone.PhoneManagerFactory.close;
 import static org.jivesoftware.phone.PhoneManagerFactory.getPhoneManager;
 import org.jivesoftware.phone.PhoneUser;
-import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneEvent.Type;
@@ -31,6 +31,7 @@ import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.element.PhoneStatus.Status;
 import org.jivesoftware.phone.util.PhoneConstants;
 import static org.jivesoftware.phone.util.ThreadPool.getThreadPool;
+import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
@@ -41,8 +42,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -52,8 +51,6 @@ import java.util.logging.Logger;
  * @author Andrew Wright
  */
 public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants {
-
-    private static final Logger log = Logger.getLogger(AsteriskEventHandler.class.getName());
 
     /**
      * Used to store old presence objects before a person goes on the phone
@@ -74,6 +71,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         if (event instanceof ChannelEvent) {
             handleChannelEvent((ChannelEvent) event);
         } else if (event instanceof LinkEvent) {
+
             getThreadPool().execute(new LinkTask((LinkEvent) event));
         } else if (event instanceof NewExtenEvent) {
             NewExtenEvent neEvent = (NewExtenEvent) event;
@@ -90,10 +88,10 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         ExecutorService executor = getThreadPool();
 
         if (executor == null) {
-            log.severe("Phone Thread pool was not initialized, returning!");
+            Log.error("Phone Thread pool was not initialized, returning!");
             return;
         } else if (executor.isShutdown()) {
-            log.warning("Phone Thread pool has been shutdown, plugin shutdown must be in progress! " +
+            Log.warn("Phone Thread pool has been shutdown, plugin shutdown must be in progress! " +
                     "Not processing event");
             return;
         }
@@ -102,6 +100,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             NewStateEvent nsEvent = (NewStateEvent) event;
             String state = nsEvent.getState();
             if ("Up".equals(state)) {
+
+                Log.debug("Asterisk-IM: Processing NewState:UP event channel : "+event.getChannel());
                 executor.execute(new OnPhoneTask(nsEvent));
             }
 
@@ -114,10 +114,16 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             // I am not sure if I will eventually change this just to work for the ring state
             // Or keep it for both
             if (state.equals("Ringing")) {
+
+                Log.debug("Asterisk-IM: Processing NewChannel:RINGING event channel : "+event.getChannel());
+
                 executor.execute(new RingTask(ncEvent));
             }
 
         } else if (event instanceof HangupEvent) {
+
+            Log.debug("Asterisk-IM: Processing HangupEvent channel : "+event.getChannel());
+
             executor.execute(new HangupTask((HangupEvent) event));
         }
 
@@ -149,6 +155,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId1(), phoneUser.getUsername());
                     callSession.setChannel(event.getChannel1());
                     callSession.setLinkedChannel(event.getChannel2());
+                    Log.debug("Asterisk-IM LinkTask: Initialized call session " + callSession);
                 }
 
                 // Now setup this up for the second user
@@ -159,11 +166,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId2(), phoneUser.getUsername());
                     callSession.setChannel(event.getChannel2());
                     callSession.setLinkedChannel(event.getChannel1());
+                    Log.debug("Asterisk-IM LinkTask: Initialized call session " + callSession);
                 }
 
             }
             catch (Exception e) {
-                log.log(Level.SEVERE, e.getMessage(), e);
+                Log.error(e.getMessage(), e);
             }
             finally {
                 close(phoneManager);
@@ -199,10 +207,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
-                    log.finer("AnswerTask: Could not find device/jid mapping for device " +
+                    Log.debug("Asterisk-IM OnPhoneTask: Could not find device/jid mapping for device " +
                             device + " returning");
                     return;
                 }
+
+                Log.debug("Asterisk-IM OnPhoneTask called for user " + phoneUser);
 
                 CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId(), phoneUser.getUsername());
 
@@ -230,7 +240,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     return;
                 }
 
-                log.finer("AnswerTask: setting presence to away for " + jid);
+                Log.debug("Asterisk-IM OnPhoneTask: setting presence to away for " + phoneUser);
 
                 // If we haven't determined their original presence, set it
                 // If there is already and original presence, it means the user is
@@ -268,7 +278,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 }
             }
             catch (Exception e) {
-                log.log(Level.SEVERE, e.getMessage(), e);
+                Log.error(e.getMessage(), e);
             }
             finally {
                 close(phoneManager);
@@ -303,6 +313,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     return;
                 }
 
+                Log.debug("Asterisk-IM HangupTask called for user " + phoneUser);
+
                 Message message = new Message();
                 message.setFrom(asteriskPlugin.getComponentJID());
                 message.setID(event.getUniqueId());
@@ -324,7 +336,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // If the user does not have any more call sessions, set back
                 // the presence to what it was before they received any calls
-                if(callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size() == 1) {
+                int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
+                if (callSessionCount <= 1) {
 
                     // Set the user's presence back to what it was before the phone call
                     Collection<Presence> presences = previousPresenceMap.remove(phoneUser.getUsername());
@@ -355,6 +368,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                             getInstance().getPresenceRouter().route(presence);
                         }
                     }
+                } else {
+
+                    Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() + " has "
+                            + callSessionCount + " call sessions,  not changing presence");
+
                 }
 
                 // finally destroy the session.
@@ -362,7 +380,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
             }
             catch (Exception e) {
-                log.log(Level.SEVERE, e.getMessage(), e);
+                Log.error(e.getMessage(), e);
             }
             finally {
                 close(phoneManager);
@@ -395,6 +413,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 if (phoneUser == null) {
                     return;
                 }
+
+                Log.debug("Asterisk-IM RingTask called for user " + phoneUser);
 
                 // try and see if we have a fake call session
                 // This will be created if there was an originated call
@@ -445,7 +465,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 }
             }
             catch (Exception e) {
-                log.log(Level.SEVERE, e.getMessage(), e);
+                Log.error(e.getMessage(), e);
             }
             finally {
                 close(phoneManager);
@@ -551,7 +571,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 }
             }
             catch (Exception e) {
-                log.log(Level.SEVERE, e.getMessage(), e);
+                Log.error(e.getMessage(), e);
             }
             finally {
                 close(phoneManager);
@@ -562,5 +582,26 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
     private JID getJID(PhoneUser user) {
         String serverName = getInstance().getServerInfo().getName();
         return new JID(user.getUsername(), serverName, null);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final AsteriskEventHandler that = (AsteriskEventHandler) o;
+
+        if (asteriskPlugin != null ? !asteriskPlugin.equals(that.asteriskPlugin) : that.asteriskPlugin != null)
+            return false;
+        if (previousPresenceMap != null ? !previousPresenceMap.equals(that.previousPresenceMap) : that.previousPresenceMap != null)
+            return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (previousPresenceMap != null ? previousPresenceMap.hashCode() : 0);
+        result = 29 * result + (asteriskPlugin != null ? asteriskPlugin.hashCode() : 0);
+        return result;
     }
 }
