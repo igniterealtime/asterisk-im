@@ -23,7 +23,8 @@ public final class AsteriskUtil {
      * @return the fullChannel with out the final hyphen section
      */
     public static String getDevice(String fullChannel) {
-        return fullChannel.split("-")[0];
+        int lastIndex = fullChannel.lastIndexOf("-");
+        return fullChannel.substring(0, lastIndex);
     }
 
 
