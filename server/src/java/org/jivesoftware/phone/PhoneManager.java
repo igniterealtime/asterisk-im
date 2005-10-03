@@ -80,10 +80,11 @@ public interface PhoneManager {
      * Forwards a call to a different extension
      *
      * @param callSessionID the call session id to forward
+     * @param username
      * @param extension extension to forward too
      * @throws PhoneException thrown if the forward cannot be completed
      */
-    void forward(String callSessionID, String extension) throws PhoneException;
+    void forward(String callSessionID, String username, String extension) throws PhoneException;
 
     /**
      * Used to release resources this manager might be holding on too
@@ -97,8 +98,6 @@ public interface PhoneManager {
      * @throws PhoneException
      */
     List<String> getDevices() throws PhoneException;
-
-    void invite(String callSessionID, String extension) throws PhoneException;
 
     /**
      * Acquire a phone device by its name
@@ -119,5 +118,5 @@ public interface PhoneManager {
      */
     MailboxStatus mailboxStatus(String mailbox) throws PhoneException;
 
-    void forward(String callSessionID, JID target) throws PhoneException;
+    void forward(String callSessionID, String username, JID target) throws PhoneException;
 }

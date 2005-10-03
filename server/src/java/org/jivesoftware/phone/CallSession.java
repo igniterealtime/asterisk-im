@@ -23,14 +23,20 @@ public class CallSession {
     private String forwardedExtension;
     private JID forwardedJID;
     private JID dialedJID;
+    private String username;
     private boolean isMonitored;
 
-    CallSession(String id) {
+    CallSession(String id, String username) {
         this.id = id;
+        this.username = username;
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getChannel() {
