@@ -8,8 +8,11 @@ package org.jivesoftware.phone.util;
 import org.xmpp.packet.Presence;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Andrew Wright
@@ -29,11 +32,11 @@ public class UserPresenceUtil {
 
 
     public static void setPresences(String username, Collection<Presence> presences) {
-        previousPresenceMap.put(username, presences);
+        previousPresenceMap.put(username, new CopyOnWriteArrayList<Presence>(presences));
     }
 
     public static Collection<Presence> removePresences(String username) {
-        return previousPresenceMap.get(username);
+        return previousPresenceMap.remove(username);
     }
 
     public static Collection<String> getUsernames() {
