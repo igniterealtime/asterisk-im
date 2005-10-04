@@ -12,7 +12,11 @@ package org.jivesoftware.phone.asterisk;
 import net.sf.asterisk.manager.ManagerConnection;
 import org.jivesoftware.messenger.container.Plugin;
 import org.jivesoftware.messenger.container.PluginManager;
+import org.jivesoftware.messenger.XMPPServer;
+import org.jivesoftware.messenger.interceptor.InterceptorManager;
+import org.jivesoftware.messenger.interceptor.PacketInterceptor;
 import org.jivesoftware.phone.PacketHandler;
+import org.jivesoftware.phone.OnPhonePacketInterceptor;
 import org.jivesoftware.phone.database.HibernateUtil;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.ThreadPool;
@@ -75,6 +79,8 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
     private PacketHandler packetHandler;
 
+    private final PacketInterceptor onPhoneInterceptor = new OnPhonePacketInterceptor();
+
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         init();
     }
@@ -130,6 +136,8 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             }
         }
 
+        // Register a packet interceptor for handling on on phone presence changes
+        InterceptorManager.getInstance().addInterceptor(onPhoneInterceptor);
     }
 
     public void destroyPlugin() {
@@ -139,6 +147,9 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     public void destroy() {
 
         Log.info("unloading asterisk-im plugin resources");
+
+        // Remove the packet interceptor
+        InterceptorManager.getInstance().removeInterceptor(onPhoneInterceptor);
 
         try {
             Log.info("Registering asterisk-im plugin as a component");
