@@ -1,0 +1,43 @@
+/**
+ * Copyright (C) 1999-2005 Jive Software. All rights reserved.
+ *
+ * This software is the proprietary information of Jive Software. Use is subject to license terms.
+ */
+package org.jivesoftware.phone.util;
+
+import org.xmpp.packet.Presence;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * @author Andrew Wright
+ */
+public class UserPresenceUtil {
+
+    /**
+     * Used to store old presence objects before a person goes on the phone
+     */
+    private static Map<String, Collection<Presence>> previousPresenceMap =
+            new ConcurrentHashMap<String, Collection<Presence>>();
+
+
+    public static Collection<Presence> getPresences(String username) {
+        return previousPresenceMap.get(username);
+    }
+
+
+    public static void setPresences(String username, Collection<Presence> presences) {
+        previousPresenceMap.put(username, presences);
+    }
+
+    public static Collection<Presence> removePresences(String username) {
+        return previousPresenceMap.get(username);
+    }
+
+    public static Collection<String> getUsernames() {
+        return previousPresenceMap.keySet();
+    }
+
+}

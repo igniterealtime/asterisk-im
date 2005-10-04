@@ -186,8 +186,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../messenger/Messenger.iml" filepath="$PROJECT_DIR$/../messenger/Messenger.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../smack/build/projects/Smack.iml" filepath="$PROJECT_DIR$/../smack/build/projects/Smack.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../whack/build/projects/Whack.iml" filepath="$PROJECT_DIR$/../whack/build/projects/Whack.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../smack/build$PROJECT_DIR$/../Smack.iml" filepath="$PROJECT_DIR$/../smack/build$PROJECT_DIR$/../Smack.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../whack/build$PROJECT_DIR$/../Whack.iml" filepath="$PROJECT_DIR$/../whack/build$PROJECT_DIR$/../Whack.iml" />
       <module fileurl="file://$PROJECT_DIR$/client/build/project/phone-client.iml" filepath="$PROJECT_DIR$/client/build/project/phone-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/build/project/phone-server.iml" filepath="$PROJECT_DIR$/server/build/project/phone-server.iml" />
     </modules>

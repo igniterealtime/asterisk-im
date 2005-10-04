@@ -30,6 +30,7 @@ import org.jivesoftware.phone.element.PhoneEvent.Type;
 import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.element.PhoneStatus.Status;
 import org.jivesoftware.phone.util.PhoneConstants;
+import org.jivesoftware.phone.util.UserPresenceUtil;
 import static org.jivesoftware.phone.util.ThreadPool.getThreadPool;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
@@ -52,11 +53,6 @@ import java.util.concurrent.ExecutorService;
  */
 public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants {
 
-    /**
-     * Used to store old presence objects before a person goes on the phone
-     */
-    private Map<String, Collection<Presence>> previousPresenceMap =
-            new ConcurrentHashMap<String, Collection<Presence>>();
 
 
     private AsteriskPlugin asteriskPlugin;
@@ -246,7 +242,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 // If there is already and original presence, it means the user is
                 // receiving an additional phone call. In this case we should not save the presence
                 // because the current precense would also be "on phone"
-                if (previousPresenceMap.get(phoneUser.getUsername()) == null) {
+                if (UserPresenceUtil.getPresences(phoneUser.getUsername()) == null) {
 
                     // Iterate through all of the sessions sending out new presences for each
                     Presence presence = new Presence();
@@ -274,7 +270,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                         server.getPresenceRouter().route(presence);
                     }
 
-                    previousPresenceMap.put(phoneUser.getUsername(), prevPresences);
+                    UserPresenceUtil.setPresences(phoneUser.getUsername(), prevPresences);
                 }
             }
             catch (Exception e) {
@@ -340,7 +336,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 if (callSessionCount <= 1) {
 
                     // Set the user's presence back to what it was before the phone call
-                    Collection<Presence> presences = previousPresenceMap.remove(phoneUser.getUsername());
+                    Collection<Presence> presences = UserPresenceUtil.removePresences(phoneUser.getUsername());
                     if (presences != null) {
                         for (Presence presence : presences) {
 
@@ -592,16 +588,13 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         if (asteriskPlugin != null ? !asteriskPlugin.equals(that.asteriskPlugin) : that.asteriskPlugin != null)
             return false;
-        if (previousPresenceMap != null ? !previousPresenceMap.equals(that.previousPresenceMap) : that.previousPresenceMap != null)
-            return false;
 
         return true;
     }
 
     public int hashCode() {
         int result;
-        result = (previousPresenceMap != null ? previousPresenceMap.hashCode() : 0);
-        result = 29 * result + (asteriskPlugin != null ? asteriskPlugin.hashCode() : 0);
+        result = 29 + (asteriskPlugin != null ? asteriskPlugin.hashCode() : 0);
         return result;
     }
 }
