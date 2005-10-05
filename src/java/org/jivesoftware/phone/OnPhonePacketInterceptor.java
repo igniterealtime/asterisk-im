@@ -6,11 +6,10 @@
 package org.jivesoftware.phone;
 
 import org.jivesoftware.messenger.Session;
-import org.jivesoftware.messenger.XMPPServer;
 import org.jivesoftware.messenger.interceptor.PacketInterceptor;
 import org.jivesoftware.messenger.interceptor.PacketRejectedException;
-import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.phone.element.PhoneStatus;
+import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
@@ -62,30 +61,30 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                         //Throw an exception to prevent the presence from being processed any further
                         Log.debug("OnPhonePacketInterceptor Rejecting presence packet for jid " + packet.getFrom());
                         throw new PacketRejectedException("Status will change after user is off the phone!");
-                    } else if (CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).size() > 0) {
+                    }
+                    else if (CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).size() > 0) {
+
+                        Log.debug("OnPhonePacketInterceptor: No existing presence, cacheing current presence setting presence to Away:On Phone");
 
                         // if the user is on the phone, but we don't have any sessions for them (they have just logged in)
+                        presences = new ArrayList<Presence>();
+
+                        Presence presence = (Presence) packet;
+
+                        // Added here, in case they logged on during the phone call
+                        presences.add(presence.createCopy());
+                        UserPresenceUtil.setPresences(username, presences);
 
                         // Iterate through all of the sessions sending out new presences for each
-                        Presence presence = new Presence();
+                        //Presence presence = new Presence();
                         presence.setShow(Presence.Show.away);
                         presence.setStatus("On the phone");
                         presence.setFrom(from);
 
+
                         PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
                         presence.getElement().add(phoneStatus);
 
-                        XMPPServer.getInstance().getPresenceRouter().route(presence);
-
-                        presences = new ArrayList<Presence>();
-
-                        // Added here, in case they logged on during the phone call
-                        presences.add((Presence) packet);
-                        UserPresenceUtil.setPresences(username, presences);
-
-                        //Throw an exception to prevent the presence from being processed any further
-                        Log.debug("OnPhonePacketInterceptor Rejecting presence packet for jid " + packet.getFrom());
-                        throw new PacketRejectedException("Status will change after user is off the phone!");
                     }
                 }
 
