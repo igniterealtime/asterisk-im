@@ -30,8 +30,8 @@ import org.jivesoftware.phone.element.PhoneEvent.Type;
 import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.element.PhoneStatus.Status;
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.phone.util.UserPresenceUtil;
 import static org.jivesoftware.phone.util.ThreadPool.getThreadPool;
+import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
 import org.xmpp.packet.JID;
@@ -40,9 +40,6 @@ import org.xmpp.packet.Presence;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 
@@ -374,6 +371,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // finally destroy the session.
                 callSessionFactory.destroyPhoneSession(event.getUniqueId());
+
+                // just in case this was a fake session, kill the fake session.
+                // This should be ok to do, since noone should be orginating a call and hanging up at the same time
+                // for a device
+                callSessionFactory.destroyPhoneSession(device);
 
             }
             catch (Exception e) {
