@@ -5,18 +5,19 @@
  */
 package org.jivesoftware.phone;
 
+import org.jivesoftware.messenger.Session;
+import org.jivesoftware.messenger.XMPPServer;
 import org.jivesoftware.messenger.interceptor.PacketInterceptor;
 import org.jivesoftware.messenger.interceptor.PacketRejectedException;
-import org.jivesoftware.messenger.Session;
 import org.jivesoftware.phone.util.UserPresenceUtil;
+import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.util.Log;
+import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
-import org.xmpp.packet.JID;
 
-import java.util.Collection;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.Collection;
 
 /**
  * Prevents presence from changing while a user is on the phone. It will however queue the presence packet to be applied
@@ -64,6 +65,17 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                     } else if (CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).size() > 0) {
 
                         // if the user is on the phone, but we don't have any sessions for them (they have just logged in)
+
+                        // Iterate through all of the sessions sending out new presences for each
+                        Presence presence = new Presence();
+                        presence.setShow(Presence.Show.away);
+                        presence.setStatus("On the phone");
+                        presence.setFrom(from);
+
+                        PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
+                        presence.getElement().add(phoneStatus);
+
+                        XMPPServer.getInstance().getPresenceRouter().route(presence);
 
                         presences = new ArrayList<Presence>();
 
