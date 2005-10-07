@@ -23,7 +23,15 @@ public final class AsteriskUtil {
      * @return the fullChannel with out the final hyphen section
      */
     public static String getDevice(String fullChannel) {
+        if(fullChannel == null || "".equals(fullChannel)) {
+            return fullChannel;
+        }
         int lastIndex = fullChannel.lastIndexOf("-");
+
+        if (lastIndex == -1) {
+            return fullChannel;
+        }
+        
         return fullChannel.substring(0, lastIndex);
     }
 
