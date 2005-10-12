@@ -46,7 +46,11 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                 final Presence presence = (Presence) packet;
 
                 // If the presence type is error we should just ignore it
-                if(Presence.Type.error.equals(presence.getType())) {
+                if (Presence.Type.error.equals(presence.getType())) {
+                    return;
+                }
+                // We should also ignore probe presence types
+                else if (Presence.Type.probe.equals(presence.getType())) {
                     return;
                 }
                 // If this presence is directed to an individual then ignore it
@@ -57,7 +61,7 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                 final String username = from.getNode();
 
                 // If the user is anonymous, or is a service
-                if(username == null) {
+                if (username == null) {
                     return;
                 }
 
@@ -95,7 +99,7 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                     else if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
 
 
-                        if(!Presence.Type.unavailable.equals(presence.getType())) {
+                        if (!Presence.Type.unavailable.equals(presence.getType())) {
                             Log.debug("OnPhonePacketInterceptor: No existing presence, cacheing current presence setting presence to Away:On Phone");
 
 
