@@ -65,11 +65,22 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             handleChannelEvent((ChannelEvent) event);
         }
         else if (event instanceof LinkEvent) {
+            LinkEvent leEvent = (LinkEvent) event;
 
-            getThreadPool().execute(new LinkTask((LinkEvent) event));
+            // Events on Zap channels can be ignored
+            if (leEvent.getChannel1().contains("Zap/")) {
+                return;
+            }
+
+            getThreadPool().execute(new LinkTask(leEvent));
         }
         else if (event instanceof NewExtenEvent) {
             NewExtenEvent neEvent = (NewExtenEvent) event;
+
+            // Events on Zap channels can be ignored
+            if (neEvent.getChannel().contains("Zap/")) {
+                return;
+            }
 
             if ("Dial".equals(neEvent.getApplication())) {
                 getThreadPool().execute(new DialedTask(neEvent));
@@ -79,6 +90,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
     }
 
     public void handleChannelEvent(ChannelEvent event) {
+
+        // Events on Zap channels can be ignored
+        if (event.getChannel().contains("Zap/")) {
+            return;
+        }
 
         ExecutorService executor = getThreadPool();
 
@@ -241,7 +257,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 // If there is already and original presence, it means the user is
                 // receiving an additional phone call. In this case we should not save the presence
                 // because the current precense would also be "on phone"
-                synchronized (phoneUser.getUsername()) {
+                synchronized (phoneUser.getUsername().intern()) {
 
                     if (UserPresenceUtil.getPresences(phoneUser.getUsername()) == null ||
                             UserPresenceUtil.getPresences(phoneUser.getUsername()).isEmpty()) {
@@ -341,7 +357,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // If the user does not have any more call sessions, set back
                 // the presence to what it was before they received any calls
-                synchronized (phoneUser.getUsername()) {
+                synchronized (phoneUser.getUsername().intern()) {
                     int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
                     if (callSessionCount <= 1) {
 
