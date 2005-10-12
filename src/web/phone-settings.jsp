@@ -15,10 +15,6 @@
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
 
-<jsp:useBean id="admin" class="org.jivesoftware.util.WebManager"/>
-<c:set var="admin" value="${admin.manager}"/>
-<% admin.init(request, response, session, application, out); %>
-
 <%
 
     boolean isSave = request.getParameter("save") != null;
@@ -149,16 +145,12 @@
 
 %>
 
-<jsp:useBean id="pageinfo" scope="request" class="org.jivesoftware.admin.AdminPageBean"/>
-<%
-    String title = "General Settings";
-    pageinfo.setTitle(title);
-    pageinfo.getBreadcrumbs().add(new AdminPageBean.Breadcrumb(title, "phone-settings.jsp"));
-    pageinfo.setPageID("item-phone-settings");
-%>
-
-<jsp:include page="top.jsp" flush="true"/>
-<jsp:include page="title.jsp" flush="true"/>
+<html>
+<head>
+    <title>General Settings</title>
+    <meta name="pageID" content="item-phone-settings"/>
+</head>
+<body>
 
 <div id="phone-settings">
 
@@ -259,7 +251,7 @@
 <tbody>
     <tr>
         <td witdh="1%">
-            <nobr><label for="enabledtf">* Enabled:</label>
+            <nobr><label for="enabledtf">* Enabled:</label></nobr>
         </td>
         <td witdh="99%">
             <table cellpadding="0" cellspacing="0" border="0">
@@ -391,7 +383,9 @@
 
 </div>
 
-<jsp:include page="bottom.jsp" flush="true"/>
+</body>
+</html>
+
 
 
 <%!

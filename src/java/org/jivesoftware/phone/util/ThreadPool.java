@@ -51,7 +51,7 @@ public final class ThreadPool {
     }
 
     private static ExecutorService createThreadPool() {
-        return Executors.newFixedThreadPool(50);
+        return Executors.newSingleThreadExecutor();
     }
 
 }

@@ -52,7 +52,6 @@ import java.util.concurrent.ExecutorService;
 public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants {
 
 
-
     private AsteriskPlugin asteriskPlugin;
 
     public AsteriskEventHandler(AsteriskPlugin asteriskPlugin) {
@@ -64,10 +63,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         if (event instanceof ChannelEvent) {
             handleChannelEvent((ChannelEvent) event);
-        } else if (event instanceof LinkEvent) {
+        }
+        else if (event instanceof LinkEvent) {
 
             getThreadPool().execute(new LinkTask((LinkEvent) event));
-        } else if (event instanceof NewExtenEvent) {
+        }
+        else if (event instanceof NewExtenEvent) {
             NewExtenEvent neEvent = (NewExtenEvent) event;
 
             if ("Dial".equals(neEvent.getApplication())) {
@@ -84,7 +85,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         if (executor == null) {
             Log.error("Phone Thread pool was not initialized, returning!");
             return;
-        } else if (executor.isShutdown()) {
+        }
+        else if (executor.isShutdown()) {
             Log.warn("Phone Thread pool has been shutdown, plugin shutdown must be in progress! " +
                     "Not processing event");
             return;
@@ -95,11 +97,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             String state = nsEvent.getState();
             if ("Up".equals(state)) {
 
-                Log.debug("Asterisk-IM: Processing NewState:UP event channel : "+event.getChannel());
+                Log.debug("Asterisk-IM: Processing NewState:UP event channel : " + event.getChannel());
                 executor.execute(new OnPhoneTask(nsEvent));
             }
 
-        } else if (event instanceof NewChannelEvent) {
+        }
+        else if (event instanceof NewChannelEvent) {
             NewChannelEvent ncEvent = (NewChannelEvent) event;
             String state = ncEvent.getState();
 
@@ -109,14 +112,15 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             // Or keep it for both
             if (state.equals("Ringing")) {
 
-                Log.debug("Asterisk-IM: Processing NewChannel:RINGING event channel : "+event.getChannel());
+                Log.debug("Asterisk-IM: Processing NewChannel:RINGING event channel : " + event.getChannel());
 
                 executor.execute(new RingTask(ncEvent));
             }
 
-        } else if (event instanceof HangupEvent) {
+        }
+        else if (event instanceof HangupEvent) {
 
-            Log.debug("Asterisk-IM: Processing HangupEvent channel : "+event.getChannel());
+            Log.debug("Asterisk-IM: Processing HangupEvent channel : " + event.getChannel());
 
             executor.execute(new HangupTask((HangupEvent) event));
         }
@@ -210,9 +214,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId(), phoneUser.getUsername());
 
-                JID jid = getJID(phoneUser);
-
-
                 XMPPServer server = getInstance();
 
                 // Notify the client that they have answered the phone
@@ -227,7 +228,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 //Acquire the xmpp sessions for the user
                 SessionManager sessionManager = server.getSessionManager();
-                Collection<ClientSession> sessions = sessionManager.getSessions(jid.getNode());
+                Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
 
                 // We don't care about people without a session
                 if (sessions.size() == 0) {
@@ -240,36 +241,46 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 // If there is already and original presence, it means the user is
                 // receiving an additional phone call. In this case we should not save the presence
                 // because the current precense would also be "on phone"
-                if (UserPresenceUtil.getPresences(phoneUser.getUsername()) == null) {
+                synchronized (phoneUser.getUsername()) {
 
-                    // Iterate through all of the sessions sending out new presences for each
-                    Presence presence = new Presence();
-                    presence.setShow(Presence.Show.away);
-                    presence.setStatus("On the phone");
+                    if (UserPresenceUtil.getPresences(phoneUser.getUsername()) == null ||
+                            UserPresenceUtil.getPresences(phoneUser.getUsername()).isEmpty()) {
 
-                    PhoneStatus phoneStatus = new PhoneStatus(Status.ON_PHONE);
-                    presence.getElement().add(phoneStatus);
+                        // Iterate through all of the sessions sending out new presences for each
+                        Presence presence = new Presence();
+                        presence.setShow(Presence.Show.away);
+                        presence.setStatus("On the phone");
 
-
-                    Collection<Presence> prevPresences = new ArrayList<Presence>();
-
-                    for (ClientSession session : sessions) {
-
-                        message.setTo(session.getAddress());
-                        asteriskPlugin.sendPacket(message);
+                        PhoneStatus phoneStatus = new PhoneStatus(Status.ON_PHONE);
+                        presence.getElement().add(phoneStatus);
 
 
-                        Presence prevPresence = session.getPresence();
-                        prevPresences.add(prevPresence);
+                        Collection<Presence> prevPresences = new ArrayList<Presence>();
 
-                        JID fullJID = session.getAddress();
-                        presence.setFrom(fullJID);
+                        for (ClientSession session : sessions) {
 
-                        server.getPresenceRouter().route(presence);
+                            message.setTo(session.getAddress());
+                            asteriskPlugin.sendPacket(message);
+
+
+                            Presence prevPresence = session.getPresence();
+
+                            // Only add the presence if it does not contain a phone element
+                            if (prevPresence.getElement().element(Status.ON_PHONE.name()) == null) {
+                                prevPresences.add(prevPresence);
+
+                                JID fullJID = session.getAddress();
+                                presence.setFrom(fullJID);
+
+                                server.getPresenceRouter().route(presence);
+                            }
+
+                        }
+
+                        UserPresenceUtil.setPresences(phoneUser.getUsername(), prevPresences);
                     }
-
-                    UserPresenceUtil.setPresences(phoneUser.getUsername(), prevPresences);
                 }
+
             }
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
@@ -330,53 +341,56 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // If the user does not have any more call sessions, set back
                 // the presence to what it was before they received any calls
-                int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
-                if (callSessionCount <= 1) {
+                synchronized (phoneUser.getUsername()) {
+                    int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
+                    if (callSessionCount <= 1) {
 
-                    // Set the user's presence back to what it was before the phone call
-                    Collection<Presence> presences = UserPresenceUtil.removePresences(phoneUser.getUsername());
-                    if (presences != null) {
-                        for (Presence presence : presences) {
+                        // Set the user's presence back to what it was before the phone call
+                        Collection<Presence> presences = UserPresenceUtil.removePresences(phoneUser.getUsername());
+                        if (presences != null) {
+                            for (Presence presence : presences) {
 
-                            Element presenceElement = presence.getElement();
+                                Element presenceElement = presence.getElement();
 
-                            Element phoneStatusElement = presenceElement.element("phone-status");
-                            // If the phone-status attribute exists check to see if the
-                            if (phoneStatusElement != null) {
+                                Element phoneStatusElement = presenceElement.element("phone-status");
+                                // If the phone-status attribute exists check to see if the status is avaialbable
+                                if (phoneStatusElement != null) {
 
-                                Attribute statusAtt = phoneStatusElement.attribute("status");
+                                    Attribute statusAtt = phoneStatusElement.attribute("status");
 
-                                if (!Status.AVAILABLE.name().equals(statusAtt.getText())) {
-                                    statusAtt.setText(Status.AVAILABLE.name());
+                                    if (!Status.AVAILABLE.name().equals(statusAtt.getText())) {
+                                        statusAtt.setText(Status.AVAILABLE.name());
+                                    }
+
+                                }
+                                // The attribute doesn't exist add new attribute
+                                else {
+
+                                    PhoneStatus status = new PhoneStatus(Status.AVAILABLE);
+                                    presence.getElement().add(status);
+
                                 }
 
+                                getInstance().getPresenceRouter().route(presence);
                             }
-                            // The attribute doesn't exist add new attribute
-                            else {
-
-                                PhoneStatus status = new PhoneStatus(Status.AVAILABLE);
-                                presence.getElement().add(status);
-
-                            }
-
-                            getInstance().getPresenceRouter().route(presence);
                         }
                     }
-                } else {
+                    else {
 
-                    Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() + " has "
-                            + callSessionCount + " call sessions,  not changing presence");
+                        Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() + " has "
+                                + callSessionCount + " call sessions,  not changing presence");
+
+                    }
+
+                    // finally destroy the session.
+                    callSessionFactory.destroyPhoneSession(event.getUniqueId());
+
+                    // just in case this was a fake session, kill the fake session.
+                    // This should be ok to do, since noone should be orginating a call and hanging up at the same time
+                    // for a device
+                    callSessionFactory.destroyPhoneSession(device);
 
                 }
-
-                // finally destroy the session.
-                callSessionFactory.destroyPhoneSession(event.getUniqueId());
-
-                // just in case this was a fake session, kill the fake session.
-                // This should be ok to do, since noone should be orginating a call and hanging up at the same time
-                // for a device
-                callSessionFactory.destroyPhoneSession(device);
-
             }
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
@@ -445,7 +459,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     }
                     message.getElement().add(dialEvent);
 
-                } else {
+                }
+                else {
                     PhoneEvent phoneEvent =
                             new PhoneEvent(event.getUniqueId(), Type.RING, device);
                     String callerID = StringUtils.stripTags(event.getCallerId());
@@ -523,7 +538,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     if (appData.contains("Zap/")) {
                         String[] tokens = appData.split("/");
                         callerID = tokens[tokens.length - 1];
-                    } else if (appData.contains("IAX/") || appData.contains("SIP/")) {
+                    }
+                    else if (appData.contains("IAX/") || appData.contains("SIP/")) {
 
                         // Hopefully they used useful names like SIP/exten
                         String name = getDevice(appData);
@@ -545,11 +561,13 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                         name = name.substring(index + 1);
 
                         callerID = name;
-                    } else {
+                    }
+                    else {
                         // Whatever it is use it (hack)
                         callerID = appData;
                     }
-                } else {
+                }
+                else {
                     //finally just put something in there (hack)
                     callerID = event.getUniqueId();
                 }
@@ -576,11 +594,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 close(phoneManager);
             }
         }
-    }
-
-    private JID getJID(PhoneUser user) {
-        String serverName = getInstance().getServerInfo().getName();
-        return new JID(user.getUsername(), serverName, null);
     }
 
     public boolean equals(Object o) {

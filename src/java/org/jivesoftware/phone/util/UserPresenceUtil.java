@@ -8,9 +8,7 @@ package org.jivesoftware.phone.util;
 import org.xmpp.packet.Presence;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -24,7 +22,6 @@ public class UserPresenceUtil {
      */
     private static Map<String, Collection<Presence>> previousPresenceMap =
             new ConcurrentHashMap<String, Collection<Presence>>();
-
 
     public static Collection<Presence> getPresences(String username) {
         return previousPresenceMap.get(username);
