@@ -10,6 +10,8 @@
 package org.jivesoftware.phone;
 
 
+import org.jivesoftware.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,13 +71,18 @@ public class CallSessionFactory {
         CallSession session = sessionMap.remove(id);
 
         if (session != null) {
-            Collection<CallSession> sessions = userSessionMap.get(session.getUsername());
-            // should never be null
-            sessions.remove(session);
+            try {
+                Collection<CallSession> sessions = userSessionMap.get(session.getUsername());
+                // should never be null
+                sessions.remove(session);
 
-            // Remove the map if there are nolonger any session for this user
-            if (sessions.size() == 0) {
-                userSessionMap.remove(session.getUsername());
+                // Remove the map if there are nolonger any session for this user
+                if (sessions.size() == 0) {
+                    userSessionMap.remove(session.getUsername());
+                }
+            }
+            catch (RuntimeException e) {
+                Log.error("CallSessionFactory: Unexpected RuntimeException occurred ", e);
             }
         }
         return session;

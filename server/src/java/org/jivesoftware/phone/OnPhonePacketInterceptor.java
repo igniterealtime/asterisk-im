@@ -6,6 +6,7 @@
 package org.jivesoftware.phone;
 
 import org.jivesoftware.messenger.Session;
+import org.jivesoftware.messenger.XMPPServer;
 import org.jivesoftware.messenger.interceptor.PacketInterceptor;
 import org.jivesoftware.messenger.interceptor.PacketRejectedException;
 import org.jivesoftware.phone.element.PhoneStatus;
@@ -15,7 +16,7 @@ import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -35,58 +36,69 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
             if (packet instanceof Presence) {
 
 
-                JID from = packet.getFrom();
+                final JID from = packet.getFrom();
 
-                if (from != null) {
-                    String username = from.getNode();
+                // Only process packets that are users on our server
+                if (!XMPPServer.getInstance().getServerInfo().getName().equals(from.getDomain())) {
+                    return;
+                }
 
-                    Collection<Presence> presences = UserPresenceUtil.getPresences(username);
+                final Presence presence = (Presence) packet;
+                final String username = from.getNode();
+
+                synchronized (username) {
+                    final Collection<Presence> presences = UserPresenceUtil.getPresences(username);
 
                     // If the user is on the phone (there are presences) then
                     // queue the new presence and reject the packet
                     if (presences != null && presences.size() > 0) {
 
-                        // find an existing old presence packet for this full jid and replace it with the new one
-                        for (Presence presence : presences) {
-
-                            if (presence.getFrom().equals(packet.getFrom())) {
-                                Log.debug("OnPhonePacketInterceptor removing old presence for jid " + packet.getFrom());
-                                presences.remove(presence);
-                            }
-
+                        // If this an unavailable status, it needs to be handled correctly, remove old presences
+                        // so that presence packets aren't sent out
+                        if (Presence.Type.unavailable.equals(presence.getType())) {
+                            UserPresenceUtil.removePresences(username);
                         }
-                        Log.debug("OnPhonePacketInterceptor adding presence for jid " + packet.getFrom());
-                        presences.add((Presence) packet);
+                        else {
 
-                        //Throw an exception to prevent the presence from being processed any further
-                        Log.debug("OnPhonePacketInterceptor Rejecting presence packet for jid " + packet.getFrom());
-                        throw new PacketRejectedException("Status will change after user is off the phone!");
+                            // find an existing old presence packet for this full jid and replace it with the new one
+                            for (Presence current : presences) {
+
+                                if (current.getFrom().equals(packet.getFrom())) {
+                                    Log.debug("OnPhonePacketInterceptor removing old presence for jid " + packet.getFrom());
+                                    presences.remove(current);
+                                }
+
+                            }
+                            Log.debug("OnPhonePacketInterceptor adding presence for jid " + packet.getFrom());
+                            presences.add((Presence) packet);
+
+                            //Throw an exception to prevent the presence from being processed any further
+                            Log.debug("OnPhonePacketInterceptor Rejecting presence packet for jid " + packet.getFrom());
+                            throw new PacketRejectedException("Status will change after user is off the phone!");
+                        }
                     }
-                    else if (CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).size() > 0) {
+                    else if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
 
-                        Log.debug("OnPhonePacketInterceptor: No existing presence, cacheing current presence setting presence to Away:On Phone");
-
-                        // if the user is on the phone, but we don't have any sessions for them (they have just logged in)
-                        presences = new ArrayList<Presence>();
-
-                        Presence presence = (Presence) packet;
-
-                        // Added here, in case they logged on during the phone call
-                        presences.add(presence.createCopy());
-                        UserPresenceUtil.setPresences(username, presences);
-
-                        // Iterate through all of the sessions sending out new presences for each
-                        //Presence presence = new Presence();
-                        presence.setShow(Presence.Show.away);
-                        presence.setStatus("On the phone");
-                        presence.setFrom(from);
+                        if(!Presence.Type.unavailable.equals(presence.getType())) {
+                            Log.debug("OnPhonePacketInterceptor: No existing presence, cacheing current presence setting presence to Away:On Phone");
 
 
-                        PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
-                        presence.getElement().add(phoneStatus);
+                            UserPresenceUtil.setPresences(username, Arrays.asList(presence.createCopy()));
+
+                            // Iterate through all of the sessions sending out new presences for each
+                            //Presence presence = new Presence();
+                            presence.setShow(Presence.Show.away);
+                            presence.setStatus("On the phone");
+                            presence.setFrom(from);
+
+
+                            PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
+                            presence.getElement().add(phoneStatus);
+                        }
 
                     }
                 }
+
 
             }
 

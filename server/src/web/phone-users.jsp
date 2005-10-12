@@ -26,10 +26,6 @@
 
 <%! static final Logger log = Logger.getLogger("org.jivesoftware.phone.admin.phone-users"); %>
 
-<jsp:useBean id="admin" class="org.jivesoftware.util.WebManager"/>
-<c:set var="admin" value="${admin.manager}"/>
-<% admin.init(request, response, session, application, out); %>
-
 <%
 
     // For cancel we will just forward before doing anything
@@ -246,16 +242,13 @@
 %>
 
 
-<jsp:useBean id="pageinfo" scope="request" class="org.jivesoftware.admin.AdminPageBean"/>
-<%
-    String title = "Phone Mappings";
-    pageinfo.setTitle(title);
-    pageinfo.getBreadcrumbs().add(new AdminPageBean.Breadcrumb(title, "phone-users.jsp"));
-    pageinfo.setPageID("item-phone-users");
-%>
+<html>
+<head>
+    <title>Phone Mappings</title>
+    <meta name="pageID" content="item-phone-users"/>
+</head>
+<body>
 
-<jsp:include page="top.jsp" flush="true"/>
-<jsp:include page="title.jsp" flush="true"/>
 
 <style type="text/css">
 
@@ -629,7 +622,8 @@
     }
 %>
 
-<jsp:include page="bottom.jsp" flush="true"/>
+</body>
+</html>
 
 
 <%!
