@@ -49,6 +49,10 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                 if(Presence.Type.error.equals(presence.getType())) {
                     return;
                 }
+                // If this presence is directed to an individual then ignore it
+                else if (presence.getTo() != null) {
+                    return;
+                }
 
                 final String username = from.getNode();
 
