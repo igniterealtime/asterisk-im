@@ -31,7 +31,7 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
             throws PacketRejectedException {
 
 
-        if (!processed) {
+        if (!processed && read) {
 
             if (packet instanceof Presence) {
 
@@ -76,27 +76,33 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                         // so that presence packets aren't sent out
                         if (Presence.Type.unavailable.equals(presence.getType())) {
                             UserPresenceUtil.removePresences(username);
-                        }
-                        else {
+                        } else {
 
-                            // find an existing old presence packet for this full jid and replace it with the new one
-                            for (Presence current : presences) {
+                            // Reject the packet if sessions exist
+                            if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
 
-                                if (current.getFrom().equals(packet.getFrom())) {
-                                    Log.debug("OnPhonePacketInterceptor removing old presence for jid " + packet.getFrom());
-                                    presences.remove(current);
+                                // find an existing old presence packet for this full jid and replace it with the new one
+                                for (Presence current : presences) {
+
+                                    if (current.getFrom().equals(packet.getFrom())) {
+                                        Log.debug("OnPhonePacketInterceptor removing old presence for jid " + packet.getFrom());
+                                        presences.remove(current);
+                                    }
+
                                 }
+                                Log.debug("OnPhonePacketInterceptor adding presence for jid " + packet.getFrom());
+                                presences.add((Presence) packet);
 
+                                //Throw an exception to prevent the presence from being processed any further
+                                Log.debug("OnPhonePacketInterceptor Rejecting presence packet for jid " + packet.getFrom());
+                                throw new PacketRejectedException("Status will change after user is off the phone!");
                             }
-                            Log.debug("OnPhonePacketInterceptor adding presence for jid " + packet.getFrom());
-                            presences.add((Presence) packet);
-
-                            //Throw an exception to prevent the presence from being processed any further
-                            Log.debug("OnPhonePacketInterceptor Rejecting presence packet for jid " + packet.getFrom());
-                            throw new PacketRejectedException("Status will change after user is off the phone!");
+                            else {
+                                Log.warn("OnPhonePacketInterceptor: Cannot reject status for "+packet.getFrom()+" because" +
+                                        "the user still has call sessions!");
+                            }
                         }
-                    }
-                    else if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
+                    } else if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
 
 
                         if (!Presence.Type.unavailable.equals(presence.getType())) {
