@@ -100,6 +100,10 @@ public class OnPhonePacketInterceptor implements PacketInterceptor {
                             else {
                                 Log.warn("OnPhonePacketInterceptor: Cannot reject status for "+packet.getFrom()+" because" +
                                         "the user still has call sessions!");
+
+                                // Go ahead and clean up the presences, because there shouldn't actually be any presences
+                                // in here
+                                UserPresenceUtil.removePresences(packet.getFrom().getNode());
                             }
                         }
                     } else if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
