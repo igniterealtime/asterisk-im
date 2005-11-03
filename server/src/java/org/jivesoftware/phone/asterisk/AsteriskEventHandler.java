@@ -239,7 +239,10 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 PhoneEvent phoneEvent =
                         new PhoneEvent(callSession.getId(), Type.ON_PHONE, device);
-                phoneEvent.addElement("callerID").setText(callSession.getCallerID());
+                // Get the callerID to add to the phone-event. If no callerID info is available
+                // then just set an empty string and let clients do the proper rendering
+                String callerID = callSession.getCallerID() == null ? "" : callSession.getCallerID();
+                phoneEvent.addElement("callerID").setText(callerID);
                 message.getElement().add(phoneEvent);
 
                 //Acquire the xmpp sessions for the user
