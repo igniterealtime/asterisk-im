@@ -14,11 +14,14 @@ import org.jivesoftware.messenger.container.Plugin;
 import org.jivesoftware.messenger.container.PluginManager;
 import org.jivesoftware.messenger.event.SessionEventDispatcher;
 import org.jivesoftware.messenger.interceptor.InterceptorManager;
+import org.jivesoftware.phone.CallSession;
+import org.jivesoftware.phone.CallSessionFactory;
 import org.jivesoftware.phone.OnPhonePacketInterceptor;
 import org.jivesoftware.phone.PacketHandler;
 import org.jivesoftware.phone.database.HibernateUtil;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.ThreadPool;
+import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.xmpp.component.Component;
@@ -74,11 +77,16 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     // Current instance of the component manager
     private ComponentManager componentManager = null;
 
+    /**
+     * Flag that indicates if the plugin is being shutdown. When shutting down presences
+     * of users that start a new conversation will not be modified to on-the-phone.
+     */
     private boolean isComponentReady = false;
 
     private PacketHandler packetHandler;
 
-    private final OnPhonePacketInterceptor onPhoneInterceptor = new OnPhonePacketInterceptor();
+    private final OnPhonePacketInterceptor onPhoneInterceptor = new OnPhonePacketInterceptor(this);
+    private AsteriskEventHandler eventHandler;
 
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         init();
@@ -147,18 +155,12 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     }
 
     public void destroy() {
-
         Log.info("unloading asterisk-im plugin resources");
 
-        // Remove the packet interceptor
-        InterceptorManager.getInstance().removeInterceptor(onPhoneInterceptor);
-
-
-        // Remove OnPhonePacketInterceptor as a session event listener
-        SessionEventDispatcher.removeListener(onPhoneInterceptor);
-
         try {
-            Log.info("Registering asterisk-im plugin as a component");
+            Log.info("Unregistering asterisk-im plugin as a component");
+            // Unregister this component. When unregistering the isComponentReady variable
+            // will be set to false so new phone calls won't be processed.
             ComponentManagerFactory.getComponentManager().removeComponent(NAME);
         }
         catch (Exception e) {
@@ -166,6 +168,22 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             // Do nothing. Should never happen.
             ComponentManagerFactory.getComponentManager().getLog().error(e);
         }
+
+        // Revert user presences to what it was before the phone call and send a hang_up
+        // message to the user
+        CallSessionFactory callSessionFactory = CallSessionFactory.getCallSessionFactory();
+        for (String username : UserPresenceUtil.getUsernames()) {
+            for (CallSession session : callSessionFactory.getUserCallSessions(username)) {
+                eventHandler.sendHangupMessage(session.getId(), AsteriskUtil.getDevice(session.getChannel()), username);
+            }
+            eventHandler.restoreUserPresence(username);
+        }
+
+        // Remove the packet interceptor
+        InterceptorManager.getInstance().removeInterceptor(onPhoneInterceptor);
+
+        // Remove OnPhonePacketInterceptor as a session event listener
+        SessionEventDispatcher.removeListener(onPhoneInterceptor);
 
         try {
             closeManagerConnection();
@@ -215,6 +233,10 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
      */
     public String getDescription() {
         return DESCRIPTION;
+    }
+
+    public boolean isComponentReady() {
+        return isComponentReady;
     }
 
     /**
@@ -296,7 +318,8 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
                     // Start handling events
                     Log.debug("Adding AsteriskEventHandler");
-                    managerConnection.addEventHandler(new AsteriskEventHandler(this));
+                    eventHandler = new AsteriskEventHandler(this);
+                    managerConnection.addEventHandler(eventHandler);
                 }
                 catch (Exception e) {
                     Log.error("unable to obtain a manager connection --> " + e.getMessage(), e);
