@@ -210,6 +210,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         public void run() {
 
+            // Do nothing when the plugin is being removed/destroyed
+            if (!asteriskPlugin.isComponentReady()) {
+                return;
+            }
+
             //everything after the hyphen should be skipped
             String device = getDevice(event.getChannel());
 
@@ -341,22 +346,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 Log.debug("Asterisk-IM HangupTask called for user " + phoneUser);
 
-                Message message = new Message();
-                message.setFrom(asteriskPlugin.getComponentJID());
-                message.setID(event.getUniqueId());
-
-                PhoneEvent phoneEvent =
-                        new PhoneEvent(event.getUniqueId(), Type.HANG_UP, device);
-                message.getElement().add(phoneEvent);
-
-                // Send the message to each of jids for this user
-                SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-                Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
-                for (ClientSession session : sessions) {
-                    message.setTo(session.getAddress());
-                    asteriskPlugin.sendPacket(message);
-                }
-
+                // Send hang up message to user
+                sendHangupMessage(event.getUniqueId(), device, phoneUser.getUsername());
 
                 CallSessionFactory callSessionFactory = getCallSessionFactory();
 
@@ -366,35 +357,9 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
                     if (callSessionCount <= 1) {
 
-                        // Set the user's presence back to what it was before the phone call
-                        Collection<Presence> presences = UserPresenceUtil.removePresences(phoneUser.getUsername());
-                        if (presences != null) {
-                            for (Presence presence : presences) {
-
-                                Element presenceElement = presence.getElement();
-
-                                Element phoneStatusElement = presenceElement.element("phone-status");
-                                // If the phone-status attribute exists check to see if the status is avaialbable
-                                if (phoneStatusElement != null) {
-
-                                    Attribute statusAtt = phoneStatusElement.attribute("status");
-
-                                    if (!Status.AVAILABLE.name().equals(statusAtt.getText())) {
-                                        statusAtt.setText(Status.AVAILABLE.name());
-                                    }
-
-                                }
-                                // The attribute doesn't exist add new attribute
-                                else {
-
-                                    PhoneStatus status = new PhoneStatus(Status.AVAILABLE);
-                                    presence.getElement().add(status);
-
-                                }
-
-                                getInstance().getPresenceRouter().route(presence);
-                            }
-                        }
+                        // Set the user's presence back to what it was before the phone call. The
+                        // presence will be broadcasted to corresponding users
+                        restoreUserPresence(phoneUser.getUsername());
                     }
                     else {
 
@@ -619,6 +584,54 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             }
             finally {
                 close(phoneManager);
+            }
+        }
+    }
+
+    public void sendHangupMessage(String callSessionID, String device, String username) {
+        Message message = new Message();
+        message.setFrom(asteriskPlugin.getComponentJID());
+        message.setID(callSessionID);
+
+        PhoneEvent phoneEvent = new PhoneEvent(callSessionID, PhoneEvent.Type.HANG_UP, device);
+        message.getElement().add(phoneEvent);
+
+        // Send the message to each of jids for this user
+        SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+        Collection<ClientSession> sessions = sessionManager.getSessions(username);
+        for (ClientSession session : sessions) {
+            message.setTo(session.getAddress());
+            asteriskPlugin.sendPacket(message);
+        }
+    }
+
+    public void restoreUserPresence(String username) {
+        Collection<Presence> presences = UserPresenceUtil.removePresences(username);
+        if (presences != null) {
+            for (Presence presence : presences) {
+
+                Element presenceElement = presence.getElement();
+
+                Element phoneStatusElement = presenceElement.element("phone-status");
+                // If the phone-status attribute exists check to see if the status is avaialbable
+                if (phoneStatusElement != null) {
+
+                    Attribute statusAtt = phoneStatusElement.attribute("status");
+
+                    if (!PhoneStatus.Status.AVAILABLE.name().equals(statusAtt.getText())) {
+                        statusAtt.setText(PhoneStatus.Status.AVAILABLE.name());
+                    }
+
+                }
+                // The attribute doesn't exist add new attribute
+                else {
+
+                    PhoneStatus status = new PhoneStatus(PhoneStatus.Status.AVAILABLE);
+                    presence.getElement().add(status);
+
+                }
+
+                getInstance().getPresenceRouter().route(presence);
             }
         }
     }
