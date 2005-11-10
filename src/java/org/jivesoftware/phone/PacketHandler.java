@@ -12,6 +12,7 @@ package org.jivesoftware.phone;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.asterisk.AsteriskPlugin;
 import org.jivesoftware.phone.element.PhoneAction;
+import org.jivesoftware.util.Log;
 import org.dom4j.Element;
 import org.xmpp.packet.*;
 
@@ -99,6 +100,7 @@ public class PacketHandler implements PhoneConstants {
             
         }
         catch (PhoneException e) {
+            Log.debug(e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
             PacketError error = new PacketError(PacketError.Condition.unexpected_condition,
@@ -153,6 +155,7 @@ public class PacketHandler implements PhoneConstants {
 
         }
         catch (PhoneException e) {
+            Log.debug(e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
             PacketError error = new PacketError(PacketError.Condition.unexpected_condition,
