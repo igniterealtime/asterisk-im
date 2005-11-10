@@ -251,6 +251,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // We don't care about people without a session
                 if (sessions.size() == 0) {
+                    // Release call session since the user is not logged into the server
+                    getCallSessionFactory().destroyPhoneSession(event.getUniqueId());
                     return;
                 }
 
@@ -403,6 +405,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                     // finally destroy the session.
                     callSessionFactory.destroyPhoneSession(event.getUniqueId());
+
+                    if (callSessionCount > 1) {
+                        for (CallSession session : callSessionFactory.getUserCallSessions(phoneUser.getUsername())) {
+                            Log.debug("Asterisk-IM HangupTask: Remaining CallSession " + session);
+                        }
+                    }
 
                     // just in case this was a fake session, kill the fake session.
                     // This should be ok to do, since noone should be orginating a call and hanging up at the same time
