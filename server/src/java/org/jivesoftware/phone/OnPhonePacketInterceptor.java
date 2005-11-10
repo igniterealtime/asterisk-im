@@ -115,7 +115,7 @@ public class OnPhonePacketInterceptor implements PacketInterceptor, SessionEvent
                     if (!Presence.Type.unavailable.equals(presence.getType())) {
                         if (Log.isDebugEnabled()) {
                             Log.debug(
-                                    "OnPhonePacketInterceptor: No existing presence, caching current presence and setting presence to \"Away:On Phone\" for: " +
+                                    "OnPhonePacketInterceptor: No queued presences, queuing current presence and setting presence to \"Away:On Phone\" for: " +
                                             presence);
                         }
 
@@ -151,7 +151,7 @@ public class OnPhonePacketInterceptor implements PacketInterceptor, SessionEvent
 
         // Remove old presences since the session has been destroyed
         if (Log.isDebugEnabled()) {
-            Log.debug("OnPhonePacketInterceptor: User went offline. Removing presences for jid " +
+            Log.debug("OnPhonePacketInterceptor: User went offline. Removing queued presences for jid " +
                     userFullJID);
         }
         UserPresenceUtil.removePresences(userFullJID.getNode());
