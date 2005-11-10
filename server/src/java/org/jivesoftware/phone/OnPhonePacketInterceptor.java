@@ -12,6 +12,7 @@ import org.jivesoftware.messenger.interceptor.PacketInterceptor;
 import org.jivesoftware.messenger.interceptor.PacketRejectedException;
 import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.util.UserPresenceUtil;
+import org.jivesoftware.phone.asterisk.AsteriskPlugin;
 import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
@@ -28,6 +29,11 @@ import java.util.Collection;
  */
 public class OnPhonePacketInterceptor implements PacketInterceptor, SessionEventListener {
 
+    private AsteriskPlugin asteriskPlugin;
+
+    public OnPhonePacketInterceptor(AsteriskPlugin asteriskPlugin) {
+        this.asteriskPlugin = asteriskPlugin;
+    }
     public void interceptPacket(Packet packet, Session session, boolean incoming, boolean processed)
             throws PacketRejectedException {
 
@@ -111,8 +117,8 @@ public class OnPhonePacketInterceptor implements PacketInterceptor, SessionEvent
                     }
                 } else if (!CallSessionFactory.getCallSessionFactory().getUserCallSessions(username).isEmpty()) {
 
-
-                    if (!Presence.Type.unavailable.equals(presence.getType())) {
+                    // Process available presences only if plugin is not being shutdown
+                    if (asteriskPlugin.isComponentReady() && !Presence.Type.unavailable.equals(presence.getType())) {
                         if (Log.isDebugEnabled()) {
                             Log.debug(
                                     "OnPhonePacketInterceptor: No queued presences, queuing current presence and setting presence to \"Away:On Phone\" for: " +
