@@ -362,10 +362,12 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                         restoreUserPresence(phoneUser.getUsername());
                     }
                     else {
-
-                        Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() + " has "
-                                + callSessionCount + " call sessions,  not changing presence");
-
+                        if (Log.isDebugEnabled()) {
+                            Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() +
+                                    " has " + callSessionCount +
+                                    " call sessions,  not restoring presence. Destroying CallSession{id=" +
+                                    event.getUniqueId() + ", channel=" + event.getChannel() + "}");
+                        }
                     }
 
                     // finally destroy the session.
