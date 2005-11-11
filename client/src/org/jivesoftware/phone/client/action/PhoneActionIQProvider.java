@@ -9,7 +9,6 @@
  */
 package org.jivesoftware.phone.client.action;
 
-import static org.jivesoftware.phone.client.action.PhoneActionPacket.ActionType.*;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.provider.IQProvider;
 import org.xmlpull.v1.XmlPullParser;
@@ -25,13 +24,13 @@ public class PhoneActionIQProvider implements IQProvider {
         String type = parser.getAttributeValue(null, "type");
 
 
-        if(DIAL.name().equals(type)) {
+        if(PhoneActionPacket.ActionType.DIAL.name().equals(type)) {
             return new DialAction();
         }
-        else if (FORWARD.name().equals(type)) {
+        else if (PhoneActionPacket.ActionType.FORWARD.name().equals(type)) {
             return new ForwardAction();
         }
-        else if (INVITE.name().equals(type)) {
+        else if (PhoneActionPacket.ActionType.INVITE.name().equals(type)) {
             return new InviteAction();
         }
 

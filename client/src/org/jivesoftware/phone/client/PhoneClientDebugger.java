@@ -161,7 +161,7 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
             if (extensionText != null && !"".equals(extensionText)) {
                 try {
 
-                    if(extensionText.contains("@")) {
+                    if(extensionText.indexOf("@") > -1) {
                         client.dialByJID(extensionText);
                     }
                     else {
@@ -208,7 +208,7 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
 
             if(call != null && extensionText != null && !"".equals(extensionText)) {
                 try {
-                    if(extensionText.contains("@")) {
+                    if(extensionText.indexOf("@") > -1) {
                         client.forwardByJID(call, extensionText);
                     }
                     else {

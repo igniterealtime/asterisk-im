@@ -12,8 +12,9 @@ package org.jivesoftware.phone.client.event;
 import org.jivesoftware.phone.client.PhoneEvent;
 import org.jivesoftware.phone.client.PhoneEventListener;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Vector;
 
 /**
  * Event dispatcher for phone events.
@@ -22,8 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class PhoneEventDispatcher {
 
-    private final List<PhoneEventListener> listeners =
-            new CopyOnWriteArrayList<PhoneEventListener>();
+    private final List listeners = new Vector();
 
 
     /**
@@ -56,7 +56,8 @@ public class PhoneEventDispatcher {
      */
     public void dispatchEvent(PhoneEvent event) {
 
-        for(PhoneEventListener listener : listeners) {
+        for (Iterator i = listeners.iterator(); i.hasNext();) {
+            PhoneEventListener listener = (PhoneEventListener) i.next();
             listener.handle(event);
         }
 

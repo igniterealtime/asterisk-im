@@ -9,7 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../test/functional" isTestSource="true" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="JDK 1.4.2" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Smack" />
     <orderEntry type="module-library">

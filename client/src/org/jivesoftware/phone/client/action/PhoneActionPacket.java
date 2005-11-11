@@ -18,19 +18,46 @@ import org.jivesoftware.smack.packet.IQ;
  */
 public abstract class PhoneActionPacket extends IQ {
 
-    public static enum ActionType {
+    public static final class ActionType {
         /**
          * When the action is dialing a new extension
          */
-        DIAL,
+        public static final ActionType DIAL = new ActionType("DIAL");
+
         /**
          * When the action is forwarding a call to a another extension
          */
-        FORWARD,
+        public static final ActionType FORWARD = new ActionType("FORWARD");
+
         /**
          * When the action is inviting a third person into the call
          */
-        INVITE
+        public static final ActionType INVITE = new ActionType("INVITE");
+
+        private String name;
+
+        public ActionType(String name) {
+            this.name = name;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final ActionType that = (ActionType) o;
+
+            if (name != null ? !name.equals(that.name) : that.name != null) return false;
+
+            return true;
+        }
+
+        public int hashCode() {
+            return (name != null ? name.hashCode() : 0);
+        }
     }
 
     /**
@@ -64,10 +91,10 @@ public abstract class PhoneActionPacket extends IQ {
                 .append(NAMESPACE)
                 .append("\"  type=\"")
                 .append(getActionType())
-                .append( "\"");
+                .append("\"");
 
 
-        if(id != null) {
+        if (id != null) {
             buffer.append(" id=\"")
                     .append(id)
                     .append("\" ");

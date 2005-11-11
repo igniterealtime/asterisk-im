@@ -272,65 +272,6 @@ public class PhoneClient {
 
     }
 
-
-    /**
-     * Used to invite another extension to the current call (three way calling)
-     * <p/>
-     * />
-     * Currently this does not behave in a way I would prefer. It will cause both channels to be forwarded to a device,
-     * making it look like the device is receiving two calls.
-     * <p/>
-     * This action works most effectively if you wish to transfer the call to a password free conference room.
-     * <p/>
-     * <p/>
-     * I have reduced the scope of this method to private, until we figure out how to deal with the case above.
-     *
-     * @param call      the call object to invite the extension too
-     * @param extension the extension of the person to invite
-     * @throws PhoneActionException Thrown if there are issues inviting someone
-     */
-    private void invite(Call call, String extension) throws PhoneActionException {
-
-        if (call == null) {
-            throw new PhoneActionException("passed null call object");
-        }
-
-        if (call.getId() == null) {
-            throw new PhoneActionException("callID cannot be null");
-        }
-
-        InviteAction action = new InviteAction(call.getId(), extension);
-        action.setTo(component);
-        action.setFrom(conn.getUser());
-
-        // Wait for a response packet back from the server.
-        PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
-        PacketCollector response = conn.createPacketCollector(responseFilter);
-
-        // do iq stuff here
-        // packet reply timeout
-        conn.sendPacket(action);
-
-        // Wait up to a certain number of seconds for a reply.
-        IQ iq = (IQ) response.nextResult(SmackConfiguration.getPacketReplyTimeout());
-
-        // Stop queuing results
-        response.cancel();
-
-
-        if (iq == null) {
-            throw new PhoneActionException("No response received from the server");
-        }
-
-        if (iq.getError() != null) {
-            throw new PhoneActionException(iq.getError());
-        }
-
-        if (!(iq instanceof InviteAction)) {
-            throw new PhoneActionException("Did not acquire the proper response!");
-        }
-    }
-
     /**
      * Used to see if whether a specified jid has the phone service enabled
      *
@@ -344,6 +285,7 @@ public class PhoneClient {
             return false;
         }
 
+        //todo - fix for derek
         DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component,
                 StringUtils.parseName(StringUtils.parseName(jid)));
 
