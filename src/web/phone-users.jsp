@@ -8,9 +8,7 @@
                  org.jivesoftware.util.ParamUtils,
                  java.util.Collection,
                  java.util.HashMap,
-                 java.util.List,
-                 java.util.logging.Level,
-                 java.util.logging.Logger" %>
+                 java.util.List" %>
 <%@ page import="org.jivesoftware.phone.*"%>
 <%@ page import="org.jivesoftware.util.Log"%>
 
@@ -23,8 +21,6 @@
     final int[] RANGE_PRESETS = {15, 25, 50, 75, 100};
     final String USER_RANGE_PROP = "admin.userlist.range";
 %>
-
-<%! static final Logger log = Logger.getLogger("org.jivesoftware.phone.admin.phone-users"); %>
 
 <%
 
@@ -83,6 +79,14 @@
 
             }
 
+
+            if (phoneUser == null) {
+                Log.error("User with id "+userID+" was not found!");
+            }
+
+        }
+        else {
+            Log.debug("No userID found - phone-users.jsp");
         }
 
         if (delete) {
@@ -101,8 +105,7 @@
                     }
                 }
                 catch (Exception e) {
-                    log.log(Level.SEVERE,
-                            "error attempting to delete device id " + deviceID + " belonging to phoneUser id " + userID, e);
+                    Log.error("error attempting to delete device id " + deviceID + " belonging to phoneUser id " + userID, e);
                 }
                 response.sendRedirect("phone-users.jsp?success=true&start=" + start + "&range=" + range);
                 return;
@@ -110,26 +113,32 @@
         } else if (save) {
             // Save with no copy is add mode
 
-            if (username == null || "".equals(username)) {
-                errors.put("username", "Username is required");
-            } else {
-                UserManager userManager = XMPPServer.getInstance().getUserManager();
-                try {
-                    userManager.getUser(username);
-                }
-                catch (UserNotFoundException e) {
-                    errors.put("username", "User does not exist");
-                }
+            if (phoneUser == null) {
+                if (username == null || "".equals(username)) {
+                    Log.debug("Username is required!!");
+                    errors.put("username", "Username is required");
+                } else {
+                    UserManager userManager = XMPPServer.getInstance().getUserManager();
+                    try {
+                        userManager.getUser(username);
+                    }
+                    catch (UserNotFoundException e) {
+                        Log.debug(e);
+                        errors.put("username", "User does not exist");
+                    }
 
+                }
             }
 
             if (device == null || "".equals(device)) {
+                Log.debug("Phone is required!");
                 errors.put("device", "Phone is required");
             }
             // if we are adding a new device make sure this name is unique
             else if (phoneDevice == null) {
 
                 if (phoneManager.getByDevice(device) != null) {
+                    Log.debug("Phone must be unique!");
                     errors.put("device", "Phone must be unique");
                 }
 
@@ -138,6 +147,7 @@
             else if (phoneDevice != null) {
 
                 if (phoneManager.getByDevice(device) != null && !phoneDevice.getDevice().equals(device)) {
+                    Log.debug("Phone must be unique!");
                     errors.put("device", "Phone must be unique");
                 }
 
@@ -145,18 +155,21 @@
             }
 
             if (extension == null || "".equals(extension)) {
+                Log.debug("Extension is required!");
                 errors.put("extension", "Extension is required");
             }
 
             // See if the username already, exists
-            phoneUser = phoneManager.getByUsername(username);
+            if (phoneUser == null) {
+                phoneUser = phoneManager.getByUsername(username);
+            }
 
             if (errors.size() == 0) {
 
                 try {
 
                     if (phoneUser == null) {
-                        log.fine("username does not exist, creating new username");
+                        Log.debug("username does not exist, creating new username");
                         phoneUser = new PhoneUser(username);
                     }
 
@@ -195,7 +208,7 @@
 
                 }
                 catch (Exception e) {
-                    log.log(Level.SEVERE, e.getMessage(), e);
+                    Log.error(e);
                 }
                 response.sendRedirect("phone-users.jsp?success=true&start=" + start + "&range=" + range);
                 return;
@@ -613,7 +626,7 @@
 <%
     }
     catch (Exception e) {
-        log.log(Level.SEVERE, e.getMessage(), e);
+        Log.error(e);
     }
     finally {
         if (phoneManager != null) {
