@@ -282,13 +282,10 @@ public class PhoneClient {
     public boolean isPhoneEnabled(String jid) throws XMPPException {
 
         if (jid == null || "".equals(jid)) {
-            return false;
+            throw new IllegalArgumentException("JID cannot be empty or null!");
         }
 
-        //todo - fix for derek
-        DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component,
-                StringUtils.parseName(StringUtils.parseName(jid)));
-
+        DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component, StringUtils.parseName(jid));
 
         return info.containsFeature("http://jivesoftware.com/phone");
     }
