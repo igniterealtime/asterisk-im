@@ -172,6 +172,15 @@ public class PacketHandler implements PhoneConstants {
 
     public void handleDisco(IQ iq) {
 
+        if (iq.getType().equals(IQ.Type.error)) {
+            Log.info("Received disco error - "+iq);
+            return;
+        }
+
+        if (!(iq.getType() == IQ.Type.get || iq.getType() == IQ.Type.set)) {
+            Log.debug("Not set or get - "+iq);
+            return;
+        }
 
         // if information was sent to the component itself
         if(plugin.getComponentJID().equals(iq.getTo())) {
