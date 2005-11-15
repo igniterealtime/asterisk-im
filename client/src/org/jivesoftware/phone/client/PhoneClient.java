@@ -11,7 +11,6 @@ package org.jivesoftware.phone.client;
 
 import org.jivesoftware.phone.client.action.DialAction;
 import org.jivesoftware.phone.client.action.ForwardAction;
-import org.jivesoftware.phone.client.action.InviteAction;
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
 import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
 import org.jivesoftware.phone.client.event.PhoneEventPacketListener;
