@@ -85,6 +85,13 @@ public class CallSessionFactory {
                 Log.error("CallSessionFactory: Unexpected RuntimeException occurred ", e);
             }
         }
+        else {
+            if (Log.isDebugEnabled()) {
+                if (!id.startsWith("SIP/")) {
+                    Log.debug("Cannot destroy non-existent CallSession with id: " + id);
+                }
+            }
+        }
         return session;
     }
 
