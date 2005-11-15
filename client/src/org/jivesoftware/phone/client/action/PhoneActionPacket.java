@@ -90,7 +90,7 @@ public abstract class PhoneActionPacket extends IQ {
                 .append(" xmlns=\"")
                 .append(NAMESPACE)
                 .append("\"  type=\"")
-                .append(getActionType())
+                .append(getActionType().name())
                 .append("\"");
 
 

@@ -9,12 +9,12 @@
  */
 package org.jivesoftware.phone.client.event;
 
+import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
 import org.jivesoftware.phone.client.PhoneEvent;
 import org.jivesoftware.phone.client.PhoneEventListener;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Event dispatcher for phone events.
@@ -23,7 +23,7 @@ import java.util.Vector;
  */
 public class PhoneEventDispatcher {
 
-    private final List listeners = new Vector();
+    private final List listeners = new CopyOnWriteArrayList();
 
 
     /**

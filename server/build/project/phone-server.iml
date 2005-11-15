@@ -13,9 +13,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="Messenger" />
-    <orderEntry type="module" module-name="Smack" />
     <orderEntry type="module" module-name="Whack" />
+    <orderEntry type="module" module-name="Smack" />
+    <orderEntry type="module" module-name="Messenger" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>

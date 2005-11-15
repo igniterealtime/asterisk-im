@@ -65,10 +65,10 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
 
     public PhoneClientDebugger() throws Exception {
         super("Phone Client Debugger");
-        setLayout(new BorderLayout());
+        getContentPane().setLayout(new BorderLayout());
         setSize(200, 150);
 
-        add(buildForm());
+        getContentPane().add(buildForm());
         pack();
 
         setVisible(true);
