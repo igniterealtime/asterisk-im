@@ -113,7 +113,9 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             String state = nsEvent.getState();
             if ("Up".equals(state)) {
 
-                Log.debug("Asterisk-IM: Processing NewState:UP event channel : " + event.getChannel());
+                if (Log.isDebugEnabled()) {
+                    Log.debug("Asterisk-IM: Processing NewState:UP event channel : " + event.getChannel() + " id: " +  event.getUniqueId());
+                }
                 executor.execute(new OnPhoneTask(nsEvent));
             }
 
@@ -128,7 +130,9 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             // Or keep it for both
             if (state.equals("Ringing")) {
 
-                Log.debug("Asterisk-IM: Processing NewChannel:RINGING event channel : " + event.getChannel());
+                if (Log.isDebugEnabled()) {
+                    Log.debug("Asterisk-IM: Processing NewChannel:RINGING event channel : " + event.getChannel() + " id: " +  event.getUniqueId());
+                }
 
                 executor.execute(new RingTask(ncEvent));
             }
@@ -136,7 +140,9 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         }
         else if (event instanceof HangupEvent) {
 
-            Log.debug("Asterisk-IM: Processing HangupEvent channel : " + event.getChannel());
+            if (Log.isDebugEnabled()) {
+                Log.debug("Asterisk-IM: Processing HangupEvent channel : " + event.getChannel() + " id: " +  event.getUniqueId());
+            }
 
             executor.execute(new HangupTask((HangupEvent) event));
         }
