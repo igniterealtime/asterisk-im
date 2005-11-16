@@ -15,6 +15,7 @@ import org.jivesoftware.phone.client.PhoneEventListener;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Event dispatcher for phone events.
@@ -55,8 +56,8 @@ public class PhoneEventDispatcher {
      * @param event event to dispatch
      */
     public void dispatchEvent(PhoneEvent event) {
-
-        for (Iterator i = listeners.iterator(); i.hasNext();) {
+        final List eventListeners = new ArrayList(listeners);
+        for (Iterator i = eventListeners.iterator(); i.hasNext();) {
             PhoneEventListener listener = (PhoneEventListener) i.next();
             listener.handle(event);
         }
