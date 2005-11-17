@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
+ * Util for keeping track of presences for users
+ *
  * @author Andrew Wright
  */
 public class UserPresenceUtil {
@@ -29,6 +31,12 @@ public class UserPresenceUtil {
     }
 
 
+    /**
+     * Sets a collection of presences for specific username
+     *
+     * @param username username for the presences
+     * @param presences collection of presences for the user
+     */
     public static void setPresences(String username, Collection<Presence> presences) {
         previousPresenceMap.put(username, new CopyOnWriteArrayList<Presence>(presences));
     }
@@ -61,6 +69,11 @@ public class UserPresenceUtil {
         }
     }
 
+    /**
+     * Returns the names of all the users whos presences we are holding
+     *
+     * @return the names of all the users whos presences we are holding
+     */
     public static Collection<String> getUsernames() {
         return previousPresenceMap.keySet();
     }
