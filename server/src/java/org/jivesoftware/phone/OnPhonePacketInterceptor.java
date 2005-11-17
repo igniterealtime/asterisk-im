@@ -160,7 +160,7 @@ public class OnPhonePacketInterceptor implements PacketInterceptor, SessionEvent
             Log.debug("OnPhonePacketInterceptor: User went offline. Removing queued presences for jid " +
                     userFullJID);
         }
-        UserPresenceUtil.removePresences(userFullJID.getNode());
+        UserPresenceUtil.removePresences(userFullJID);
     }
 
     public void anonymousSessionCreated(Session session) {
