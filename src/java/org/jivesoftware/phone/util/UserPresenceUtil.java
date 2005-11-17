@@ -6,6 +6,7 @@
 package org.jivesoftware.phone.util;
 
 import org.xmpp.packet.Presence;
+import org.xmpp.packet.JID;
 
 import java.util.Collection;
 import java.util.Map;
@@ -32,8 +33,32 @@ public class UserPresenceUtil {
         previousPresenceMap.put(username, new CopyOnWriteArrayList<Presence>(presences));
     }
 
+    /**
+     * Removes all stored presences of the specified user. This means that if the user was
+     * connected from many clients then any stored presence will be removed.
+     *
+     * @param username the username of the user (i.e. JID's node)
+     * @return the previously stored presences or <tt>null</tt> if no presence was being stored.
+     */
     public static Collection<Presence> removePresences(String username) {
         return previousPresenceMap.remove(username);
+    }
+
+    /**
+     * Removes stored presences of the user that was connected from a specific client.
+     * The received JID is a full JID so we can identify the presences to remove.
+     *
+     * @param userFullJID JID of the user whose presences are not going to be stored anymore.
+     */
+    public static void removePresences(JID userFullJID) {
+        Collection<Presence> presences = previousPresenceMap.get(userFullJID.getNode());
+        if (presences != null) {
+            for (Presence presence : presences) {
+                if (userFullJID.equals(presence.getFrom())) {
+                    presences.remove(presence);
+                }
+            }
+        }
     }
 
     public static Collection<String> getUsernames() {
