@@ -365,7 +365,26 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                         // Set the user's presence back to what it was before the phone call. The
                         // presence will be broadcasted to corresponding users
-                        restoreUserPresence(phoneUser.getUsername());
+                        if (!restoreUserPresence(phoneUser.getUsername())) {
+                            // TODO Remove this code when the "always on-the-phone problem is fixed"
+                            // Check if the user is available and his presence is still
+                            // on-the-phone (and no there are no more calls)
+                            SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+                            Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
+                            for (ClientSession session : sessions) {
+                                Presence presence = session.getPresence();
+                                Element phoneStatusElement = presence.getElement().element("phone-status");
+                                // If the phone-status attribute exists check to see if the status is avaialbable
+                                if (phoneStatusElement != null && PhoneStatus.Status.ON_PHONE.name().equals(phoneStatusElement.attributeValue("status"))) {
+                                    Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() +
+                                            " has no more call sessions, but his presence is " +
+                                            "still ON_PHONE. Changing to AVAILABLE");
+                                    // Change presence to available since there are no more active calls
+                                    phoneStatusElement.addAttribute("status", PhoneStatus.Status.AVAILABLE.name());
+                                    getInstance().getPresenceRouter().route(presence);
+                                }
+                            }
+                        }
                     }
                     else {
                         if (Log.isDebugEnabled()) {
@@ -613,7 +632,9 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         }
     }
 
-    public void restoreUserPresence(String username) {
+    public boolean restoreUserPresence(String username) {
+        // Flag that indicates if the presence was restored to "off the phone"
+        boolean restored = false;
         Collection<Presence> presences = UserPresenceUtil.removePresences(username);
         if (presences != null) {
             for (Presence presence : presences) {
@@ -640,8 +661,10 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 }
 
                 getInstance().getPresenceRouter().route(presence);
+                restored = true;
             }
         }
+        return restored;
     }
 
     public boolean equals(Object o) {
