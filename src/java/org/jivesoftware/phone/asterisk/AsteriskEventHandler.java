@@ -408,7 +408,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                                         "trying to destroy CallSession based on channel " +
                                         "instead of id. User: " + phoneUser.getUsername() +
                                         " channel to destroy" + event.getChannel() +
-                                        " . Destruction status: " + destroyedSession == null ? "FAILED" : "SUCCEEDED";
+                                        " . Destruction status: " + destroyedSession == null ? "FAILED" : "SUCCEEDED");
                             }
                         }
                     }
