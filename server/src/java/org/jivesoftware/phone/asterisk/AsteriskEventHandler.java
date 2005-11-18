@@ -396,7 +396,22 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                     }
 
                     // finally destroy the session.
-                    callSessionFactory.destroyPhoneSession(event.getUniqueId());
+                    if (callSessionFactory.destroyPhoneSession(event.getUniqueId()) == null) {
+                        // Events of ZOMBIE channels may have a different ID so try to locate
+                        // the CallSession to destroy based on the channel
+                        if (event.getChannel().contains("<ZOMBIE>")) {
+                            CallSession destroyedSession = callSessionFactory.destroyPhoneSession(
+                                    event.getChannel().replace("<ZOMBIE>", ""),
+                                    phoneUser.getUsername());
+                            if (Log.isDebugEnabled()) {
+                                Log.debug("Asterisk-IM HangupTask: Found ZOMBIE channel so " +
+                                        "trying to destroy CallSession based on channel " +
+                                        "instead of id. User: " + phoneUser.getUsername() +
+                                        " channel to destroy" + event.getChannel() +
+                                        " . Destruction status: " + destroyedSession == null ? "FAILED" : "SUCCEEDED";
+                            }
+                        }
+                    }
 
                     if (callSessionCount > 1) {
                         for (CallSession session : callSessionFactory.getUserCallSessions(phoneUser.getUsername())) {
