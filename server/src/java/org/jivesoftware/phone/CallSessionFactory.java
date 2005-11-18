@@ -100,14 +100,16 @@ public class CallSessionFactory {
      *
      * @param channel the channel of the CallSession.
      * @param username the name of the user that has the CallSession.
-     * @return the removed CallSession or <tt>null</tt> if nothing was removed. 
+     * @return the removed CallSession or <tt>null</tt> if nothing was removed.
      */
     public synchronized CallSession destroyPhoneSession(String channel, String username) {
         Collection<CallSession> sessions = userSessionMap.get(username);
+        if (sessions == null) {
+            return null;
+        }
         for (CallSession session : sessions) {
             if (channel.equals(session.getChannel())) {
-                destroyPhoneSession(session.getId());
-                return session;
+                return destroyPhoneSession(session.getId());
             }
         }
         return null;
