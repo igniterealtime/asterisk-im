@@ -118,7 +118,7 @@
         <delete dir="${target.dir}/web/images"/>
     </target>
 
-     <target name="dbscript" depends="compile">
+     <target name="dbscript" depends="compile" if="database">
         <java classname="org.jivesoftware.phone.database.HibernateUtil" >
             <arg line="${database} asterisk-im-${database}.sql"/>
             <classpath>
