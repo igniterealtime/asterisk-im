@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 public class HibernateDAOTest extends TestCase {
 
     static {
-        JiveGlobals.setConfigName("jive-messenger.xml");
+        JiveGlobals.setConfigName("wildfire.xml");
         JiveGlobals.getPropertyNames(); // just called to intialize jive globals
         ThreadPool.init();
 

@@ -12,8 +12,8 @@
     <property name="lib.dir" value="${basedir}/build/lib"/>
     <property name="work.src.dir" value="${basedir}/src/work"/>
     <property name="web.src.dir" value="${basedir}/src/web"/>
-    <property name="jsp.package" value="org.jivesoftware.messenger.plugin.phone"/>
-    <property name="messenger.dir" value="${basedir}/../../messenger"/>
+    <property name="jsp.package" value="org.jivesoftware.wildfire.plugin.phone"/>
+    <property name="wildfire.dir" value="${basedir}/../../wildfire"/>
     <property name="jar.file" value="${basedir}/asterisk-im.jar"/>
 
     <path id="lib.path">
@@ -21,10 +21,10 @@
         <fileset dir="${lib.dir}">
             <include name="**/*.jar"/>
         </fileset>
-         <fileset dir="${messenger.dir}/build/lib">
+         <fileset dir="${wildfire.dir}/build/lib">
             <include name="**/*.jar"/>
         </fileset>
-        <pathelement path="${messenger.dir}/target/classes"/>
+        <pathelement path="${wildfire.dir}/target/classes"/>
     </path>
 
 
@@ -47,8 +47,8 @@
                 <contains string="${ant.java.version}" substring="1.5"/>
             </not>
         </condition>
-        <fail if="ant.not.ok" message="Must use Ant 1.6.x to build Jive Messenger"/>
-        <fail if="java.not.ok" message="Must use JDK 1.5.x to build Jive Messenger"/>
+        <fail if="ant.not.ok" message="Must use Ant 1.6.x to build Wildfire"/>
+        <fail if="java.not.ok" message="Must use JDK 1.5.x to build Wildfire"/>
     </target>
 
     <target name="jspc" depends="init" >
@@ -89,6 +89,11 @@
     </target>
 
     <target name="jar" depends="clean,compile">
+        <mkdir dir="${target.dir}"/>
+        <copy todir="${target.dir}">
+            <fileset dir="${basedir}" includes="*.*" excludes="*.jar"/>
+        </copy>
+
         <mkdir dir="${target.dir}/lib"/>
         <copy todir="${target.dir}/lib"	>
             <fileset dir="${lib.dir}"/>
@@ -105,7 +110,7 @@
     </target>
 
     <target name="deploy" depends="jar">
-        <copy file="${jar.file}" todir="${messenger.dir}/target/plugins"/>
+        <copy file="${jar.file}" todir="${wildfire.dir}/target/plugins"/>
     </target>
 
 

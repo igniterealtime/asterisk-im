@@ -5,11 +5,11 @@
  */
 package org.jivesoftware.phone;
 
-import org.jivesoftware.messenger.Session;
-import org.jivesoftware.messenger.XMPPServer;
-import org.jivesoftware.messenger.event.SessionEventListener;
-import org.jivesoftware.messenger.interceptor.PacketInterceptor;
-import org.jivesoftware.messenger.interceptor.PacketRejectedException;
+import org.jivesoftware.wildfire.Session;
+import org.jivesoftware.wildfire.XMPPServer;
+import org.jivesoftware.wildfire.event.SessionEventListener;
+import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
+import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
 import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.phone.asterisk.AsteriskPlugin;
