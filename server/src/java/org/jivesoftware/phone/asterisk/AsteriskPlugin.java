@@ -10,10 +10,10 @@
 package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.ManagerConnection;
-import org.jivesoftware.messenger.container.Plugin;
-import org.jivesoftware.messenger.container.PluginManager;
-import org.jivesoftware.messenger.event.SessionEventDispatcher;
-import org.jivesoftware.messenger.interceptor.InterceptorManager;
+import org.jivesoftware.wildfire.container.Plugin;
+import org.jivesoftware.wildfire.container.PluginManager;
+import org.jivesoftware.wildfire.event.SessionEventDispatcher;
+import org.jivesoftware.wildfire.interceptor.InterceptorManager;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import org.jivesoftware.phone.OnPhonePacketInterceptor;
@@ -36,7 +36,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Plugin for integrating Asterisk with messenger. This plugin will create a new connection pull
+ * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
  * to the asterisk manager server and assign a handler to handle events received from the server.
  * <p/>
  * This plugin exepects the following jive properties to be set up.

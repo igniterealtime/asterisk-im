@@ -270,7 +270,7 @@ public class HibernateUtil {
 
         DbConnectionManager.DatabaseType databaseType = DbConnectionManager.getDatabaseType();
 
-        Log.debug("Asterisk-IM: Messenger is using database type : "+databaseType);
+        Log.debug("Asterisk-IM: Wildfire is using database type : "+databaseType);
 
         String dialect = getDialect(databaseType).getName();
 

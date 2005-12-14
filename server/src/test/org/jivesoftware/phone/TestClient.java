@@ -42,7 +42,7 @@ public class TestClient extends TestCase {
 
     public void testDial() throws Exception {
 
-        // look at smack and messenger debugger to figure out why this isn't working
+        // look at smack and wildfire debugger to figure out why this isn't working
 
         IQ iq = new IQ() {
             public String getChildElementXML() {
