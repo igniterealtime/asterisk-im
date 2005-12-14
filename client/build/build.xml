@@ -77,15 +77,15 @@
         <javadoc
             packagenames="org.jivesoftware.*, org.xmpp.*"
             destdir="${javadoc.dest.dir}"
-            windowtitle="Jive Messenger ${version} Javadoc"
+            windowtitle="Wildfire ${version} Javadoc"
             overview="${src.dir}/overview.html"
             failonerror="yes"
             >
             <sourcepath>
                 <path location="${src.dir}"/>
             </sourcepath>
-            <doctitle><![CDATA[<font face="arial,helvetica,sans-serif">Jive Messenger ${version} Javadoc</font>]]></doctitle>
-            <header><![CDATA[<b>Jive Messenger ${version} Javadoc</b>]]></header>
+            <doctitle><![CDATA[<font face="arial,helvetica,sans-serif">Wildfire ${version} Javadoc</font>]]></doctitle>
+            <header><![CDATA[<b>Wildfire ${version} Javadoc</b>]]></header>
             <bottom><![CDATA[<i>Copyright &copy; 1999-2004 Jive Software.</i>]]></bottom>
             <classpath>
                 <path refid="lib.path"/>
