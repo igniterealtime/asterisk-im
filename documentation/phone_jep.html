@@ -84,7 +84,7 @@ for each integration.</p>
 
 <h2>Presence</h2>
 
-<p>A user's presence is updated when on a phone call. The Jive Messenger/Asterisk
+<p>A user's presence is updated when on a phone call. The Wildfire/Asterisk
 implementation will update the user's presence automatically by adding the following
 packet extension to the user's presence:</p>
 
@@ -92,12 +92,12 @@ packet extension to the user's presence:</p>
 
 <p>Adding a packet extension to presence is not the generally accepted method
 for handling extended presence information in XMPP. Instead, pubsub is
-used such as with JEP-0108: User Activity. However, Jive Messenger
+used such as with JEP-0108: User Activity. However, Wildfire
 does not currently support pubsub. When this protocol is turned into an
 official JEP, pubsub will likely be required so that we can publish
 this extended presence information in the "correct" way.</p>
 
-<p>Jive Messenger can also be configured to change the user's availability
+<p>Wildfire can also be configured to change the user's availability
 to "Away -- on the phone" when the user is on a call (in addition to the
 packet extension). This is useful when interacting with clients
 that don't understand the extended presence information or when using
