@@ -6,7 +6,7 @@
     <description>Integration for Asterisk and Wildfire.</description>
     <author>Andrew Wright</author>
     <version>1.0</version>
-    <minServerVersion>2.3.0</minServerVersion>
+    <minServerVersion>2.4.0</minServerVersion>
 
     <adminconsole>
         <tab id="tab-phone" name="Asterisk-IM" url="phone-settings.jsp"
