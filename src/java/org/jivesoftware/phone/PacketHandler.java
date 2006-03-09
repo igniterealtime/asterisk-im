@@ -103,7 +103,7 @@ public class PacketHandler implements PhoneConstants {
             Log.debug(e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
-            PacketError error = new PacketError(PacketError.Condition.unexpected_condition,
+            PacketError error = new PacketError(PacketError.Condition.undefined_condition,
                     PacketError.Type.cancel,
                     e.getMessage());
             reply.setError(error);
@@ -158,7 +158,7 @@ public class PacketHandler implements PhoneConstants {
             Log.debug(e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
-            PacketError error = new PacketError(PacketError.Condition.unexpected_condition,
+            PacketError error = new PacketError(PacketError.Condition.undefined_condition,
                     PacketError.Type.cancel,
                     e.getMessage());
             reply.setError(error);
