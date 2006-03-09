@@ -1,4 +1,4 @@
-asterisk-java.jar - .2 rc1
+asterisk-java.jar - .2
 ehcache.jar - 1.1
 cglib.jar - 2.1
 ant-antlr.jar - 1.6.3
