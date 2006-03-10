@@ -184,7 +184,7 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
                 client.addEventListener(this);
             }
             catch (XMPPException e1) {
-                log.log(Level.SEVERE, e1.getMessage(), e);
+                log.log(Level.SEVERE, e1.getMessage(), e1);
                 throw new RuntimeException(e1);
             }
 
