@@ -1,16 +1,16 @@
 <%@ page import="net.sf.asterisk.manager.ManagerConnection,
-                 org.jivesoftware.admin.AdminPageBean,
-                 org.jivesoftware.wildfire.XMPPServer,
-                 org.jivesoftware.wildfire.container.PluginManager,
                  org.jivesoftware.phone.asterisk.AsteriskPlugin,
                  org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory,
                  org.jivesoftware.phone.database.HibernateUtil,
                  org.jivesoftware.util.JiveConstants,
                  org.jivesoftware.util.JiveGlobals,
-                 org.jivesoftware.util.Log" %>
-<%@ page import="org.jivesoftware.util.ParamUtils"%>
+                 org.jivesoftware.util.Log,
+                 org.jivesoftware.util.ParamUtils,
+                 org.jivesoftware.wildfire.XMPPServer,
+                 org.jivesoftware.wildfire.container.PluginManager" %>
 <%@ page import="javax.servlet.http.HttpServletRequest"%>
 <%@ page import="java.util.HashMap"%>
+<%@ page import="net.sf.asterisk.manager.TimeoutException"%>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
@@ -151,7 +151,12 @@
         }
         finally {
             if (conn != null) {
-                conn.logoff();
+                try {
+                    conn.logoff();
+                }
+                catch (TimeoutException e) {
+                    Log.error(e);
+                }
             }
         }
     }
@@ -163,6 +168,10 @@
 <head>
     <title>General Settings</title>
     <meta name="pageID" content="item-phone-settings"/>
+
+  <style type="text/css">
+    #enabledtf {}
+  </style>
 </head>
 <body>
 
@@ -182,7 +191,7 @@
         <table cellpadding="0" cellspacing="0" border="0">
             <tbody>
                 <tr>
-                    <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
+                    <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0" /></td>
                     <td class="jive-icon-label">The Asterisk plugin was not able to succesfully initialize the database.
                         Please see the documentation on initializing the database manually.</td>
                 </tr>
@@ -264,13 +273,13 @@
 <table cellpadding="3" cellspacing="0" border="0" width="100%">
 <tbody>
     <tr>
-        <td witdh="1%">
+        <td width="1%">
             <nobr><label for="enabledtf">* Enabled:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                    <td><input type="radio" name="enabled" value="true" <%=enabled ? "checked" : ""%> /></td>
+                    <td><input type="radio" name="enabled" id="enabledtf" value="true" <%=enabled ? "checked" : ""%> /></td>
                     <td style="padding-right : 10px;">Yes</td>
                     <td><input type="radio" name="enabled" value="false" <%=!enabled ? "checked" : ""%> /></td>
                     <td>No</td>
@@ -282,9 +291,8 @@
         <td width="1%">
             <nobr><label for="servertf">* Server:</label></nobr>
         </td>
-        <td witdh="99%">
-            <input type="text" name="server" size="30" maxlength="100" value="<%=server != null ? server : ""%>"
-                   id="servertf"/>
+        <td width="99%">
+            <input type="text" name="server" id="servertf" size="30" maxlength="100" value="<%=server != null ? server : ""%>"/>
             <% if (errors.containsKey("server")) { %>
             <br/>
             <span class="jive-error-text"><%=errors.get("server")%></span>
@@ -295,9 +303,9 @@
         <td width="1%">
             <nobr><label for="porttf">Port:</label></nobr>
         </td>
-        <td witdh="99%">
-            <input type="text" name="port" size="30" maxlength="100"
-                   value="<%= port != -1 ? String.valueOf(port) : "" %>" id="porttf"/>
+        <td width="99%">
+            <input type="text" name="port" id="porttf" size="30" maxlength="100"
+                   value="<%= port != -1 ? String.valueOf(port) : "" %>" />
             <% if (errors.containsKey("port")) { %>
             <br/>
             <span class="jive-error-text"><%=errors.get("port")%></span>
@@ -308,7 +316,7 @@
         <td width="1%">
             <nobr><label for="usernametf">* Username:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <input type="text" name="username" size="30" maxlength="100" value="<%=username != null ? username : ""%>"
                    id="usernametf"/>
             <% if (errors.containsKey("username")) { %>
@@ -321,7 +329,7 @@
         <td width="1%">
             <nobr>* <label for="passwordtf">Password:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <input type="password" name="password" size="30" maxlength="100" value="<%=password%>" id="passwordtf"/>
             <% if (errors.containsKey("password")) { %>
             <br/>
@@ -333,7 +341,7 @@
         <td width="1%">
             <nobr><label for="poolSizetf">Pool Size:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <input type="text" name="poolSize" size="30" maxlength="100"
                    value="<%= poolSize != -1 ? String.valueOf(poolSize) : "" %>" id="poolSizetf"/>
             <% if (errors.containsKey("poolSize")) { %>
@@ -346,7 +354,7 @@
         <td width="1%">
             <nobr><label for="contexttf">Asterisk Context:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <input type="text" name="context" size="30" maxlength="100" value="<%= context != null ? context : "" %>"
                    id="contexttf"/>
             <% if (errors.containsKey("context")) { %>
@@ -359,7 +367,7 @@
         <td width="1%">
             <nobr><label for="callerIDtf">Default Caller ID:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <input type="text" name="callerID" size="30" maxlength="100" value="<%= callerID != null ? callerID : "" %>"
                    id="callerIDtf"/>
             <% if (errors.containsKey("callerID")) { %>
@@ -372,7 +380,7 @@
         <td width="1%">
             <nobr><label for="dialVariablestf">Dial Command Variables:</label></nobr>
         </td>
-        <td witdh="99%">
+        <td width="99%">
             <input type="text" name="dialVariables" size="30" maxlength="100" value="<%= dialVariables != null ? dialVariables : "" %>"
                    id="dialVariablestf"/>
             <% if (errors.containsKey("dialVariables")) { %>
@@ -408,10 +416,7 @@
         if (value == null) {
             return false;
         }
-        if ("".equals(value)) {
-            return false;
-        }
-        return true;
+        return !"".equals(value);
     }
 
 %>
