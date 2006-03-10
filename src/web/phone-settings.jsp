@@ -83,20 +83,34 @@
 
             JiveGlobals.setProperty(AsteriskPlugin.Properties.DIAL_VARIABLES, dialVariables);
 
-            try {
                 // if we were not enabled before and we are now restart the plugin
-                PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
-                AsteriskPlugin plugin = (AsteriskPlugin) pluginManager.getPlugin(AsteriskPlugin.NAME);
+            PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
+            AsteriskPlugin plugin = (AsteriskPlugin) pluginManager.getPlugin(AsteriskPlugin.NAME);
 
+            if (plugin != null) {
                 plugin.destroy();
-                Thread.sleep(1 * JiveConstants.SECOND);
+                try {
+                    Thread.sleep(1 * JiveConstants.SECOND);
+                }
+                catch (InterruptedException e) {
+                    Log.error(e);
+                }
 
                 plugin.init();
-                Thread.sleep(1 * JiveConstants.SECOND);
-
-            } catch (Exception e) {
-                Log.error(e);
+                try {
+                    Thread.sleep(1 * JiveConstants.SECOND);
+                }
+                catch (InterruptedException e) {
+                   Log.error(e);
+                }
             }
+            else {
+                // Complain about not being able to get the plugin
+                String msg = "Unable to acquire asterisk plugin instance!";
+                Log.error(msg);
+                throw new IllegalStateException(msg);
+            }
+
 
             response.sendRedirect("phone-settings.jsp?success=true");
             return;
