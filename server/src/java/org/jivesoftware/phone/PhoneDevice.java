@@ -17,11 +17,12 @@ import org.jivesoftware.database.JiveID;
 @JiveID(101)
 public class PhoneDevice {
 
-    private Long id;
+    private long id;
+    private long phoneUserID;
     private String callerId;
     private String device;
-    private Boolean primary = false;
-    private Boolean monitored = false;
+    private boolean primary = false;
+    private boolean monitored = false;
 
     private String extension;
 
@@ -32,12 +33,20 @@ public class PhoneDevice {
         this.device = device;
     }
 
-    public Long getId() {
+    public long getID() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setID(long id) {
         this.id = id;
+    }
+
+    public long getPhoneUserID() {
+        return phoneUserID;
+    }
+
+    public void setPhoneUserID(long phoneUserID) {
+        this.phoneUserID = phoneUserID;
     }
 
     public String getCallerId() {
@@ -56,15 +65,12 @@ public class PhoneDevice {
         this.device = device;
     }
 
-    public Boolean isPrimary() {
+    public boolean isPrimary() {
         return primary;
     }
 
-    public void setPrimary(Boolean primary) {
-        // We don't really want null values
-        if(primary != null) {
-            this.primary = primary;
-        }
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 
     /**
@@ -72,7 +78,7 @@ public class PhoneDevice {
      *
      * @return true if this device should be monitored
      */
-    public Boolean isMonitored() {
+    public boolean isMonitored() {
         return monitored;
     }
 
@@ -81,11 +87,8 @@ public class PhoneDevice {
      *
      * @param monitored true if this device should be monitored
      */
-    public void setMonitored(Boolean monitored) {
-        // We don't really want null values
-        if(monitored != null) {
-            this.monitored = monitored;
-        }
+    public void setMonitored(boolean monitored) {
+        this.monitored = monitored;
     }
 
     public String getExtension() {
@@ -97,28 +100,46 @@ public class PhoneDevice {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         final PhoneDevice that = (PhoneDevice) o;
 
-        if (callerId != null ? !callerId.equals(that.callerId) : that.callerId != null) return false;
-        if (device != null ? !device.equals(that.device) : that.device != null) return false;
-        if (extension != null ? !extension.equals(that.extension) : that.extension != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (monitored != null ? !monitored.equals(that.monitored) : that.monitored != null) return false;
-        if (primary != null ? !primary.equals(that.primary) : that.primary != null) return false;
+        if (id != that.id) {
+            return false;
+        }
+        if (monitored != that.monitored) {
+            return false;
+        }
+        if (phoneUserID != that.phoneUserID) {
+            return false;
+        }
+        if (primary != that.primary) {
+            return false;
+        }
+        if (callerId != null ? !callerId.equals(that.callerId) : that.callerId != null) {
+            return false;
+        }
+        if (device != null ? !device.equals(that.device) : that.device != null) {
+            return false;
+        }
 
-        return true;
+        return !(extension != null ? !extension.equals(that.extension) : that.extension != null);
+
     }
 
     public int hashCode() {
         int result;
-        result = (id != null ? id.hashCode() : 0);
+        result = (int) (id ^ (id >>> 32));
+        result = 29 * result + (int) (phoneUserID ^ (phoneUserID >>> 32));
         result = 29 * result + (callerId != null ? callerId.hashCode() : 0);
         result = 29 * result + (device != null ? device.hashCode() : 0);
-        result = 29 * result + (primary != null ? primary.hashCode() : 0);
-        result = 29 * result + (monitored != null ? monitored.hashCode() : 0);
+        result = 29 * result + (primary ? 1 : 0);
+        result = 29 * result + (monitored ? 1 : 0);
         result = 29 * result + (extension != null ? extension.hashCode() : 0);
         return result;
     }
@@ -128,6 +149,7 @@ public class PhoneDevice {
         final StringBuilder sb = new StringBuilder();
         sb.append("PhoneDevice");
         sb.append("{id=").append(id);
+        sb.append(", phoneUserID=").append(phoneUserID);
         sb.append(", callerId='").append(callerId).append('\'');
         sb.append(", device='").append(device).append('\'');
         sb.append(", primary=").append(primary);

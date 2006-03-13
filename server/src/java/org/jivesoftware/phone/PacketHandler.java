@@ -70,7 +70,7 @@ public class PacketHandler implements PhoneConstants {
 
         Element phoneElement = iq.getChildElement();
 
-        PhoneManager phoneManager = null;
+        PhoneManager phoneManager;
         try {
             phoneManager = PhoneManagerFactory.getPhoneManager();
 
@@ -109,16 +109,13 @@ public class PacketHandler implements PhoneConstants {
             reply.setError(error);
             send(reply);
         }
-        finally {
-            PhoneManagerFactory.close(phoneManager);
-        }
     }
 
     public void handleForward(IQ iq) {
 
         Element phoneElement = iq.getChildElement();
 
-        PhoneManager phoneManager = null;
+        PhoneManager phoneManager;
         try {
             phoneManager = PhoneManagerFactory.getPhoneManager();
 
@@ -163,9 +160,6 @@ public class PacketHandler implements PhoneConstants {
                     e.getMessage());
             reply.setError(error);
             send(reply);
-        }
-        finally {
-            PhoneManagerFactory.close(phoneManager);
         }
 
     }
@@ -223,12 +217,12 @@ public class PacketHandler implements PhoneConstants {
             } else {
 
                 // This is a query against a specific user
-                PhoneManager phoneManager = null;
+                PhoneManager phoneManager;
                 try {
 
                     phoneManager = PhoneManagerFactory.getPhoneManager();
 
-                    PhoneUser user = phoneManager.getByUsername(node);
+                    PhoneUser user = phoneManager.getPhoneUserByUsername(node);
 
                     // if there is a user they have support
                     if(user != null) {
@@ -241,9 +235,6 @@ public class PacketHandler implements PhoneConstants {
                 }
                 catch (Exception e) {
                     log.log(Level.SEVERE, e.getMessage(), e);
-                }
-                finally {
-                    PhoneManagerFactory.close(phoneManager);
                 }
 
             }

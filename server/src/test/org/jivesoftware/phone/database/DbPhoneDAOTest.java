@@ -1,5 +1,5 @@
 /**
- * $RCSfile: HibernateDAOTest.java,v $
+ * $RCSfile: DbPhoneDAOTest.java,v $
  * $Revision: 1.8 $
  * $Date: 2005/06/24 19:32:50 $
  *
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 /**
  * @author Andrew Wright
  */
-public class HibernateDAOTest extends TestCase {
+public class DbPhoneDAOTest extends TestCase {
 
     static {
         JiveGlobals.setConfigName("wildfire.xml");
@@ -42,30 +42,28 @@ public class HibernateDAOTest extends TestCase {
         h.setLevel(Level.ALL);
         log.addHandler(h);
 
-        PhoneDAO phoneDAO = new HibernatePhoneDAO();
+        PhoneDAO phoneDAO = new DbPhoneDAO();
 
 
         PhoneUser phoneJID = new PhoneUser("andrew");
         PhoneDevice device = new PhoneDevice("SIP/1231");
         device.setPrimary(true);
-        phoneJID.addDevice(device);
-        phoneDAO.save(phoneJID);
 
-        assertTrue(phoneJID.getId() > 0);
+        assertTrue(phoneJID.getID() > 0);
 
-        PhoneUser phoneJID2 = phoneDAO.getByID(phoneJID.getId());
+        PhoneUser phoneJID2 = phoneDAO.getPhoneUserByID(phoneJID.getID());
         assertNotNull(phoneJID2);
         assertEquals(phoneJID, phoneJID2);
 
-        PhoneDevice primary = phoneJID.getPrimaryDevice();
+        PhoneDevice primary = phoneDAO.getPrimaryDevice(phoneJID.getID());
         assertNotNull(primary);
 
-        phoneJID2 = phoneDAO.getByDevice(device.getDevice());
+        phoneJID2 = phoneDAO.getPhoneUserByDevice(device.getDevice());
         assertNotNull(phoneJID);
         assertEquals(phoneJID, phoneJID2);
 
 
-        Collection<PhoneUser> phones = phoneDAO.getALL();
+        Collection<PhoneUser> phones = phoneDAO.getPhoneUsers();
         for (PhoneUser pjid : phones) {
             assertNotNull(pjid);
         }
@@ -77,7 +75,7 @@ public class HibernateDAOTest extends TestCase {
 
         phoneDAO.remove(phoneJID);
 
-        phoneJID = phoneDAO.getByID(phoneJID.getId());
+        phoneJID = phoneDAO.getPhoneUserByID(phoneJID.getID());
 
         assertNull(phoneJID);
 
@@ -88,9 +86,9 @@ public class HibernateDAOTest extends TestCase {
         // assumes the device is in the database
 
 
-        PhoneDAO phoneDAO = new HibernatePhoneDAO();
+        PhoneDAO phoneDAO = new DbPhoneDAO();
 
-        PhoneUser phoneJID = phoneDAO.getByDevice("SIP/6131");
+        PhoneUser phoneJID = phoneDAO.getPhoneUserByDevice("SIP/6131");
 
         assertNotNull(phoneJID);
 

@@ -23,9 +23,7 @@ import org.jivesoftware.util.JiveConstants;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.xmpp.packet.JID;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,13 +49,13 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     public void dial(String username, JID target) throws PhoneException {
 
-        PhoneUser targetUser = getByUsername(target.getNode());
+        PhoneUser targetUser = getPhoneUserByUsername(target.getNode());
 
         if (targetUser == null) {
             throw new PhoneException("User is not configured on this server");
         }
 
-        String extension = targetUser.getPrimaryDevice().getExtension();
+        String extension = getPrimaryDevice(targetUser.getID()).getExtension();
 
         if (extension == null) {
             throw new PhoneException("User has not identified a number with himself");
@@ -73,19 +71,21 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     public void forward(String callSessionID, String username, JID target) throws PhoneException {
 
-        PhoneUser targetUser = getByUsername(target.getNode());
+        PhoneUser targetUser = getPhoneUserByUsername(target.getNode());
 
         if (targetUser == null) {
             throw new PhoneException("User is not configured on this server");
         }
 
-        String extension = targetUser.getPrimaryDevice().getExtension();
+        PhoneDevice primaryDevice = getPrimaryDevice(targetUser.getID());
+
+        String extension = primaryDevice.getExtension();
 
         if (extension == null) {
             throw new PhoneException("User has not identified a number with himself");
         }
 
-        forward(callSessionID, username, targetUser.getPrimaryDevice().getExtension(), target);
+        forward(callSessionID, username, extension, target);
 
     }
 
@@ -226,14 +226,14 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
     public void dial(String username, String extension, JID jid) throws PhoneException {
 
         //acquire the jidUser object
-        PhoneUser user = getByUsername(username);
+        PhoneUser user = getPhoneUserByUsername(username);
 
         ManagerConnection con = null;
 
         try {
             con = getManagerConnectionPool().getConnection();
 
-            PhoneDevice primaryDevice = user.getPrimaryDevice();
+            PhoneDevice primaryDevice = getPrimaryDevice(user.getID());
 
             OriginateAction action = new OriginateAction();
             action.setChannel(primaryDevice.getDevice());
@@ -255,12 +255,15 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
                 String[] varArray = variables.split(",");
 
-                StringBuffer buff = new StringBuffer();
+                Map<String,String> varMap = new HashMap<String,String>();
                 for (String aVarArray : varArray) {
-                    buff.append(aVarArray);
+                    String[] s = aVarArray.split("=");
+                    String key = s[0].trim();
+                    String value = s[1].trim();
+                    varMap.put(key, value);
                 }
 
-                action.setVariable(buff.toString());
+                action.setVariables(varMap);
             }
 
             con.sendAction(action, 5 * JiveConstants.SECOND);

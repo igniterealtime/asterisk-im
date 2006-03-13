@@ -1,5 +1,5 @@
 /**
- * $RCSfile: PhoneJIDTest.java,v $
+ * $RCSfile: PhoneUserTest.java,v $
  * $Revision: 1.2 $
  * $Date: 2005/06/24 19:32:50 $
  *
@@ -15,7 +15,7 @@ import org.jivesoftware.database.JiveID;
 /**
  * @author Andrew Wright
  */
-public class PhoneJIDTest extends TestCase {
+public class PhoneUserTest extends TestCase {
 
 
     public void testGetJiveID() {

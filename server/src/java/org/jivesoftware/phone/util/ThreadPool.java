@@ -10,11 +10,7 @@
 package org.jivesoftware.phone.util;
 
 
-import org.jivesoftware.phone.database.HibernateUtil;
-
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 

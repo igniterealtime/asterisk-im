@@ -1,16 +1,15 @@
-<%@ page import="org.jivesoftware.admin.AdminPageBean,
-                 org.jivesoftware.wildfire.XMPPServer,
-                 org.jivesoftware.wildfire.user.UserManager,
-                 org.jivesoftware.wildfire.user.UserNotFoundException,
+<%@ page import="org.jivesoftware.phone.*,
                  org.jivesoftware.phone.asterisk.AsteriskPlugin,
                  org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.LocaleUtils,
+                 org.jivesoftware.util.Log,
                  org.jivesoftware.util.ParamUtils,
+                 org.jivesoftware.wildfire.XMPPServer,
+                 org.jivesoftware.wildfire.user.UserManager,
+                 org.jivesoftware.wildfire.user.UserNotFoundException,
                  java.util.Collection,
-                 java.util.HashMap,
-                 java.util.List" %>
-<%@ page import="org.jivesoftware.phone.*"%>
-<%@ page import="org.jivesoftware.util.Log"%>
+                 java.util.HashMap" %>
+<%@ page import="java.util.List"%>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
@@ -56,27 +55,23 @@
 
     HashMap<String, String> errors = new HashMap<String, String>();
 
-    PhoneManager phoneManager = null;
+    PhoneManager phoneManager;
     try {
         phoneManager = PhoneManagerFactory.getPhoneManager();
 
         PhoneUser phoneUser = null;
+        List<PhoneDevice> devices = null;
         PhoneDevice phoneDevice = null;
 
         // find the phoneUser if one was passed in
         if (userID > 0) {
-            phoneUser = phoneManager.getByID(userID);
+            phoneUser = phoneManager.getPhoneUserByID(userID);
 
             // find the phone device if one was passed in
             if (phoneUser != null && deviceID > 0) {
-                //find the correct device entry
-                for (PhoneDevice currentDevice : phoneUser.getDevices()) {
-                    if (currentDevice.getId() == deviceID) {
-                        phoneDevice = currentDevice;
-                        break;
-                    }
-                }
+                devices = phoneManager.getPhoneDevicesByUserID(userID);
 
+                phoneDevice = phoneManager.getPhoneDeviceByID(deviceID);
             }
 
 
@@ -93,11 +88,9 @@
             if (deviceID > -1) {
                 try {
 
-                    if (phoneUser.getDevices().size() > 1) {
+                    if (devices.size() > 1) {
+                        phoneManager.remove(phoneDevice);
 
-                        phoneUser.getDevices().remove(phoneDevice);
-
-                        phoneManager.save(phoneUser);
 
                     } else {
                         // only one remove the whole mapping
@@ -137,7 +130,7 @@
             // if we are adding a new device make sure this name is unique
             else if (phoneDevice == null) {
 
-                if (phoneManager.getByDevice(device) != null) {
+                if (phoneManager.getPhoneUserByDevice(device) != null) {
                     Log.debug("Phone must be unique!");
                     errors.put("device", "Phone must be unique");
                 }
@@ -146,7 +139,7 @@
             // Make sure it is unique if we are updating, ignore our own username
             else if (phoneDevice != null) {
 
-                if (phoneManager.getByDevice(device) != null && !phoneDevice.getDevice().equals(device)) {
+                if (phoneManager.getPhoneUserByDevice(device) != null && !phoneDevice.getDevice().equals(device)) {
                     Log.debug("Phone must be unique!");
                     errors.put("device", "Phone must be unique");
                 }
@@ -161,7 +154,7 @@
 
             // See if the username already, exists
             if (phoneUser == null) {
-                phoneUser = phoneManager.getByUsername(username);
+                phoneUser = phoneManager.getPhoneUserByUsername(username);
             }
 
             if (errors.size() == 0) {
@@ -177,7 +170,6 @@
                     if (phoneDevice == null) {
                         // This is a new device
                         phoneDevice = new PhoneDevice(device);
-                        phoneUser.addDevice(phoneDevice);
                     }
 
                     if ("".equals(callerID)) {
@@ -187,16 +179,16 @@
                     phoneDevice.setExtension(extension);
 
                     // Make all the other users not the primary
-                    if (isPrimary && phoneUser.getDevices() != null) {
+                    if (isPrimary && devices != null) {
 
-                        for (PhoneDevice currentDevice : phoneUser.getDevices()) {
+                        for (PhoneDevice currentDevice : devices) {
                             currentDevice.setPrimary(false);
                         }
 
                         phoneDevice.setPrimary(true);
                     }
                     // If there are no others,set the default
-                    else if (!containsPrimary(phoneUser.getDevices(), phoneDevice)) {
+                    else if (!containsPrimary(devices, phoneDevice)) {
                         phoneDevice.setPrimary(true);
                     }
                     // Other wise just set the value
@@ -204,7 +196,17 @@
                         phoneDevice.setPrimary(isPrimary);
                     }
 
-                    phoneManager.save(phoneUser);
+                    if (phoneUser.getID() < 1) {
+                        phoneManager.insert(phoneUser);
+                    }
+
+                    phoneDevice.setPhoneUserID(phoneUser.getID());
+                    if (phoneDevice.getID() < 1) {
+                        phoneManager.insert(phoneDevice);
+                    }
+                    else {
+                        phoneManager.update(phoneDevice);
+                    }
 
                 }
                 catch (Exception e) {
@@ -227,7 +229,7 @@
         }
 
         // Get the list of users for the correct page
-        List<PhoneUser> allusers = phoneManager.getAll();
+        List<PhoneUser> allusers = phoneManager.getAllPhoneUsers();
         int userCount = allusers.size();
         int endpoint = start + range;
 
@@ -418,9 +420,10 @@
 
 
             <%
-                int deviceListSize = currentUser.getDevices().size();
+                List<PhoneDevice> userDevices = phoneManager.getPhoneDevicesByUserID(currentUser.getID());
+                int deviceListSize = userDevices.size();
                 int j = 0;
-                for (PhoneDevice currentDevice : currentUser.getDevices()) {
+                for (PhoneDevice currentDevice : userDevices) {
                     j++;
                     isLast = (j == deviceListSize); // we are the last entry
             %>
@@ -435,12 +438,12 @@
                 <td><%=currentDevice.getExtension()%></td>
                 <td><%=currentDevice.getCallerId() != null ? currentDevice.getCallerId() : "&nbsp;"%></td>
                 <td align="center">
-                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getId()%>&userID=<%=currentUser.getId()%>">
+                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>">
                         <img src="images/edit-16x16.gif" width="16" height="16" alt="Edit" border="0">
                     </a>
                 </td>
                 <td align="center" style="border-right:1px #ccc solid;">
-                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getId()%>&userID=<%=currentUser.getId()%>">
+                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>">
                         <img src="images/delete-16x16.gif" width="16" height="16" alt="Delete" border="0">
                     </a>
                 </td>
@@ -628,11 +631,7 @@
     catch (Exception e) {
         Log.error(e);
     }
-    finally {
-        if (phoneManager != null) {
-            phoneManager.close();
-        }
-    }
+
 %>
 
 </body>
@@ -647,7 +646,7 @@
             for (PhoneDevice current : devices) {
 
                 if (current.isPrimary() &&
-                        current.getId() != ignored.getId()) {
+                        current.getID() != ignored.getID()) {
                     return true;
                 }
 

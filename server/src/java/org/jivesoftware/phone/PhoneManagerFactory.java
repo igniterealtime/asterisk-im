@@ -9,11 +9,8 @@
  */
 package org.jivesoftware.phone;
 
-import org.jivesoftware.phone.database.HibernatePhoneDAO;
 import org.jivesoftware.phone.asterisk.AsteriskPhoneManager;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.jivesoftware.phone.database.DbPhoneDAO;
 
 
 /**
@@ -22,8 +19,6 @@ import java.util.logging.Level;
  * @author Andrew Wright
  */
 public final class PhoneManagerFactory {
-
-    private static final Logger log = Logger.getLogger(PhoneManagerFactory.class.getName());
 
     private PhoneManagerFactory() {
     }
@@ -34,29 +29,8 @@ public final class PhoneManagerFactory {
      *
      * @return new phone manager instance
      */
-    public static final PhoneManager getPhoneManager() {
-        return new AsteriskPhoneManager(new HibernatePhoneDAO());
+    public static PhoneManager getPhoneManager() {
+        return new AsteriskPhoneManager(new DbPhoneDAO());
     }
-
-    /**
-     * Utility method for closing managers that checks to see if the manager is null first
-     *
-     * @param phoneManager phone manager to close
-     */
-    public static final void close(PhoneManager phoneManager) {
-        try {
-            if(phoneManager != null) {
-
-                phoneManager.close();
-
-            }
-        }
-        catch (RuntimeException e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
-            throw e;
-        }
-
-    }
-
 
 }
