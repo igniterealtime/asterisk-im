@@ -9,12 +9,10 @@
  */
 package org.jivesoftware.phone;
 
-import org.jivesoftware.phone.util.PhoneConstants;
 import junit.framework.TestCase;
+import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Message;
-import org.xmpp.packet.Packet;
 
 /**
  * @author Andrew Wright

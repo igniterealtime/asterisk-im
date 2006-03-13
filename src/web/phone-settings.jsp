@@ -1,7 +1,6 @@
 <%@ page import="net.sf.asterisk.manager.ManagerConnection,
                  org.jivesoftware.phone.asterisk.AsteriskPlugin,
                  org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory,
-                 org.jivesoftware.phone.database.HibernateUtil,
                  org.jivesoftware.util.JiveConstants,
                  org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.Log,
@@ -181,27 +180,6 @@
     Use the form below to edit Asterisk integration settings.
     Changing settings will cause the plugin to be reloaded.<br>
 </p>
-
-
-<% if (!HibernateUtil.tablesExist()) { %>
-
-<p>
-
-    <div class="jive-error">
-        <table cellpadding="0" cellspacing="0" border="0">
-            <tbody>
-                <tr>
-                    <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0" /></td>
-                    <td class="jive-icon-label">The Asterisk plugin was not able to succesfully initialize the database.
-                        Please see the documentation on initializing the database manually.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div><br>
-
-</p>
-
-<%  } %>
 
 
 <% if (success) { %>

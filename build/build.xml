@@ -128,17 +128,4 @@
         <property name="database" value="unknown"/>
     </target>
 
-     <target name="dbscript" depends="compile, __assign-unknown__" >
-        <java classname="org.jivesoftware.phone.database.HibernateUtil" >
-            <arg line="${database} asterisk-im-${database}.sql"/>
-            <classpath>
-                <path refid="lib.path"/>
-                <fileset dir="${basedir}/build">
-                    <include name="**/*.jar"/>
-                </fileset>
-                <pathelement path="${classes.dir}"/>
-            </classpath>
-        </java>
-    </target>
-
 </project>

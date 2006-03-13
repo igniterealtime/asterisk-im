@@ -10,20 +10,19 @@
 package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.ManagerConnection;
-import org.jivesoftware.wildfire.container.Plugin;
-import org.jivesoftware.wildfire.container.PluginManager;
-import org.jivesoftware.wildfire.event.SessionEventDispatcher;
-import org.jivesoftware.wildfire.interceptor.InterceptorManager;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import org.jivesoftware.phone.OnPhonePacketInterceptor;
 import org.jivesoftware.phone.PacketHandler;
-import org.jivesoftware.phone.database.HibernateUtil;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.ThreadPool;
 import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
+import org.jivesoftware.wildfire.container.Plugin;
+import org.jivesoftware.wildfire.container.PluginManager;
+import org.jivesoftware.wildfire.event.SessionEventDispatcher;
+import org.jivesoftware.wildfire.interceptor.InterceptorManager;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
@@ -33,7 +32,6 @@ import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
@@ -96,29 +94,6 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         Log.info("Initializing Asterisk-IM Plugin");
 
         try {
-            Log.info("Initializing Hibernate for Asterisk-IM");
-            HibernateUtil.init();
-
-            // Attempts to setup the database if it hasn't been done already
-            Log.info("Checking to see if Asterisk-IM database schema is present");
-            List<Exception> exceptions;
-            if(!HibernateUtil.tablesExist()) {
-                Log.info("Installing Asterisk-IM database schema");
-                exceptions = HibernateUtil.initDB();
-            }
-            else {
-                // Try updating the database
-                Log.info("Ensuring Asterisk-IM schema is up to date");
-                exceptions = HibernateUtil.updateDB();
-            }
-
-            if(exceptions != null && exceptions.size() > 0 ) {
-                Log.warn("Asterisk-IM table contains errors exited with error, database may not behave properly");
-                for (Exception e : exceptions) {
-                    Log.warn("Asterisk-IM table creation --> "+e.getMessage(), e);
-                }
-            }
-
             Log.info("Initializing Asterisk-IM thread Pool");
             ThreadPool.init(); //initialize the thread pols
             initAsteriskManager();
@@ -190,7 +165,6 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             Log.info("Shutting down Asterisk-IM Thread Pool");
             ThreadPool.shutdown();
             Log.info("Shutting down Hibernate for Asterisk-IM");
-            HibernateUtil.close();
 
         }
         catch (Exception e) {

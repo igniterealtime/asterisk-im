@@ -11,8 +11,8 @@ package org.jivesoftware.phone;
 
 import org.jivesoftware.database.JiveID;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Used to represent a user/channel relationship.
@@ -22,9 +22,8 @@ import java.util.Set;
 @JiveID(100)
 public class PhoneUser implements java.io.Serializable {
 
-    private Long id;
+    private long id;
     private String username;
-    private Set<PhoneDevice> devices;
 
     public PhoneUser() {
     }
@@ -33,11 +32,11 @@ public class PhoneUser implements java.io.Serializable {
         this.username = username;
     }
 
-    public Long getId() {
+    public long getID() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setID(long id) {
         this.id = id;
     }
 
@@ -50,60 +49,35 @@ public class PhoneUser implements java.io.Serializable {
     }
 
 
-    public PhoneDevice getPrimaryDevice() {
-
-        for (PhoneDevice channel : devices) {
-            if(channel.isPrimary()) {
-                return channel;
-            }
-        }
-
-        throw new IllegalStateException("No primary channel found!");
-    }
-
-    public Set<PhoneDevice> getDevices() {
-        return devices;
-    }
-
-    public void setDevices(Set<PhoneDevice> devices) {
-        this.devices = devices;
-    }
-
-    public void addDevice(PhoneDevice channel) {
-        if(devices == null) {
-            devices = new HashSet<PhoneDevice>();
-        }
-        devices.add(channel);
-    }
-
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         final PhoneUser phoneUser = (PhoneUser) o;
 
-        if (devices != null ? !devices.equals(phoneUser.devices) : phoneUser.devices != null) return false;
-        if (id != null ? !id.equals(phoneUser.id) : phoneUser.id != null) return false;
-        if (username != null ? !username.equals(phoneUser.username) : phoneUser.username != null) return false;
+        if (id != phoneUser.id) {
+            return false;
+        }
+        return !(username != null ? !username.equals(phoneUser.username) : phoneUser.username != null);
 
-        return true;
     }
 
     public int hashCode() {
         int result;
-        result = (id != null ? id.hashCode() : 0);
+        result = (int) (id ^ (id >>> 32));
         result = 29 * result + (username != null ? username.hashCode() : 0);
-        result = 29 * result + (devices != null ? devices.hashCode() : 0);
         return result;
     }
-
 
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("PhoneUser");
         sb.append("{id=").append(id);
         sb.append(", username='").append(username).append('\'');
-        sb.append(", devices=").append(devices);
         sb.append('}');
         return sb.toString();
     }

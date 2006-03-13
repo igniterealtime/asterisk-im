@@ -21,7 +21,6 @@ import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 import org.jivesoftware.phone.PhoneManager;
-import static org.jivesoftware.phone.PhoneManagerFactory.close;
 import static org.jivesoftware.phone.PhoneManagerFactory.getPhoneManager;
 import org.jivesoftware.phone.PhoneUser;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
@@ -162,14 +161,14 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         public void run() {
 
-            PhoneManager phoneManager = null;
+            PhoneManager phoneManager;
 
             try {
                 phoneManager = getPhoneManager();
 
                 String device = getDevice(event.getChannel1());
 
-                PhoneUser phoneUser = phoneManager.getByDevice(device);
+                PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 if (phoneUser != null) {
                     CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId1(), phoneUser.getUsername());
@@ -180,7 +179,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // Now setup this up for the second user
                 device = getDevice(event.getChannel2());
-                phoneUser = phoneManager.getByDevice(device);
+                phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 if (phoneUser != null) {
                     CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId2(), phoneUser.getUsername());
@@ -193,11 +192,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
             }
-            finally {
-                close(phoneManager);
-            }
-
-
         }
 
 
@@ -224,11 +218,11 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             //everything after the hyphen should be skipped
             String device = getDevice(event.getChannel());
 
-            PhoneManager phoneManager = null;
+            PhoneManager phoneManager;
 
             try {
                 phoneManager = getPhoneManager();
-                PhoneUser phoneUser = phoneManager.getByDevice(device);
+                PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
@@ -317,9 +311,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
             }
-            finally {
-                close(phoneManager);
-            }
         }
 
     }
@@ -343,7 +334,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
             try {
                 phoneManager = getPhoneManager();
-                PhoneUser phoneUser = phoneManager.getByDevice(device);
+                PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
@@ -429,9 +420,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
             }
-            finally {
-                close(phoneManager);
-            }
         }
     }
 
@@ -454,7 +442,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
             try {
                 phoneManager = getPhoneManager();
-                PhoneUser phoneUser = phoneManager.getByDevice(device);
+                PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
@@ -515,9 +503,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
             }
-            finally {
-                close(phoneManager);
-            }
         }
     }
 
@@ -544,7 +529,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
             try {
                 phoneManager = getPhoneManager();
-                PhoneUser phoneUser = phoneManager.getByDevice(device);
+                PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
                 if (phoneUser == null) {
@@ -624,9 +609,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             catch (Exception e) {
                 Log.error(e.getMessage(), e);
             }
-            finally {
-                close(phoneManager);
-            }
         }
     }
 
@@ -688,10 +670,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         final AsteriskEventHandler that = (AsteriskEventHandler) o;
 
-        if (asteriskPlugin != null ? !asteriskPlugin.equals(that.asteriskPlugin) : that.asteriskPlugin != null)
-            return false;
+        return !(asteriskPlugin != null ? !asteriskPlugin.equals(that.asteriskPlugin) : that.asteriskPlugin != null);
 
-        return true;
     }
 
     public int hashCode() {

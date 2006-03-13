@@ -5,7 +5,7 @@ create table phoneDevice (
    deviceID bigint not null,
    device varchar(255) not null,
    extension varchar(255) not null,
-   callerId varchar(255),
+   callerID varchar(255),
    isPrimary bit not null,
    userID bigint,
    primary key (deviceID)
@@ -15,4 +15,4 @@ create table phoneUser (
    username varchar(255) not null unique,
    primary key (userID)
 );
-alter table phoneDevice add index FKA6F6FD644F390113 (userID), add constraint FKA6F6FD644F390113 foreign key (userID) references phoneUser (userID);
+alter table phoneDevice add index FKA6F6FD644F390113 (userID), add constraint phoneUser_fk_userID foreign key (userID) references phoneUser (userID);

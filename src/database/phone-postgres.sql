@@ -5,7 +5,7 @@ create table phoneDevice (
    deviceID int8 not null,
    device varchar(255) not null,
    extension varchar(255) not null,
-   callerId varchar(255),
+   callerID varchar(255),
    isPrimary bool not null,
    userID int8,
    primary key (deviceID)

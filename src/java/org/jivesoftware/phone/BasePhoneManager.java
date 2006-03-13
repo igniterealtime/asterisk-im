@@ -22,40 +22,68 @@ public abstract class BasePhoneManager implements PhoneManager {
         this.phoneDAO = phoneDAO;
     }
 
-    public PhoneUser getByDevice(String device) {
-        return phoneDAO.getByDevice(device);
+    public PhoneUser getPhoneUserByDevice(String device) {
+        return phoneDAO.getPhoneUserByDevice(device);
     }
 
-    public PhoneUser getByUsername(String username) {
+    public PhoneUser getPhoneUserByUsername(String username) {
         return phoneDAO.getByUsername(username);
     }
 
-    public List<PhoneUser> getAll() {
-        return phoneDAO.getALL();
+    public List<PhoneUser> getAllPhoneUsers() {
+        return phoneDAO.getPhoneUsers();
     }
 
     public void remove(PhoneUser phoneJid) {
         phoneDAO.remove(phoneJid);
     }
 
-    public void save(PhoneUser phoneJid) {
-        phoneDAO.save(phoneJid);
+    public void remove(PhoneDevice phoneDevice) {
+        phoneDAO.remove(phoneDevice);
     }
 
-    public PhoneUser getByID(long phoneUserID) {
-        return phoneDAO.getByID(phoneUserID);
+    public void update(PhoneDevice phoneDevice) {
+        phoneDAO.update(phoneDevice);
+    }
+
+    public void update(PhoneUser phoneUser) {
+        phoneDAO.update(phoneUser);
+    }
+
+    public PhoneUser getPhoneUserByID(long phoneUserID) {
+        return phoneDAO.getPhoneUserByID(phoneUserID);
+    }
+
+    public List<PhoneDevice> getPhoneDevicesByUserID(long phoneUserID) {
+        return phoneDAO.getPhoneDeviceByUserID(phoneUserID);
+    }
+
+    public PhoneDevice getPhoneDeviceByID(long phoneDeviceID) {
+        return phoneDAO.getPhoneDeviceByID(phoneDeviceID);
+    }
+
+    public PhoneDevice getPrimaryDevice(long phoneUserID) {
+        return phoneDAO.getPrimaryDevice(phoneUserID);
     }
 
     public PhoneDevice getDevice(String device) {
         return phoneDAO.getDevice(device);
     }
 
-    public void close() {
-        phoneDAO.close();
+    public void insert(PhoneUser phoneUser) {
+        phoneDAO.insert(phoneUser);
+    }
+
+    public void insert(PhoneDevice phoneDevice) {
+        phoneDAO.insert(phoneDevice);
     }
 
     protected PhoneDAO getPhoneDAO() {
         return phoneDAO;
+    }
+
+    public PhoneDevice getPhoneDeviceByDevice(String device) {
+        return phoneDAO.getDevice(device);
     }
 
 }
