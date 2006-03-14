@@ -161,10 +161,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         public void run() {
 
-            PhoneManager phoneManager;
-
             try {
-                phoneManager = getPhoneManager();
+                PhoneManager phoneManager = getPhoneManager();
 
                 String device = getDevice(event.getChannel1());
 
@@ -218,10 +216,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             //everything after the hyphen should be skipped
             String device = getDevice(event.getChannel());
 
-            PhoneManager phoneManager;
-
             try {
-                phoneManager = getPhoneManager();
+                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -330,10 +326,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             //everything after the hyphen should be skipped
             String device = getDevice(event.getChannel());
 
-            PhoneManager phoneManager = null;
-
             try {
-                phoneManager = getPhoneManager();
+                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -438,10 +432,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
             String device = getDevice(event.getChannel());
 
-            PhoneManager phoneManager = null;
-
             try {
-                phoneManager = getPhoneManager();
+                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -525,10 +517,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
             String device = getDevice(event.getChannel());
 
-            PhoneManager phoneManager = null;
-
             try {
-                phoneManager = getPhoneManager();
+                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else

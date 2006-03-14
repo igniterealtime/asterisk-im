@@ -11,6 +11,8 @@ package org.jivesoftware.phone;
 
 
 import org.jivesoftware.util.Log;
+import org.jivesoftware.database.SequenceManager;
+import org.jivesoftware.database.JiveID;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -139,6 +141,18 @@ public class CallSessionFactory {
      */
     public static CallSessionFactory getCallSessionFactory() {
         return INSTANCE;
+    }
+
+    /**
+     * Generates new call session IDs.
+     *
+     * @return new call session IDs.
+     */
+    public static String generateNewCallSessionID() {
+        long id = SequenceManager.nextID(CallSession.class.getAnnotation(JiveID.class).value());
+        StringBuilder builder = new StringBuilder("asterisk-im-");
+        builder.append(id);
+        return builder.toString();
     }
 
 }
