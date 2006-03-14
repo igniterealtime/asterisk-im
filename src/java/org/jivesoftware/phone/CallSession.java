@@ -10,10 +10,12 @@
 package org.jivesoftware.phone;
 
 import org.xmpp.packet.JID;
+import org.jivesoftware.database.JiveID;
 
 /**
  * @author Andrew Wright
  */
+@JiveID(102)
 public class CallSession {
 
     private String id;
@@ -110,9 +112,8 @@ public class CallSession {
         if (forwardedJID != null ? !forwardedJID.equals(that.forwardedJID) : that.forwardedJID != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel) : that.linkedChannel != null) return false;
-        if (username != null ? !username.equals(that.username) : that.username != null) return false;
+        return !(username != null ? !username.equals(that.username) : that.username != null);
 
-        return true;
     }
 
     public int hashCode() {

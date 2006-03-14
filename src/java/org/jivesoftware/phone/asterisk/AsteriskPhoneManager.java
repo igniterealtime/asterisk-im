@@ -273,9 +273,8 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
             con.sendAction(action, 5 * JiveConstants.SECOND);
 
-            // BEWARE EVIL HACK, when you can actually get a uniqueID from the response we should use that instead
-            // We will create a call session for this device and then later parse out the info
-            CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(primaryDevice.getDevice(), username);
+            CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(
+                    CallSessionFactory.generateNewCallSessionID(), username);
             phoneSession.setCallerID(extension);
 
             if (jid != null) {
