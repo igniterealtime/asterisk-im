@@ -183,6 +183,7 @@
 
                         for (PhoneDevice currentDevice : devices) {
                             currentDevice.setPrimary(false);
+                            phoneManager.update(currentDevice);
                         }
 
                         phoneDevice.setPrimary(true);
@@ -563,7 +564,14 @@
                     or
                     <% } %>
 
-                    <input type="text" name="devicetf" size="35" value="<%= device != null ? device : ""%>"
+                    <input type="text" name="devicetf" size="35" value="<%
+                        if (device != null && (sipDevices != null && !sipDevices.contains(device))) {
+                            out.println(device);
+                        }
+                        else {
+                            out.println("");
+                        }
+                     %>"
                            id="devicetf"/>
                     <% if (errors.containsKey("device")) { %>
                     <br/>
