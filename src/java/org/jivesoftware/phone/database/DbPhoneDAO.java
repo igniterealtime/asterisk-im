@@ -388,7 +388,7 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public void remove(PhoneDevice device) {
-        String sql = "DELETE FROM phoneDevice WHERE userID = ?";
+        String sql = "DELETE FROM phoneDevice WHERE deviceID = ?";
 
         PreparedStatement psmt = null;
         Connection con = null;
