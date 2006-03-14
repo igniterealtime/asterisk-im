@@ -192,9 +192,14 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             boolean isFirst = true; // The first entry is Name, we want to skip that one
             for (String result : results) {
                 if (!isFirst) {
+                    result = result.trim();
+                    result = result.substring(0, result.indexOf(" "));
                     list.add("SIP/" + result.split("/")[0]);
                 }
                 isFirst = false;
+            }
+            if (list.size() > 0) {
+                list.remove(list.size() - 1); // Remove the last entry, it just tells how many are online
             }
 
             return list;
