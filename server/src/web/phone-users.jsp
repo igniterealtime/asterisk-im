@@ -80,8 +80,8 @@
             }
 
         }
-        else {
-            Log.debug("No userID found - phone-users.jsp");
+        else if (username != null) {
+            devices = phoneManager.getPhoneDevicesByUsername(username);
         }
 
         if (delete) {
