@@ -45,4 +45,6 @@ public interface PhoneDAO {
      * @return the primary device for the phone user
      */
     PhoneDevice getPrimaryDevice(long phoneUserID);
+
+    List<PhoneDevice> getPhoneDevicesByUsername(String username);
 }

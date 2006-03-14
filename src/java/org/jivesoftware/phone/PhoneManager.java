@@ -83,6 +83,16 @@ public interface PhoneManager {
     List<PhoneDevice> getPhoneDevicesByUserID(long phoneUserID);
 
     /**
+     * Returns a List of {@link PhoneDevice} object that are associated with specified username.
+     * If there are no {@link PhoneDevice} matching the username then an empty list
+     * will be returned.
+     *
+     * @param username phone username
+     * @return devices athat are associated to the give phone user
+     */
+    List<PhoneDevice> getPhoneDevicesByUsername(String username);
+
+    /**
      * Returns a {@link PhoneDevice} by the device name. If no {@link PhoneDevice}
      * is found matching the device name then null will be returned.
      *

@@ -437,6 +437,40 @@ public class DbPhoneDAO implements PhoneDAO {
         return device;
     }
 
+    public List<PhoneDevice> getPhoneDevicesByUsername(String username) {
+          String sql = "SELECT deviceID FROM phoneDevice, phoneUser " +
+                  "WHERE phoneDevice.userID = phoneUser.userID AND phoneUser.username = ?";
+
+        ArrayList<PhoneDevice> list = new ArrayList<PhoneDevice>();
+        Connection con = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setString(1, username);
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                long id = rs.getLong(1);
+                PhoneDevice device = getPhoneDeviceByID(id);
+                if (device != null) {
+                    list.add(device);
+                }
+            }
+
+        }
+        catch (SQLException sqle) {
+            Log.error(sqle.getMessage(), sqle);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return list;
+    }
+
     private PhoneDevice read(PhoneDevice device, ResultSet rs) throws SQLException {
         device.setID(rs.getLong("deviceID"));
         device.setPhoneUserID(rs.getLong("userID"));
