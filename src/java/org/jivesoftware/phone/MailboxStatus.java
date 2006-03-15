@@ -63,9 +63,8 @@ public class MailboxStatus {
 
         if (newMessages != that.newMessages) return false;
         if (oldMessages != that.oldMessages) return false;
-        if (mailbox != null ? !mailbox.equals(that.mailbox) : that.mailbox != null) return false;
+        return !(mailbox != null ? !mailbox.equals(that.mailbox) : that.mailbox != null);
 
-        return true;
     }
 
     public int hashCode() {

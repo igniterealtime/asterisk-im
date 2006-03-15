@@ -20,7 +20,13 @@ import org.jivesoftware.phone.database.DbPhoneDAO;
  */
 public final class PhoneManagerFactory {
 
+    private static PhoneManager phoneManager;
+
     private PhoneManagerFactory() {
+    }
+
+    public static void init(PhoneManager phoneManager)  {
+        PhoneManagerFactory.phoneManager = phoneManager;
     }
 
 
@@ -30,7 +36,7 @@ public final class PhoneManagerFactory {
      * @return new phone manager instance
      */
     public static PhoneManager getPhoneManager() {
-        return new AsteriskPhoneManager(new DbPhoneDAO());
+        return phoneManager;
     }
 
 }

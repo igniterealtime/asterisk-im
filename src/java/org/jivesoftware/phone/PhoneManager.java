@@ -125,7 +125,7 @@ public interface PhoneManager {
      * @param extension extension to dial, this could local to the pbx or an outbound number
      * @throws PhoneException thrown if dialing cannot be completed
      */
-    void dial(String username, String extension) throws PhoneException;
+    void originate(String username, String extension) throws PhoneException;
 
 
     /**
@@ -135,7 +135,7 @@ public interface PhoneManager {
      * @param target   the target jid to dial
      * @throws PhoneException thrown if dialing cannot be completed
      */
-    void dial(String username, JID target) throws PhoneException;
+    void originate(String username, JID target) throws PhoneException;
 
     /**
      * Forwards a call to a different extension

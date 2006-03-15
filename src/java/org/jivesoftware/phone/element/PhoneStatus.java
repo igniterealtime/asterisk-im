@@ -9,8 +9,6 @@
  */
 package org.jivesoftware.phone.element;
 
-import org.xmpp.packet.PacketExtension;
-import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.tree.BaseElement;
 import org.jivesoftware.phone.util.PhoneConstants;

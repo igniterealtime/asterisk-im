@@ -44,7 +44,7 @@ public class PacketHandler implements PhoneConstants {
             if (PhoneAction.Type.DIAL.name().equals(type)) {
                 handleDial(iq);
             }
-            else if(PhoneAction.Type.FORWARD.name().equals(type)) {
+            else if (PhoneAction.Type.FORWARD.name().equals(type)) {
                 handleForward(iq);
             }
 
@@ -75,19 +75,18 @@ public class PacketHandler implements PhoneConstants {
             phoneManager = PhoneManagerFactory.getPhoneManager();
 
             String extension = phoneElement.elementText("extension");
-            if(extension != null) {
-                phoneManager.dial(jid.getNode(), extension);
+            if (extension != null) {
+                phoneManager.originate(jid.getNode(), extension);
             }
             // try dialing by jid
             else {
                 String targetJID = phoneElement.elementText("jid");
-                if(targetJID == null) {
+                if (targetJID == null) {
                     throw new PhoneException("No extension or jid was specified");
                 }
 
-                phoneManager.dial(jid.getNode(), new JID(targetJID));
+                phoneManager.originate(jid.getNode(), new JID(targetJID));
             }
-
 
             //send reply
             IQ reply = IQ.createResultIQ(iq);
@@ -97,7 +96,7 @@ public class PacketHandler implements PhoneConstants {
             reply.setChildElement(phoneAction);
 
             send(reply);
-            
+
         }
         catch (PhoneException e) {
             Log.debug(e);
@@ -121,18 +120,18 @@ public class PacketHandler implements PhoneConstants {
 
             String callSessionID = phoneElement.attributeValue("id");
 
-            if(callSessionID == null || "".equals(callSessionID)) {
+            if (callSessionID == null || "".equals(callSessionID)) {
                 throw new PhoneException("a call 'id' is a required attribute for type FORWARD");
             }
 
             String extension = phoneElement.elementText("extension");
-            if(extension != null && !"".equals(extension)) {
+            if (extension != null && !"".equals(extension)) {
                 phoneManager.forward(callSessionID, iq.getFrom().getNode(), extension);
             }
             // try dialing by jid
             else {
                 String targetJID = phoneElement.elementText("jid");
-                if(targetJID == null) {
+                if (targetJID == null) {
                     throw new PhoneException("No extension or jid was specified");
                 }
 
@@ -167,18 +166,17 @@ public class PacketHandler implements PhoneConstants {
     public void handleDisco(IQ iq) {
 
         if (iq.getType().equals(IQ.Type.error)) {
-            Log.info("Received disco error - "+iq);
+            Log.info("Received disco error - " + iq);
             return;
         }
 
         if (!(iq.getType() == IQ.Type.get || iq.getType() == IQ.Type.set)) {
-            Log.debug("Not set or get - "+iq);
+            Log.debug("Not set or get - " + iq);
             return;
         }
 
         // if information was sent to the component itself
-        if(plugin.getComponentJID().equals(iq.getTo())) {
-
+        if (plugin.getComponentJID().equals(iq.getTo())) {
 
             //try to see if there is a node on the query
             Element child = iq.getChildElement();
@@ -208,13 +206,14 @@ public class PacketHandler implements PhoneConstants {
             Element feature = queryElement.addElement("feature");
             feature.addAttribute("var", "http://jabber.org/protocol/disco#info");
 
-            if(node == null) {
+            if (node == null) {
 
                 // Indicate that we can provide information about the software version being used
                 feature = queryElement.addElement("feature");
                 feature.addAttribute("var", "jabber:iq:version");
 
-            } else {
+            }
+            else {
 
                 // This is a query against a specific user
                 PhoneManager phoneManager;
@@ -225,7 +224,7 @@ public class PacketHandler implements PhoneConstants {
                     PhoneUser user = phoneManager.getPhoneUserByUsername(node);
 
                     // if there is a user they have support
-                    if(user != null) {
+                    if (user != null) {
 
                         // var http://jivesoftware.com/phone
                         feature = queryElement.addElement("feature");
@@ -242,7 +241,8 @@ public class PacketHandler implements PhoneConstants {
             send(reply);
 
 
-        } else {
+        }
+        else {
             // todo implement
         }
 
