@@ -9,11 +9,10 @@
  */
 package org.jivesoftware.phone.asterisk;
 
+import net.sf.asterisk.manager.DefaultManagerConnection;
 import net.sf.asterisk.manager.ManagerConnection;
-import org.jivesoftware.phone.CallSession;
-import org.jivesoftware.phone.CallSessionFactory;
-import org.jivesoftware.phone.OnPhonePacketInterceptor;
-import org.jivesoftware.phone.PacketHandler;
+import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.ThreadPool;
 import org.jivesoftware.phone.util.UserPresenceUtil;
@@ -98,15 +97,17 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             ThreadPool.init(); //initialize the thread pols
             initAsteriskManager();
 
-        } catch (RuntimeException e) {
+        }
+        catch (Throwable e) {
             // Make sure we catch all exceptions show we can Log anything that might be
             // going on
             Log.error(e.getMessage(), e);
-            throw e;
+            Log.error("Asterisk-IM not Initializing because of errors");
+            return;
         }
 
         // only register the component if we are enabled
-        if(JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
+        if (JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
             try {
                 Log.info("Registering phone plugin as a component");
                 ComponentManagerFactory.getComponentManager().addComponent(NAME, this);
@@ -126,7 +127,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     }
 
     public void destroyPlugin() {
-         destroy();
+        destroy();
     }
 
     public void destroy() {
@@ -138,7 +139,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             // will be set to false so new phone calls won't be processed.
             ComponentManagerFactory.getComponentManager().removeComponent(NAME);
         }
-        catch (Exception e) {
+        catch (Throwable e) {
             Log.error(e.getMessage(), e);
             // Do nothing. Should never happen.
             ComponentManagerFactory.getComponentManager().getLog().error(e);
@@ -255,29 +256,19 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     public void initAsteriskManager() {
 
         // Only initialize things if the plugin is enabled
-        if(JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
+        if (JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
 
             Log.info("Initializing Asterisk Manager connection");
 
             // Populate the manager configuration
-            ManagerConfig asteriskManagerConfig = new ManagerConfig();
-            asteriskManagerConfig.setServer(JiveGlobals.getProperty(Properties.SERVER));
-            asteriskManagerConfig.setUsername(JiveGlobals.getProperty(Properties.USERNAME));
-            asteriskManagerConfig.setPassword(JiveGlobals.getProperty(Properties.PASSWORD));
-
-            int port = JiveGlobals.getIntProperty(Properties.PORT, -1);
-            if (port > 0) {
-                asteriskManagerConfig.setPort(port);
-            }
-
-            int poolsize = JiveGlobals.getIntProperty(Properties.POOLSIZE, -1);
-            if (poolsize > 0) {
-                asteriskManagerConfig.setMaxPoolSize(poolsize);
-            }
+            String server = JiveGlobals.getProperty(Properties.SERVER);
+            String username = JiveGlobals.getProperty(Properties.USERNAME);
+            String password = JiveGlobals.getProperty(Properties.PASSWORD);
+            int port = JiveGlobals.getIntProperty(Properties.PORT, 5038);
 
             // Check to see if the configuration is valid then
             // Initialize the manager connection pool and create an eventhandler
-            if (isConfigValid(asteriskManagerConfig)) {
+            if (server != null && username != null && password != null) {
 
                 try {
 
@@ -286,16 +277,17 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
                         managerConnection.logoff();
                     }
 
-                    ManagerConnectionPoolFactory.init(asteriskManagerConfig);
-                    managerConnection = ManagerConnectionPoolFactory.getManagerConnectionPool()
-                            .getConnection();
+                    managerConnection = new DefaultManagerConnection(server, port, username, password);
+                    AsteriskPhoneManager asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO(), managerConnection);
+                    asteriskPhoneManager.init();
+                    PhoneManagerFactory.init(asteriskPhoneManager);
 
                     // Start handling events
                     Log.debug("Adding AsteriskEventHandler");
                     eventHandler = new AsteriskEventHandler(this);
                     managerConnection.addEventHandler(eventHandler);
                 }
-                catch (Exception e) {
+                catch (Throwable e) {
                     Log.error("unable to obtain a manager connection --> " + e.getMessage(), e);
                 }
 
@@ -335,7 +327,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         Log.info("Closing Asterisk Manager Connection");
 
         try {
-            if(managerConnection != null) {
+            if (managerConnection != null) {
                 managerConnection.logoff();
             }
             ManagerConnectionPoolFactory.close();
@@ -346,21 +338,5 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
 
     }
-
-
-    /**
-     * Returns true if the given ManagerConfig is valid
-     *
-     * @param config manager config to check
-     * @return true if the config is valid
-     */
-    private boolean isConfigValid(ManagerConfig config) {
-
-        return config.getServer() != null && !"".equals(config.getServer())
-                && config.getUsername() != null && !"".equals(config.getUsername())
-                && config.getPassword() != null && !"".equals(config.getPassword());
-
-    }
-
 
 }

@@ -31,11 +31,12 @@ public final class ManagerConnectionPoolFactory {
         log.info("initializing factory");
 
         //if there is an instance already close it
-        if(connectionPool != null) {
+        if (connectionPool != null) {
             try {
                 connectionPool.close();
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
+            }
+            catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
         }
 
@@ -45,7 +46,7 @@ public final class ManagerConnectionPoolFactory {
 
     public static ManagerConnectionPool getManagerConnectionPool() {
 
-        if(connectionPool == null) {
+        if (connectionPool == null) {
             log.error("ManagerFactory has not been initialized");
             throw new IllegalStateException("ManagerFactory has not been initialized!");
         }
@@ -59,7 +60,7 @@ public final class ManagerConnectionPoolFactory {
      * @throws ManagerException thrown if there is problem closing the pool
      */
     public static void close() throws ManagerException {
-        if(connectionPool != null) {
+        if (connectionPool != null) {
             connectionPool.close();
             connectionPool = null;
         }

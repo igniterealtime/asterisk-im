@@ -5,20 +5,20 @@
  */
 package org.jivesoftware.phone;
 
+import org.jivesoftware.phone.asterisk.AsteriskPlugin;
+import org.jivesoftware.phone.element.PhoneStatus;
+import org.jivesoftware.phone.util.UserPresenceUtil;
+import org.jivesoftware.util.Log;
 import org.jivesoftware.wildfire.Session;
 import org.jivesoftware.wildfire.XMPPServer;
 import org.jivesoftware.wildfire.event.SessionEventListener;
 import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
 import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
-import org.jivesoftware.phone.element.PhoneStatus;
-import org.jivesoftware.phone.util.UserPresenceUtil;
-import org.jivesoftware.phone.asterisk.AsteriskPlugin;
-import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -125,7 +125,9 @@ public class OnPhonePacketInterceptor implements PacketInterceptor, SessionEvent
                                             presence);
                         }
 
-                        UserPresenceUtil.setPresences(username, Arrays.asList(presence.createCopy()));
+                        ArrayList<Presence> presenceList = new ArrayList<Presence>();
+                        presenceList.add((Presence) presence.createCopy());
+                        UserPresenceUtil.setPresences(username, presenceList);
 
                         // Iterate through all of the sessions sending out new presences for each
                         //Presence presence = new Presence();

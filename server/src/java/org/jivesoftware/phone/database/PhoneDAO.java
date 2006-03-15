@@ -1,11 +1,9 @@
 package org.jivesoftware.phone.database;
 
-import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.phone.PhoneDevice;
+import org.jivesoftware.phone.PhoneUser;
 
 import java.util.List;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author Andrew Wright

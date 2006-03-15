@@ -9,23 +9,24 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.ManagerConnection;
-import net.sf.asterisk.manager.action.*;
+import net.sf.asterisk.manager.*;
+import net.sf.asterisk.manager.action.CommandAction;
+import net.sf.asterisk.manager.action.MailboxCountAction;
+import net.sf.asterisk.manager.action.RedirectAction;
+import net.sf.asterisk.manager.action.StopMonitorAction;
 import net.sf.asterisk.manager.response.CommandResponse;
 import net.sf.asterisk.manager.response.MailboxCountResponse;
 import net.sf.asterisk.manager.response.ManagerError;
 import net.sf.asterisk.manager.response.ManagerResponse;
 import org.jivesoftware.phone.*;
-import static org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory.getManagerConnectionPool;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.util.JiveConstants;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
+import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
 
+import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -36,18 +37,25 @@ import java.util.logging.Logger;
 @PBXInfo(make = "Asterisk", version = "1.x")
 public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConstants {
 
-    private static final Logger log = Logger.getLogger(AsteriskPhoneManager.class.getName());
+    private ManagerConnection con;
+    private DefaultAsteriskManager asteriskManager;
 
-    public AsteriskPhoneManager(PhoneDAO dao) {
+    public AsteriskPhoneManager(PhoneDAO dao, ManagerConnection con) {
         super(dao);
+        this.con = con;
+        asteriskManager = new DefaultAsteriskManager(con);
+    }
+
+    public void init() throws TimeoutException, IOException, AuthenticationFailedException {
+        asteriskManager.initialize();
     }
 
 
-    public void dial(String username, String extension) throws PhoneException {
+    public void originate(String username, String extension) throws PhoneException {
         dial(username, extension, null);
     }
 
-    public void dial(String username, JID target) throws PhoneException {
+    public void originate(String username, JID target) throws PhoneException {
 
         PhoneUser targetUser = getPhoneUserByUsername(target.getNode());
 
@@ -94,16 +102,12 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         StopMonitorAction action = new StopMonitorAction();
         action.setChannel(channel);
 
-
-        ManagerConnection con = null;
         try {
-
-            con = getManagerConnectionPool().getConnection();
 
             ManagerResponse managerResponse = con.sendAction(action);
 
             if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
+                Log.warn(managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
             }
 
@@ -112,12 +116,10 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             throw pe;
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             throw new PhoneException(e.getMessage());
         }
-        finally {
-            close(con);
-        }
+
     }
 
     public MailboxStatus mailboxStatus(String mailbox) throws PhoneException {
@@ -125,15 +127,12 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         MailboxCountAction action = new MailboxCountAction();
         action.setMailbox(mailbox);
 
-        ManagerConnection con = null;
         try {
-
-            con = getManagerConnectionPool().getConnection();
 
             ManagerResponse managerResponse = con.sendAction(action);
 
             if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
+                Log.warn(managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
             } else if (managerResponse instanceof MailboxCountResponse) {
                 MailboxCountResponse mailboxStatus = (MailboxCountResponse) managerResponse;
@@ -141,7 +140,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
                 int newMessages = mailboxStatus.getNewMessages();
                 return new MailboxStatus(mailbox, oldMessages, newMessages);
             } else {
-                log.severe("Did not receive a MailboxCountResponseEvent!");
+                Log.error("Did not receive a MailboxCountResponseEvent!");
                 throw new PhoneException("Did not receive a MailboxCountResponseEvent!");
             }
 
@@ -150,12 +149,10 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             throw pe;
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             throw new PhoneException(e.getMessage());
         }
-        finally {
-            close(con);
-        }
+
     }
 
     public List<String> getDevices() throws PhoneException {
@@ -167,21 +164,21 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         return devices;
     }
 
+    public Map getStatus() throws PhoneException {
+        return asteriskManager.getChannels();
+    }
+
     @SuppressWarnings({"unchecked"})
     protected List<String> getSipDevices() throws PhoneException {
 
-        ManagerConnection con = null;
-
         try {
-
-            con = getManagerConnectionPool().getConnection();
 
             CommandAction action = new CommandAction();
             action.setCommand("sip show peers");
 
             ManagerResponse managerResponse = con.sendAction(action);
             if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
+                Log.warn(managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
             }
 
@@ -206,24 +203,8 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             throw new PhoneException(e);
-        }
-        finally {
-            close(con);
-        }
-
-    }
-
-    private static void close(ManagerConnection con) {
-
-        if (con != null) {
-            try {
-                con.logoff();
-            }
-            catch (Exception e) {
-                log.log(Level.SEVERE, "trouble closing connection : " + e.getMessage(), e);
-            }
         }
 
     }
@@ -233,14 +214,11 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         //acquire the jidUser object
         PhoneUser user = getPhoneUserByUsername(username);
 
-        ManagerConnection con = null;
-
         try {
-            con = getManagerConnectionPool().getConnection();
 
             PhoneDevice primaryDevice = getPrimaryDevice(user.getID());
 
-            OriginateAction action = new OriginateAction();
+            Originate action = new Originate();
             action.setChannel(primaryDevice.getDevice());
             action.setCallerId(primaryDevice.getCallerId() != null ? primaryDevice.getCallerId() :
                     getProperty(Properties.DEFAULT_CALLER_ID, ""));
@@ -250,7 +228,6 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
                 context = DEFAULT_CONTEXT;
             }
 
-            action.setAsync(true);
             action.setContext(context);
             action.setPriority(1);
 
@@ -271,10 +248,10 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
                 action.setVariables(varMap);
             }
 
-            con.sendAction(action, 5 * JiveConstants.SECOND);
+            Call call = asteriskManager.originateCall(action);
 
             CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(
-                    CallSessionFactory.generateNewCallSessionID(), username);
+                    call.getUniqueId(), username);
             phoneSession.setCallerID(extension);
 
             if (jid != null) {
@@ -283,12 +260,10 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             throw new PhoneException("Unabled to dial extention " + extension, e);
         }
-        finally {
-            close(con);
-        }
+
 
     }
 
@@ -316,14 +291,12 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
         action.setContext(context);
 
-        ManagerConnection con = null;
         try {
-            con = getManagerConnectionPool().getConnection();
             ManagerResponse managerResponse = con.sendAction(action);
 
 
             if (managerResponse instanceof ManagerError) {
-                log.warning(managerResponse.getMessage());
+                Log.warn(managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
             }
 
@@ -332,11 +305,8 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             throw pe;
         }
         catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            Log.error(e.getMessage(), e);
             throw new PhoneException(e.getMessage());
-        }
-        finally {
-            close(con);
         }
 
 

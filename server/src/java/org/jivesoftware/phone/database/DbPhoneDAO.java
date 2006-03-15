@@ -438,8 +438,8 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public List<PhoneDevice> getPhoneDevicesByUsername(String username) {
-          String sql = "SELECT deviceID FROM phoneDevice, phoneUser " +
-                  "WHERE phoneDevice.userID = phoneUser.userID AND phoneUser.username = ?";
+        String sql = "SELECT deviceID FROM phoneDevice, phoneUser " +
+                "WHERE phoneDevice.userID = phoneUser.userID AND phoneUser.username = ?";
 
         ArrayList<PhoneDevice> list = new ArrayList<PhoneDevice>();
         Connection con = null;
