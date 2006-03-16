@@ -21,6 +21,7 @@ import net.sf.asterisk.manager.response.ManagerResponse;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
+import org.jivesoftware.phone.util.UserPresenceUtil;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
@@ -39,6 +40,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     private ManagerConnection con;
     private DefaultAsteriskManager asteriskManager;
+    private AsteriskEventHandler eventHandler;
 
     public AsteriskPhoneManager(PhoneDAO dao, ManagerConnection con) {
         super(dao);
@@ -46,8 +48,25 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         asteriskManager = new DefaultAsteriskManager(con);
     }
 
-    public void init() throws TimeoutException, IOException, AuthenticationFailedException {
+    public void init(AsteriskPlugin plugin) throws TimeoutException, IOException, AuthenticationFailedException {
         asteriskManager.initialize();
+        // Start handling events
+        Log.debug("Adding AsteriskEventHandler");
+        eventHandler = new AsteriskEventHandler(plugin);
+        con.addEventHandler(eventHandler);
+
+    }
+
+    public void destroy() {
+        // Revert user presences to what it was before the phone call and send a hang_up
+        // message to the user
+        CallSessionFactory callSessionFactory = CallSessionFactory.getCallSessionFactory();
+        for (String username : UserPresenceUtil.getUsernames()) {
+            for (CallSession session : callSessionFactory.getUserCallSessions(username)) {
+                eventHandler.sendHangupMessage(session.getId(), AsteriskUtil.getDevice(session.getChannel()), username);
+            }
+            eventHandler.restoreUserPresence(username);
+        }
     }
 
 
@@ -134,12 +153,14 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             if (managerResponse instanceof ManagerError) {
                 Log.warn(managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
-            } else if (managerResponse instanceof MailboxCountResponse) {
+            }
+            else if (managerResponse instanceof MailboxCountResponse) {
                 MailboxCountResponse mailboxStatus = (MailboxCountResponse) managerResponse;
                 int oldMessages = mailboxStatus.getOldMessages();
                 int newMessages = mailboxStatus.getNewMessages();
                 return new MailboxStatus(mailbox, oldMessages, newMessages);
-            } else {
+            }
+            else {
                 Log.error("Did not receive a MailboxCountResponseEvent!");
                 throw new PhoneException("Did not receive a MailboxCountResponseEvent!");
             }
@@ -237,7 +258,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
                 String[] varArray = variables.split(",");
 
-                Map<String,String> varMap = new HashMap<String,String>();
+                Map<String, String> varMap = new HashMap<String, String>();
                 for (String aVarArray : varArray) {
                     String[] s = aVarArray.split("=");
                     String key = s[0].trim();
