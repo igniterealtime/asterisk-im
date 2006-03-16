@@ -43,7 +43,6 @@ import java.io.File;
  * <li>asterisk.manager.port - Port to connect to on the server (optional, default to 5038)
  * <li>asterisk.manager.username - Username to connect to the manager api with
  * <li>asterisk.manager.password - User's password
- * <li>asterisk.manager.poolsize - how many connection to make to the server (optional, default is 10)
  * </ul>
  * <p/>
  * If you are setting many of these properties at

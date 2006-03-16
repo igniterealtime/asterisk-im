@@ -23,7 +23,6 @@
     int port = ParamUtils.getIntParameter(request, "port", -1);
     String username = request.getParameter("username");
     String password = request.getParameter("password");
-    int poolSize = ParamUtils.getIntParameter(request, "poolSize", -1);
     boolean enabled = ParamUtils.getBooleanParameter(request, "enabled", false);
     String callerID = request.getParameter("callerID");
     String context = request.getParameter("context");
@@ -48,11 +47,6 @@
         // If a port was specified make sure that it is valid
         if (isParamPresent(request, "port") && port < 1025) {
             errors.put("port", "Port must be greater than 1024 and not in use");
-        }
-
-        // If a poolSize was specified make sure it is valid
-        if (isParamPresent(request, "poolSize") && poolSize < 2) {
-            errors.put("poolSize", "Pool Size must be greater than 1");
         }
 
         // If there are no errors initialize the manager
@@ -289,19 +283,6 @@
             <% if (errors.containsKey("password")) { %>
             <br/>
             <span class="jive-error-text"><%=errors.get("password")%></span>
-            <% } %>
-        </td>
-    </tr>
-    <tr>
-        <td width="1%">
-            <nobr><label for="poolSizetf">Pool Size:</label></nobr>
-        </td>
-        <td width="99%">
-            <input type="text" name="poolSize" size="30" maxlength="100"
-                   value="<%= poolSize != -1 ? String.valueOf(poolSize) : "" %>" id="poolSizetf"/>
-            <% if (errors.containsKey("poolSize")) { %>
-            <br/>
-            <span class="jive-error-text"><%=errors.get("poolSize")%></span>
             <% } %>
         </td>
     </tr>
