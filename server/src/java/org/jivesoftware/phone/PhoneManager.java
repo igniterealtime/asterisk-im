@@ -207,4 +207,10 @@ public interface PhoneManager {
      */
     void insert(PhoneDevice phoneDevice);
 
+    /**
+     * Used to check and see if Asterisk-IM is connected to asterisk manager
+     *
+     * @return whether or not we are connected to the asterisk manager
+     */
+    boolean isConnected();
 }
