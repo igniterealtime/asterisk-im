@@ -51,10 +51,10 @@ import java.util.concurrent.ExecutorService;
 public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants {
 
 
-    private AsteriskPlugin asteriskPlugin;
+    private AsteriskPlugin plugin;
 
-    public AsteriskEventHandler(AsteriskPlugin asteriskPlugin) {
-        this.asteriskPlugin = asteriskPlugin;
+    public AsteriskEventHandler(AsteriskPlugin plugin) {
+        this.plugin = plugin;
     }
 
 
@@ -209,7 +209,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         public void run() {
 
             // Do nothing when the plugin is being removed/destroyed
-            if (!asteriskPlugin.isComponentReady()) {
+            if (!plugin.isComponentReady()) {
                 return;
             }
 
@@ -235,7 +235,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // Notify the client that they have answered the phone
                 Message message = new Message();
-                message.setFrom(asteriskPlugin.getComponentJID());
+                message.setFrom(plugin.getComponentJID());
                 message.setID(event.getUniqueId());
 
                 PhoneEvent phoneEvent =
@@ -282,7 +282,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                         for (ClientSession session : sessions) {
 
                             message.setTo(session.getAddress());
-                            asteriskPlugin.sendPacket(message);
+                            plugin.sendPacket(message);
 
 
                             Presence prevPresence = session.getPresence();
@@ -455,7 +455,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 Message message = new Message();
                 message.setID(event.getUniqueId()); //just put something in here
-                message.setFrom(asteriskPlugin.getComponentJID());
+                message.setFrom(plugin.getComponentJID());
 
                 if (fakeSession != null) {
 
@@ -489,7 +489,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
                 for (ClientSession session : sessions) {
                     message.setTo(session.getAddress());
-                    asteriskPlugin.sendPacket(message);
+                    plugin.sendPacket(message);
                 }
             }
             catch (Exception e) {
@@ -537,7 +537,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 Message message = new Message();
                 message.setID(event.getUniqueId());
-                message.setFrom(asteriskPlugin.getComponentJID());
+                message.setFrom(plugin.getComponentJID());
 
                 String appData = event.getAppData();
 
@@ -593,7 +593,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
                 for (ClientSession session : sessions) {
                     message.setTo(session.getAddress());
-                    asteriskPlugin.sendPacket(message);
+                    plugin.sendPacket(message);
                 }
             }
             catch (Exception e) {
@@ -604,7 +604,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
     public void sendHangupMessage(String callSessionID, String device, String username) {
         Message message = new Message();
-        message.setFrom(asteriskPlugin.getComponentJID());
+        message.setFrom(plugin.getComponentJID());
         message.setID(callSessionID);
 
         PhoneEvent phoneEvent = new PhoneEvent(callSessionID, PhoneEvent.Type.HANG_UP, device);
@@ -615,7 +615,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         Collection<ClientSession> sessions = sessionManager.getSessions(username);
         for (ClientSession session : sessions) {
             message.setTo(session.getAddress());
-            asteriskPlugin.sendPacket(message);
+            plugin.sendPacket(message);
         }
     }
 
@@ -660,13 +660,13 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         final AsteriskEventHandler that = (AsteriskEventHandler) o;
 
-        return !(asteriskPlugin != null ? !asteriskPlugin.equals(that.asteriskPlugin) : that.asteriskPlugin != null);
+        return !(plugin != null ? !plugin.equals(that.plugin) : that.plugin != null);
 
     }
 
     public int hashCode() {
         int result;
-        result = 29 + (asteriskPlugin != null ? asteriskPlugin.hashCode() : 0);
+        result = 29 + (plugin != null ? plugin.hashCode() : 0);
         return result;
     }
 }

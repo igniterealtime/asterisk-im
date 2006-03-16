@@ -11,11 +11,12 @@ package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.DefaultManagerConnection;
 import net.sf.asterisk.manager.ManagerConnection;
-import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.OnPhonePacketInterceptor;
+import org.jivesoftware.phone.PacketHandler;
+import org.jivesoftware.phone.PhoneManagerFactory;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.ThreadPool;
-import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.wildfire.container.Plugin;
@@ -83,7 +84,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
     private PacketHandler packetHandler;
 
     private final OnPhonePacketInterceptor onPhoneInterceptor = new OnPhonePacketInterceptor(this);
-    private AsteriskEventHandler eventHandler;
+
 
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         init();
@@ -145,16 +146,6 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             ComponentManagerFactory.getComponentManager().getLog().error(e);
         }
 
-        // Revert user presences to what it was before the phone call and send a hang_up
-        // message to the user
-        CallSessionFactory callSessionFactory = CallSessionFactory.getCallSessionFactory();
-        for (String username : UserPresenceUtil.getUsernames()) {
-            for (CallSession session : callSessionFactory.getUserCallSessions(username)) {
-                eventHandler.sendHangupMessage(session.getId(), AsteriskUtil.getDevice(session.getChannel()), username);
-            }
-            eventHandler.restoreUserPresence(username);
-        }
-
         // Remove the packet interceptor
         InterceptorManager.getInstance().removeInterceptor(onPhoneInterceptor);
 
@@ -162,7 +153,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         SessionEventDispatcher.removeListener(onPhoneInterceptor);
 
         try {
-            closeManagerConnection();
+            managerConnection.logoff();
             Log.info("Shutting down Asterisk-IM Thread Pool");
             ThreadPool.shutdown();
             Log.info("Shutting down Hibernate for Asterisk-IM");
@@ -278,14 +269,11 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
                     }
 
                     managerConnection = new DefaultManagerConnection(server, port, username, password);
-                    AsteriskPhoneManager asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO(), managerConnection);
-                    asteriskPhoneManager.init();
+                    AsteriskPhoneManager asteriskPhoneManager =
+                            new AsteriskPhoneManager(new DbPhoneDAO(), managerConnection);
+                    asteriskPhoneManager.init(this);
                     PhoneManagerFactory.init(asteriskPhoneManager);
 
-                    // Start handling events
-                    Log.debug("Adding AsteriskEventHandler");
-                    eventHandler = new AsteriskEventHandler(this);
-                    managerConnection.addEventHandler(eventHandler);
                 }
                 catch (Throwable e) {
                     Log.error("unable to obtain a manager connection --> " + e.getMessage(), e);
@@ -321,22 +309,4 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         return componentJID;
 
     }
-
-    private void closeManagerConnection() {
-
-        Log.info("Closing Asterisk Manager Connection");
-
-        try {
-            if (managerConnection != null) {
-                managerConnection.logoff();
-            }
-            ManagerConnectionPoolFactory.close();
-        }
-        catch (Exception e) {
-            Log.error("problem closing connection pool", e);
-        }
-
-
-    }
-
 }
