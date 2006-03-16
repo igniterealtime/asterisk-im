@@ -52,11 +52,6 @@ public interface PhoneConstants {
         public static final String PASSWORD = "asterisk.manager.password";
 
         /**
-         * How many manager server connections we should make
-         */
-        public static final String POOLSIZE = "asterisk.manager.poolsize";
-
-        /**
          * Whether or not the plugin is enabled
          */
         public static final String ENABLED = "asterisk.manager.enabled";

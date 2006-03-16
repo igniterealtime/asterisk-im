@@ -267,6 +267,10 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     }
 
+    public boolean isConnected() {
+        return con.isConnected();
+    }
+
     private void forward(String callSessionID, String username, String extension, JID jid) throws PhoneException {
 
 

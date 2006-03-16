@@ -1,6 +1,6 @@
-<%@ page import="net.sf.asterisk.manager.ManagerConnection,
+<%@ page import="org.jivesoftware.phone.PhoneManager,
+                 org.jivesoftware.phone.PhoneManagerFactory,
                  org.jivesoftware.phone.asterisk.AsteriskPlugin,
-                 org.jivesoftware.phone.asterisk.ManagerConnectionPoolFactory,
                  org.jivesoftware.util.JiveConstants,
                  org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.Log,
@@ -9,7 +9,6 @@
                  org.jivesoftware.wildfire.container.PluginManager" %>
 <%@ page import="javax.servlet.http.HttpServletRequest"%>
 <%@ page import="java.util.HashMap"%>
-<%@ page import="net.sf.asterisk.manager.TimeoutException"%>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
@@ -71,10 +70,6 @@
 
             JiveGlobals.setProperty(AsteriskPlugin.Properties.ENABLED, String.valueOf(enabled));
 
-            if (poolSize > 1) {
-                JiveGlobals.setProperty(AsteriskPlugin.Properties.POOLSIZE, String.valueOf(poolSize));
-            }
-
             if (port > 1024) {
                 JiveGlobals.setProperty(AsteriskPlugin.Properties.PORT, String.valueOf(port));
             }
@@ -127,7 +122,6 @@
         } else if (password == null) {
             password = "";
         }
-        poolSize = JiveGlobals.getIntProperty(AsteriskPlugin.Properties.POOLSIZE, -1);
         enabled = JiveGlobals.getBooleanProperty(AsteriskPlugin.Properties.ENABLED, false);
         callerID = JiveGlobals.getProperty(AsteriskPlugin.Properties.DEFAULT_CALLER_ID);
         context = JiveGlobals.getProperty(AsteriskPlugin.Properties.CONTEXT);
@@ -136,28 +130,11 @@
     }
 
     //try to establish a connection, if there is an error we log it below
-    ManagerConnection conn = null;
-    boolean isConnected = true;
+    boolean isConnected = false;
 
     if (enabled) {
-        try {
-            conn = ManagerConnectionPoolFactory.getManagerConnectionPool().getConnection();
-
-        }
-        catch (Exception e) {
-            isConnected = false;
-            Log.error("unable to get a manager connection : " + e.getMessage(), e);
-        }
-        finally {
-            if (conn != null) {
-                try {
-                    conn.logoff();
-                }
-                catch (TimeoutException e) {
-                    Log.error(e);
-                }
-            }
-        }
+        PhoneManager phoneManager = PhoneManagerFactory.getPhoneManager();
+        isConnected = phoneManager != null && phoneManager.isConnected();
     }
 
 
