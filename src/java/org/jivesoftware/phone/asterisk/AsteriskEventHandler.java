@@ -11,17 +11,10 @@ package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.ManagerEventHandler;
 import net.sf.asterisk.manager.event.*;
-import org.dom4j.Attribute;
 import org.dom4j.Element;
-import org.jivesoftware.wildfire.ClientSession;
-import org.jivesoftware.wildfire.SessionManager;
-import org.jivesoftware.wildfire.XMPPServer;
-import static org.jivesoftware.wildfire.XMPPServer.getInstance;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
-import org.jivesoftware.phone.PhoneManager;
-import static org.jivesoftware.phone.PhoneManagerFactory.getPhoneManager;
 import org.jivesoftware.phone.PhoneUser;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
@@ -33,6 +26,10 @@ import static org.jivesoftware.phone.util.ThreadPool.getThreadPool;
 import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
+import org.jivesoftware.wildfire.ClientSession;
+import org.jivesoftware.wildfire.SessionManager;
+import org.jivesoftware.wildfire.XMPPServer;
+import static org.jivesoftware.wildfire.XMPPServer.getInstance;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Presence;
@@ -51,10 +48,10 @@ import java.util.concurrent.ExecutorService;
 public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants {
 
 
-    private AsteriskPlugin plugin;
+    private AsteriskPhoneManager phoneManager;
 
-    public AsteriskEventHandler(AsteriskPlugin plugin) {
-        this.plugin = plugin;
+    public AsteriskEventHandler(AsteriskPhoneManager phoneManager) {
+        this.phoneManager = phoneManager;
     }
 
 
@@ -102,7 +99,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             return;
         }
         else if (executor.isShutdown()) {
-            Log.warn("Phone Thread pool has been shutdown, plugin shutdown must be in progress! " +
+            Log.warn("Phone Thread pool has been shutdown, phoneManager shutdown must be in progress! " +
                     "Not processing event");
             return;
         }
@@ -162,8 +159,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         public void run() {
 
             try {
-                PhoneManager phoneManager = getPhoneManager();
-
                 String device = getDevice(event.getChannel1());
 
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
@@ -208,8 +203,8 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         public void run() {
 
-            // Do nothing when the plugin is being removed/destroyed
-            if (!plugin.isComponentReady()) {
+            // Do nothing when the phoneManager is being removed/destroyed
+            if (!phoneManager.isReady()) {
                 return;
             }
 
@@ -217,7 +212,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             String device = getDevice(event.getChannel());
 
             try {
-                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -235,7 +229,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 // Notify the client that they have answered the phone
                 Message message = new Message();
-                message.setFrom(plugin.getComponentJID());
+                message.setFrom(phoneManager.getComponentJID());
                 message.setID(event.getUniqueId());
 
                 PhoneEvent phoneEvent =
@@ -282,7 +276,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                         for (ClientSession session : sessions) {
 
                             message.setTo(session.getAddress());
-                            plugin.sendPacket(message);
+                            phoneManager.sendPacket(message);
 
 
                             Presence prevPresence = session.getPresence();
@@ -327,7 +321,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             String device = getDevice(event.getChannel());
 
             try {
-                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -338,7 +331,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Log.debug("Asterisk-IM HangupTask called for user " + phoneUser);
 
                 // Send hang up message to user
-                sendHangupMessage(event.getUniqueId(), device, phoneUser.getUsername());
+                phoneManager.sendHangupMessage(event.getUniqueId(), device, phoneUser.getUsername());
 
                 CallSessionFactory callSessionFactory = getCallSessionFactory();
 
@@ -350,7 +343,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                         // Set the user's presence back to what it was before the phone call. The
                         // presence will be broadcasted to corresponding users
-                        if (!restoreUserPresence(phoneUser.getUsername())) {
+                        if (!phoneManager.restoreUserPresence(phoneUser.getUsername())) {
                             // TODO Remove this code when the "always on-the-phone problem is fixed"
                             // Check if the user is available and his presence is still
                             // on-the-phone (and no there are no more calls)
@@ -433,7 +426,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             String device = getDevice(event.getChannel());
 
             try {
-                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -455,7 +447,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 Message message = new Message();
                 message.setID(event.getUniqueId()); //just put something in here
-                message.setFrom(plugin.getComponentJID());
+                message.setFrom(phoneManager.getComponentJID());
 
                 if (fakeSession != null) {
 
@@ -489,7 +481,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
                 for (ClientSession session : sessions) {
                     message.setTo(session.getAddress());
-                    plugin.sendPacket(message);
+                    phoneManager.sendPacket(message);
                 }
             }
             catch (Exception e) {
@@ -518,7 +510,6 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
             String device = getDevice(event.getChannel());
 
             try {
-                PhoneManager phoneManager = getPhoneManager();
                 PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
 
                 //If there is no jid for this device don't do anything else
@@ -537,7 +528,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
                 Message message = new Message();
                 message.setID(event.getUniqueId());
-                message.setFrom(plugin.getComponentJID());
+                message.setFrom(phoneManager.getComponentJID());
 
                 String appData = event.getAppData();
 
@@ -593,7 +584,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
                 Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
                 for (ClientSession session : sessions) {
                     message.setTo(session.getAddress());
-                    plugin.sendPacket(message);
+                    phoneManager.sendPacket(message);
                 }
             }
             catch (Exception e) {
@@ -602,57 +593,7 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
         }
     }
 
-    public void sendHangupMessage(String callSessionID, String device, String username) {
-        Message message = new Message();
-        message.setFrom(plugin.getComponentJID());
-        message.setID(callSessionID);
 
-        PhoneEvent phoneEvent = new PhoneEvent(callSessionID, PhoneEvent.Type.HANG_UP, device);
-        message.getElement().add(phoneEvent);
-
-        // Send the message to each of jids for this user
-        SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-        Collection<ClientSession> sessions = sessionManager.getSessions(username);
-        for (ClientSession session : sessions) {
-            message.setTo(session.getAddress());
-            plugin.sendPacket(message);
-        }
-    }
-
-    public boolean restoreUserPresence(String username) {
-        // Flag that indicates if the presence was restored to "off the phone"
-        boolean restored = false;
-        Collection<Presence> presences = UserPresenceUtil.removePresences(username);
-        if (presences != null) {
-            for (Presence presence : presences) {
-
-                Element presenceElement = presence.getElement();
-
-                Element phoneStatusElement = presenceElement.element("phone-status");
-                // If the phone-status attribute exists check to see if the status is avaialbable
-                if (phoneStatusElement != null) {
-
-                    Attribute statusAtt = phoneStatusElement.attribute("status");
-
-                    if (!PhoneStatus.Status.AVAILABLE.name().equals(statusAtt.getText())) {
-                        statusAtt.setText(PhoneStatus.Status.AVAILABLE.name());
-                    }
-
-                }
-                // The attribute doesn't exist add new attribute
-                else {
-
-                    PhoneStatus status = new PhoneStatus(PhoneStatus.Status.AVAILABLE);
-                    presence.getElement().add(status);
-
-                }
-
-                getInstance().getPresenceRouter().route(presence);
-                restored = true;
-            }
-        }
-        return restored;
-    }
 
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -660,13 +601,13 @@ public class AsteriskEventHandler implements ManagerEventHandler, PhoneConstants
 
         final AsteriskEventHandler that = (AsteriskEventHandler) o;
 
-        return !(plugin != null ? !plugin.equals(that.plugin) : that.plugin != null);
+        return !(phoneManager != null ? !phoneManager.equals(that.phoneManager) : that.phoneManager != null);
 
     }
 
     public int hashCode() {
         int result;
-        result = 29 + (plugin != null ? plugin.hashCode() : 0);
+        result = 29 + (phoneManager != null ? phoneManager.hashCode() : 0);
         return result;
     }
 }

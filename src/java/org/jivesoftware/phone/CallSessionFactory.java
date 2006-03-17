@@ -27,7 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CallSessionFactory {
 
+    /**
+     * key => asterisk unique id, value => CallSession for that id
+     */
     private Map<String, CallSession> sessionMap = new ConcurrentHashMap<String, CallSession>();
+
+    /**
+     * key => username, value => all call sessions for that user
+     */
     private Map<String, Collection<CallSession>> userSessionMap = new ConcurrentHashMap<String, Collection<CallSession>>();
 
     private static final CallSessionFactory INSTANCE = new CallSessionFactory();
@@ -62,6 +69,10 @@ public class CallSessionFactory {
         }
 
         return session;
+    }
+
+    public CallSession getCallSession(String id) {
+        return sessionMap.get(id);
     }
 
     /**

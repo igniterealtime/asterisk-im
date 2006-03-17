@@ -18,13 +18,26 @@ import net.sf.asterisk.manager.response.CommandResponse;
 import net.sf.asterisk.manager.response.MailboxCountResponse;
 import net.sf.asterisk.manager.response.ManagerError;
 import net.sf.asterisk.manager.response.ManagerResponse;
+import org.dom4j.Attribute;
+import org.dom4j.Element;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
+import org.jivesoftware.phone.element.PhoneEvent;
+import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.UserPresenceUtil;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.jivesoftware.util.Log;
+import org.jivesoftware.util.JiveConstants;
+import org.jivesoftware.wildfire.ClientSession;
+import org.jivesoftware.wildfire.SessionManager;
+import org.jivesoftware.wildfire.XMPPServer;
+import static org.jivesoftware.wildfire.XMPPServer.getInstance;
+import org.jivesoftware.smack.XMPPException;
 import org.xmpp.packet.JID;
+import org.xmpp.packet.Message;
+import org.xmpp.packet.Presence;
+import org.xmpp.packet.Packet;
 
 import java.io.IOException;
 import java.util.*;
@@ -40,7 +53,8 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     private ManagerConnection con;
     private DefaultAsteriskManager asteriskManager;
-    private AsteriskEventHandler eventHandler;
+    private ChannelStatusRunnable channelStatusRunnable;
+    private AsteriskPlugin plugin;
 
     public AsteriskPhoneManager(PhoneDAO dao, ManagerConnection con) {
         super(dao);
@@ -49,12 +63,14 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
     }
 
     public void init(AsteriskPlugin plugin) throws TimeoutException, IOException, AuthenticationFailedException {
+        this.plugin = plugin;
         asteriskManager.initialize();
         // Start handling events
         Log.debug("Adding AsteriskEventHandler");
-        eventHandler = new AsteriskEventHandler(plugin);
+        AsteriskEventHandler eventHandler = new AsteriskEventHandler(this);
         con.addEventHandler(eventHandler);
-
+        channelStatusRunnable = new ChannelStatusRunnable();
+        new Thread(channelStatusRunnable).start();
     }
 
     public void destroy() {
@@ -63,10 +79,11 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         CallSessionFactory callSessionFactory = CallSessionFactory.getCallSessionFactory();
         for (String username : UserPresenceUtil.getUsernames()) {
             for (CallSession session : callSessionFactory.getUserCallSessions(username)) {
-                eventHandler.sendHangupMessage(session.getId(), AsteriskUtil.getDevice(session.getChannel()), username);
+                sendHangupMessage(session.getId(), AsteriskUtil.getDevice(session.getChannel()), username);
             }
-            eventHandler.restoreUserPresence(username);
+            restoreUserPresence(username);
         }
+        channelStatusRunnable.shouldRun = false;
     }
 
 
@@ -292,6 +309,70 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
         return con.isConnected();
     }
 
+    public boolean isReady() {
+        return plugin.isComponentReady();
+    }
+
+    public JID getComponentJID() {
+        return plugin.getComponentJID();
+    }
+
+    public void sendHangupMessage(String callSessionID, String device, String username) {
+        Message message = new Message();
+        message.setFrom(plugin.getComponentJID());
+        message.setID(callSessionID);
+
+        PhoneEvent phoneEvent = new PhoneEvent(callSessionID, PhoneEvent.Type.HANG_UP, device);
+        message.getElement().add(phoneEvent);
+
+        // Send the message to each of jids for this user
+        SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+        Collection<ClientSession> sessions = sessionManager.getSessions(username);
+        for (ClientSession session : sessions) {
+            message.setTo(session.getAddress());
+            plugin.sendPacket(message);
+        }
+    }
+
+    public boolean restoreUserPresence(String username) {
+        // Flag that indicates if the presence was restored to "off the phone"
+        boolean restored = false;
+        Collection<Presence> presences = UserPresenceUtil.removePresences(username);
+        if (presences != null) {
+            for (Presence presence : presences) {
+
+                Element presenceElement = presence.getElement();
+
+                Element phoneStatusElement = presenceElement.element("phone-status");
+                // If the phone-status attribute exists check to see if the status is avaialbable
+                if (phoneStatusElement != null) {
+
+                    Attribute statusAtt = phoneStatusElement.attribute("status");
+
+                    if (!PhoneStatus.Status.AVAILABLE.name().equals(statusAtt.getText())) {
+                        statusAtt.setText(PhoneStatus.Status.AVAILABLE.name());
+                    }
+
+                }
+                // The attribute doesn't exist add new attribute
+                else {
+
+                    PhoneStatus status = new PhoneStatus(PhoneStatus.Status.AVAILABLE);
+                    presence.getElement().add(status);
+
+                }
+
+                getInstance().getPresenceRouter().route(presence);
+                restored = true;
+            }
+        }
+        return restored;
+    }
+
+    public void sendPacket(Packet packet) throws XMPPException {
+        plugin.sendPacket(packet);
+    }
+
     private void forward(String callSessionID, String username, String extension, JID jid) throws PhoneException {
 
 
@@ -337,5 +418,77 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
     }
 
+
+    /**
+     * Peforms a cleanup on any sessions that have been left open that shouldn't be
+     */
+    private class ChannelStatusRunnable implements Runnable {
+
+        boolean shouldRun = true;
+        long lastRun = -1;
+        static final long PERIOD = JiveConstants.MINUTE * 2;
+
+        public void run() {
+
+            while (shouldRun) {
+
+                if (lastRun + PERIOD > System.currentTimeMillis()) {
+
+                    Map channels = asteriskManager.getChannels();
+
+                    for (Object o : channels.entrySet()) {
+                        Map.Entry entry = (Map.Entry) o;
+
+                        String uniqueID = (String) entry.getKey();
+                        Channel channel = (Channel) entry.getValue();
+
+
+                        CallSession callSession = CallSessionFactory.getCallSessionFactory().getCallSession(uniqueID);
+
+                        if (ChannelStateEnum.UP.equals(channel.getState()) && callSession != null) {
+                            Log.debug("AsteriskPhoneManger.ChannelStatusRunnable: User " + callSession.getUsername() +
+                                    " has no more call sessions, but his presence is " +
+                                    "still ON_PHONE. Changing to AVAILABLE");
+                            CallSessionFactory.getCallSessionFactory().destroyPhoneSession(uniqueID);
+                            if (!restoreUserPresence(callSession.getUsername())) {
+                                // TODO Remove this code when the "always on-the-phone problem is fixed"
+                                // Check if the user is available and his presence is still
+                                // on-the-phone (and no there are no more calls)
+                                SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+                                Collection<ClientSession> sessions = sessionManager.getSessions(callSession.getUsername());
+                                for (ClientSession session : sessions) {
+                                    Presence presence = session.getPresence();
+                                    Element phoneStatusElement = presence.getElement().element("phone-status");
+                                    // If the phone-status attribute exists check to see if the status is avaialbable
+                                    if (phoneStatusElement != null &&
+                                            PhoneStatus.Status.ON_PHONE.name().equals(phoneStatusElement.attributeValue("status")))
+                                    {
+                                        Log.debug("Asterisk-IM HangupTask: User " + callSession.getUsername() +
+                                                " has no more call sessions, but his presence is " +
+                                                "still ON_PHONE. Changing to AVAILABLE");
+                                        // Change presence to available since there are no more active calls
+                                        phoneStatusElement.addAttribute("status", PhoneStatus.Status.AVAILABLE.name());
+                                        getInstance().getPresenceRouter().route(presence);
+                                    }
+                                }
+
+                            }
+                        }
+
+                    }
+                }
+
+                try {
+                    Thread.sleep(5 * JiveConstants.SECOND);
+                }
+                catch (InterruptedException e) {
+                    // Not really a big deal if this is interrupted
+                }
+
+            }
+
+        }
+
+    }
 
 }
