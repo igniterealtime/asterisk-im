@@ -63,7 +63,7 @@ public class DbPhoneDAO implements PhoneDAO {
 
     public PhoneDevice getDevice(String deviceName) {
 
-        String sql = "SELECT deviceID, device, extension, callerID, userID " +
+        String sql = "SELECT deviceID, device, extension, callerId, userID " +
                 "from phoneDevice WHERE device = ?";
 
         PhoneDevice device = null;
@@ -185,7 +185,7 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public PhoneDevice getPhoneDeviceByID(long id) {
-        String sql = "SELECT deviceID, device, extension, callerID, isPrimary, userID " +
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID " +
                 "FROM phoneDevice WHERE deviceID = ?";
 
         PhoneDevice device = null;
@@ -332,7 +332,7 @@ public class DbPhoneDAO implements PhoneDAO {
 
     public void update(PhoneDevice device) {
 
-        String sql = "UPDATE phoneDevice SET extension = ?, callerID = ?, isPrimary = ? " +
+        String sql = "UPDATE phoneDevice SET extension = ?, callerId = ?, isPrimary = ? " +
                 "WHERE deviceID  = ?";
 
         PreparedStatement psmt = null;
@@ -358,7 +358,7 @@ public class DbPhoneDAO implements PhoneDAO {
     public void insert(PhoneDevice device) {
 
         String sql = "INSERT INTO phoneDevice " +
-                "(deviceID, extension, callerID, isPrimary, userID, device) " +
+                "(deviceID, extension, callerId, isPrimary, userID, device) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         long id = SequenceManager.nextID(device);
@@ -409,7 +409,7 @@ public class DbPhoneDAO implements PhoneDAO {
 
     public PhoneDevice getPrimaryDevice(long phoneUserID) {
 
-        String sql = "SELECT deviceID, device, extension, callerID, isPrimary, userID " +
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID " +
                 "FROM phoneDevice WHERE userID = ? AND isPrimary = 1";
 
         PhoneDevice device = null;
