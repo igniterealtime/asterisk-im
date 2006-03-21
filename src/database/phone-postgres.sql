@@ -1,6 +1,3 @@
-alter table phoneDevice drop constraint FKA6F6FD644F390113;
-drop table phoneDevice;
-drop table phoneUser;
 create table phoneDevice (
    deviceID int8 not null,
    device varchar(255) not null,
@@ -15,4 +12,4 @@ create table phoneUser (
    username varchar(255) not null unique,
    primary key (userID)
 );
-alter table phoneDevice add constraint FKA6F6FD644F390113 foreign key (userID) references phoneUser;
+alter table phoneDevice add constraint pD_userID_fk foreign key (userID) references phoneUser;
