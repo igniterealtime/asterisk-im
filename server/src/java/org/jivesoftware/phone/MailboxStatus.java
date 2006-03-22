@@ -19,7 +19,7 @@ public class MailboxStatus {
     /**
      * Creates a new MailboxStatus object
      *
-     * @param mailbox the name of the mailbox
+     * @param mailbox     the name of the mailbox
      * @param oldMessages number of old messages
      * @param newMessages number of new messages
      */
@@ -31,6 +31,7 @@ public class MailboxStatus {
 
     /**
      * Returns the name of the Mailbox that this status object is for
+     *
      * @return the name of the Mailbox that this status object is for
      */
     public String getMailbox() {
@@ -55,18 +56,28 @@ public class MailboxStatus {
         return newMessages;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         final MailboxStatus that = (MailboxStatus) o;
 
-        if (newMessages != that.newMessages) return false;
-        if (oldMessages != that.oldMessages) return false;
+        if (newMessages != that.newMessages) {
+            return false;
+        }
+        if (oldMessages != that.oldMessages) {
+            return false;
+        }
         return !(mailbox != null ? !mailbox.equals(that.mailbox) : that.mailbox != null);
 
     }
 
+    @Override
     public int hashCode() {
         int result;
         result = (mailbox != null ? mailbox.hashCode() : 0);
@@ -75,7 +86,7 @@ public class MailboxStatus {
         return result;
     }
 
-
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("MailboxStatus");

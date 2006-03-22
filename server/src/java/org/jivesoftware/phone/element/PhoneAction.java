@@ -9,9 +9,9 @@
  */
 package org.jivesoftware.phone.element;
 
-import org.jivesoftware.phone.util.PhoneConstants;
 import org.dom4j.Namespace;
 import org.dom4j.tree.BaseElement;
+import org.jivesoftware.phone.util.PhoneConstants;
 
 /**
  * @author Andrew Wright
@@ -19,6 +19,7 @@ import org.dom4j.tree.BaseElement;
 public class PhoneAction extends BaseElement {
 
     private static final Namespace NAMESPACE = new Namespace(null, PhoneConstants.NAMESPACE);
+    private static final long serialVersionUID = -2541186522728239794L;
 
     public static enum Type {
         /**
@@ -51,7 +52,9 @@ public class PhoneAction extends BaseElement {
     }
 
     public void setType(Type type) {
-        if (type == null) { return; }
+        if (type == null) {
+            return;
+        }
         addAttribute("type", type.name());
     }
 

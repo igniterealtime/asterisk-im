@@ -9,10 +9,7 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.ManagerConnection;
-import org.jivesoftware.phone.OnPhonePacketInterceptor;
-import org.jivesoftware.phone.PacketHandler;
-import org.jivesoftware.phone.PhoneManagerFactory;
+import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.util.JiveGlobals;
@@ -50,6 +47,8 @@ import java.io.File;
  *
  * @author Andrew Wright
  */
+@PluginVersion("1.1.0")
+@PBXInfo(make = "Asterisk", version = "1.2")
 public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
     /**
@@ -138,18 +137,13 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
             ComponentManagerFactory.getComponentManager().getLog().error(e);
         }
 
+        asteriskPhoneManager.destroy();
+
         // Remove the packet interceptor
         InterceptorManager.getInstance().removeInterceptor(onPhoneInterceptor);
 
         // Remove OnPhonePacketInterceptor as a session event listener
         SessionEventDispatcher.removeListener(onPhoneInterceptor);
-
-
-
-
-        
-
-
     }
 
     /**

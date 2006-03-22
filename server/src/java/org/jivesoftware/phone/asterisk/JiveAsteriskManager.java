@@ -10,27 +10,27 @@ package org.jivesoftware.phone.asterisk;
 import net.sf.asterisk.manager.DefaultAsteriskManager;
 import net.sf.asterisk.manager.ManagerConnection;
 import net.sf.asterisk.manager.event.*;
-import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
-import org.jivesoftware.phone.PhoneUser;
+import org.dom4j.Element;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
-import org.jivesoftware.phone.util.UserPresenceUtil;
+import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
+import org.jivesoftware.phone.PhoneUser;
+import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneStatus;
-import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
-import org.jivesoftware.wildfire.SessionManager;
-import org.jivesoftware.wildfire.XMPPServer;
-import org.jivesoftware.wildfire.ClientSession;
-import static org.jivesoftware.wildfire.XMPPServer.getInstance;
+import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
+import org.jivesoftware.wildfire.ClientSession;
+import org.jivesoftware.wildfire.SessionManager;
+import org.jivesoftware.wildfire.XMPPServer;
+import static org.jivesoftware.wildfire.XMPPServer.getInstance;
+import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Presence;
-import org.xmpp.packet.JID;
-import org.dom4j.Element;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -44,17 +44,19 @@ public class JiveAsteriskManager extends DefaultAsteriskManager {
         this.phoneManager = asteriskPhoneManager;
     }
 
+    @Override
     protected void handleDisconnectEvent(DisconnectEvent disconnectEvent) {
         super.handleDisconnectEvent(disconnectEvent);
     }
 
 
+    @Override
     protected void handleHangupEvent(HangupEvent event) {
         super.handleHangupEvent(event);
         handleHangup(event);
     }
 
-
+    @Override
     protected void handleNewExtenEvent(NewExtenEvent event) {
         super.handleNewExtenEvent(event);
 
@@ -63,6 +65,7 @@ public class JiveAsteriskManager extends DefaultAsteriskManager {
         }
     }
 
+    @Override
     protected void handleNewStateEvent(NewStateEvent event) {
         super.handleNewStateEvent(event);
 
@@ -442,9 +445,6 @@ public class JiveAsteriskManager extends DefaultAsteriskManager {
             Log.error(e.getMessage(), e);
         }
     }
-
-
-
 
 
 }

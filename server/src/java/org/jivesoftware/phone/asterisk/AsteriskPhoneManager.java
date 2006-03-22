@@ -50,7 +50,7 @@ import java.util.*;
  *
  * @author Andrew Wright
  */
-@PBXInfo(make = "Asterisk", version = "1.x")
+@PBXInfo(make = "Asterisk", version = "1.2")
 public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConstants {
 
     private ManagerConnection con;

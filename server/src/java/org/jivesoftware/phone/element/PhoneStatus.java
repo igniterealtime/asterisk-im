@@ -21,6 +21,7 @@ public class PhoneStatus extends BaseElement {
     private static final Namespace NAMESPACE = new Namespace(null, PhoneConstants.NAMESPACE);
 
     public static final String ELEMENT_NAME = "phone-status";
+    private static final long serialVersionUID = 6530959124167483746L;
 
     public static enum Status {
         ON_PHONE,
