@@ -182,8 +182,11 @@
                     if (isPrimary && devices != null) {
 
                         for (PhoneDevice currentDevice : devices) {
-                            currentDevice.setPrimary(false);
-                            phoneManager.update(currentDevice);
+
+                            if (currentDevice.getID() != phoneDevice.getID()) {
+                                currentDevice.setPrimary(false);
+                                phoneManager.update(currentDevice);
+                            }
                         }
 
                         phoneDevice.setPrimary(true);

@@ -9,14 +9,12 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.DefaultManagerConnection;
 import net.sf.asterisk.manager.ManagerConnection;
 import org.jivesoftware.phone.OnPhonePacketInterceptor;
 import org.jivesoftware.phone.PacketHandler;
 import org.jivesoftware.phone.PhoneManagerFactory;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.phone.util.ThreadPool;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.wildfire.container.Plugin;
@@ -64,10 +62,6 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
      */
     public static final String DESCRIPTION = "Asterisk integration component";
 
-
-    // This class needs to keep one connection for handling events
-    private ManagerConnection managerConnection = null;
-
     // The jid for this component
     private JID componentJID = null;
 
@@ -80,6 +74,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
      */
     private boolean isComponentReady = false;
 
+    private AsteriskPhoneManager asteriskPhoneManager;
     private PacketHandler packetHandler;
 
     private final OnPhonePacketInterceptor onPhoneInterceptor = new OnPhonePacketInterceptor(this);
@@ -93,8 +88,6 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         Log.info("Initializing Asterisk-IM Plugin");
 
         try {
-            Log.info("Initializing Asterisk-IM thread Pool");
-            ThreadPool.init(); //initialize the thread pols
             initAsteriskManager();
 
         }
@@ -151,19 +144,10 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         // Remove OnPhonePacketInterceptor as a session event listener
         SessionEventDispatcher.removeListener(onPhoneInterceptor);
 
-        try {
-            managerConnection.logoff();
-            Log.info("Shutting down Asterisk-IM Thread Pool");
-            ThreadPool.shutdown();
-            Log.info("Shutting down Hibernate for Asterisk-IM");
 
-        }
-        catch (Exception e) {
-            // Make sure we catch all exceptions show we can Log anything that might be
-            // going on
-            Log.error(e.getMessage(), e);
-            ComponentManagerFactory.getComponentManager().getLog().error(e);
-        }
+
+
+        
 
 
     }
@@ -248,40 +232,16 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         // Only initialize things if the plugin is enabled
         if (JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
 
-            Log.info("Initializing Asterisk Manager connection");
+            try {
 
-            // Populate the manager configuration
-            String server = JiveGlobals.getProperty(Properties.SERVER);
-            String username = JiveGlobals.getProperty(Properties.USERNAME);
-            String password = JiveGlobals.getProperty(Properties.PASSWORD);
-            int port = JiveGlobals.getIntProperty(Properties.PORT, 5038);
-
-            // Check to see if the configuration is valid then
-            // Initialize the manager connection pool and create an eventhandler
-            if (server != null && username != null && password != null) {
-
-                try {
-
-                    // This will release the connection back to the pool so can be reinitialized
-                    if (managerConnection != null) {
-                        managerConnection.logoff();
-                    }
-
-                    managerConnection = new DefaultManagerConnection(server, port, username, password);
-                    AsteriskPhoneManager asteriskPhoneManager =
-                            new AsteriskPhoneManager(new DbPhoneDAO(), managerConnection);
-                    asteriskPhoneManager.init(this);
-                    PhoneManagerFactory.init(asteriskPhoneManager);
-
-                }
-                catch (Throwable e) {
-                    Log.error("unable to obtain a manager connection --> " + e.getMessage(), e);
-                }
-
+                asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
+                asteriskPhoneManager.init(this);
+                PhoneManagerFactory.init(asteriskPhoneManager);
             }
-            else {
-                Log.warn("AsteriskPlugin configuration is invalid, please see admin tool!!");
+            catch (Throwable e) {
+                Log.error(e);
             }
+
         }
     }
 

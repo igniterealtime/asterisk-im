@@ -26,18 +26,20 @@ import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneStatus;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.UserPresenceUtil;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.util.JiveConstants;
+import org.jivesoftware.util.JiveGlobals;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.jivesoftware.util.Log;
-import org.jivesoftware.util.JiveConstants;
 import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.XMPPServer;
 import static org.jivesoftware.wildfire.XMPPServer.getInstance;
-import org.jivesoftware.smack.XMPPException;
+import org.xmpp.component.ComponentManagerFactory;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
-import org.xmpp.packet.Presence;
 import org.xmpp.packet.Packet;
+import org.xmpp.packet.Presence;
 
 import java.io.IOException;
 import java.util.*;
@@ -56,19 +58,48 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
     private ChannelStatusRunnable channelStatusRunnable;
     private AsteriskPlugin plugin;
 
-    public AsteriskPhoneManager(PhoneDAO dao, ManagerConnection con) {
+    public AsteriskPhoneManager(PhoneDAO dao) {
         super(dao);
-        this.con = con;
-        asteriskManager = new DefaultAsteriskManager(con);
     }
 
     public void init(AsteriskPlugin plugin) throws TimeoutException, IOException, AuthenticationFailedException {
+
+
+        Log.info("Initializing Asterisk Manager connection");
+
+        // Populate the manager configuration
+        String server = JiveGlobals.getProperty(Properties.SERVER);
+        String username = JiveGlobals.getProperty(Properties.USERNAME);
+        String password = JiveGlobals.getProperty(Properties.PASSWORD);
+        int port = JiveGlobals.getIntProperty(Properties.PORT, 5038);
+
+        // Check to see if the configuration is valid then
+        // Initialize the manager connection pool and create an eventhandler
+        if (server != null && username != null && password != null) {
+
+            try {
+
+                if (con != null) {
+                    con.logoff();
+                }
+
+                con = new DefaultManagerConnection(server, port, username, password);
+                asteriskManager = new JiveAsteriskManager(con, this);
+
+            }
+            catch (Throwable e) {
+                Log.error("unable to obtain a manager connection --> " + e.getMessage(), e);
+            }
+
+        }
+        else {
+            Log.warn("AsteriskPlugin configuration is invalid, please see admin tool!!");
+        }
+
+
         this.plugin = plugin;
         asteriskManager.initialize();
         // Start handling events
-        Log.debug("Adding AsteriskEventHandler");
-        AsteriskEventHandler eventHandler = new AsteriskEventHandler(this);
-        con.addEventHandler(eventHandler);
         channelStatusRunnable = new ChannelStatusRunnable();
         new Thread(channelStatusRunnable).start();
     }
@@ -84,6 +115,18 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             restoreUserPresence(username);
         }
         channelStatusRunnable.shouldRun = false;
+
+
+        Log.debug("Shutting down Manager connection");
+        try {
+            con.logoff();
+        }
+        catch (Throwable e) {
+            // Make sure we catch all exceptions show we can Log anything that might be
+            // going on
+            Log.error(e.getMessage(), e);
+            ComponentManagerFactory.getComponentManager().getLog().error(e);
+        }
     }
 
 
