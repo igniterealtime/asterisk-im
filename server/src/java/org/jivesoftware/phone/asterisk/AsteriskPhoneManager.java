@@ -488,7 +488,9 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
                         CallSession callSession = CallSessionFactory.getCallSessionFactory().getCallSession(uniqueID);
 
-                        if (ChannelStateEnum.UP.equals(channel.getState()) && callSession != null) {
+                        // The channel is not up 
+                        if (!ChannelStateEnum.UP.equals(channel.getState()) && callSession != null) {
+
                             Log.debug("AsteriskPhoneManger.ChannelStatusRunnable: User " + callSession.getUsername() +
                                     " has no more call sessions, but his presence is " +
                                     "still ON_PHONE. Changing to AVAILABLE");
