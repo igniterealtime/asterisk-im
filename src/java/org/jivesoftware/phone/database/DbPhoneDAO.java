@@ -343,7 +343,7 @@ public class DbPhoneDAO implements PhoneDAO {
             psmt = con.prepareStatement(sql);
             psmt.setString(1, device.getExtension());
             psmt.setString(2, device.getCallerId());
-            psmt.setBoolean(3, device.isPrimary());
+            psmt.setLong(3, device.isPrimary() ? 1 : 0);
             psmt.setLong(4, device.getID());
             psmt.executeUpdate();
         }
@@ -372,7 +372,7 @@ public class DbPhoneDAO implements PhoneDAO {
             psmt.setLong(1, id);
             psmt.setString(2, device.getExtension());
             psmt.setString(3, device.getCallerId());
-            psmt.setBoolean(4, device.isPrimary());
+            psmt.setLong(4, device.isPrimary() ? 1 : 0);
             psmt.setLong(5, device.getPhoneUserID());
             psmt.setString(6, device.getDevice());
             psmt.executeUpdate();
@@ -477,7 +477,7 @@ public class DbPhoneDAO implements PhoneDAO {
         device.setDevice(rs.getString("device"));
         device.setExtension(rs.getString("extension"));
         device.setCallerId(rs.getString("callerId"));
-        device.setPrimary(rs.getBoolean("isPrimary"));
+        device.setPrimary(rs.getLong("isPrimary") == 1);
         return device;
     }
 

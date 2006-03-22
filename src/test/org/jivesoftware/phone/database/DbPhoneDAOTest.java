@@ -9,10 +9,9 @@
  */
 package org.jivesoftware.phone.database;
 
+import junit.framework.TestCase;
 import org.jivesoftware.phone.PhoneDevice;
 import org.jivesoftware.phone.PhoneUser;
-import org.jivesoftware.phone.util.ThreadPool;
-import junit.framework.TestCase;
 import org.jivesoftware.util.JiveGlobals;
 
 import java.util.Collection;
@@ -28,9 +27,6 @@ public class DbPhoneDAOTest extends TestCase {
     static {
         JiveGlobals.setConfigName("wildfire.xml");
         JiveGlobals.getPropertyNames(); // just called to intialize jive globals
-        ThreadPool.init();
-
-
     }
 
     public void testCRUD() throws Exception {
