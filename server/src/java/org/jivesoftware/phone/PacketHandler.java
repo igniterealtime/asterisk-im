@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 /**
+ * Processes the packets the come into the phone component
+ * 
  * @author Andrew Wright
  */
 public class PacketHandler implements PhoneConstants {
