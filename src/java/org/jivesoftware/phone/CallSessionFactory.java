@@ -11,8 +11,6 @@ package org.jivesoftware.phone;
 
 
 import org.jivesoftware.util.Log;
-import org.jivesoftware.database.SequenceManager;
-import org.jivesoftware.database.JiveID;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,7 +62,7 @@ public class CallSessionFactory {
             userSessionMap.put(username, sessions);
         }
 
-        if(!sessions.contains(session)) {
+        if (!sessions.contains(session)) {
             sessions.add(session);
         }
 
@@ -111,7 +109,7 @@ public class CallSessionFactory {
     /**
      * Destroys the CallSession of the specified user with the given channel.
      *
-     * @param channel the channel of the CallSession.
+     * @param channel  the channel of the CallSession.
      * @param username the name of the user that has the CallSession.
      * @return the removed CallSession or <tt>null</tt> if nothing was removed.
      */
@@ -152,18 +150,6 @@ public class CallSessionFactory {
      */
     public static CallSessionFactory getCallSessionFactory() {
         return INSTANCE;
-    }
-
-    /**
-     * Generates new call session IDs.
-     *
-     * @return new call session IDs.
-     */
-    public static String generateNewCallSessionID() {
-        long id = SequenceManager.nextID(CallSession.class.getAnnotation(JiveID.class).value());
-        StringBuilder builder = new StringBuilder("asterisk-im-");
-        builder.append(id);
-        return builder.toString();
     }
 
 }

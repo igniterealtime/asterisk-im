@@ -6,14 +6,14 @@ package org.jivesoftware.phone;
  * @author Andrew Wright
  */
 public @interface PBXInfo {
-    
+
     /**
      * The make of the pbx (ie asterisk)
      */
     String make();
 
     /**
-     * Version of the pbx
+     * org.jivesoftware.phone.Version of the pbx
      */
     String version();
 }

@@ -11,9 +11,6 @@ package org.jivesoftware.phone;
 
 import org.jivesoftware.database.JiveID;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Used to represent a user/channel relationship.
  *
@@ -24,6 +21,8 @@ public class PhoneUser implements java.io.Serializable {
 
     private long id;
     private String username;
+
+    private static final long serialVersionUID = -3105905430411708323L;
 
     public PhoneUser() {
     }
@@ -48,7 +47,7 @@ public class PhoneUser implements java.io.Serializable {
         this.username = username;
     }
 
-
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -66,6 +65,7 @@ public class PhoneUser implements java.io.Serializable {
 
     }
 
+    @Override
     public int hashCode() {
         int result;
         result = (int) (id ^ (id >>> 32));
@@ -73,6 +73,7 @@ public class PhoneUser implements java.io.Serializable {
         return result;
     }
 
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("PhoneUser");

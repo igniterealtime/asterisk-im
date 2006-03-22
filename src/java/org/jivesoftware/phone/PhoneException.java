@@ -13,6 +13,7 @@ package org.jivesoftware.phone;
  * @author Andrew Wright
  */
 public class PhoneException extends Exception {
+    private static final long serialVersionUID = 124052723723359452L;
 
     public PhoneException() {
         super();
@@ -27,7 +28,7 @@ public class PhoneException extends Exception {
     }
 
     public PhoneException(Throwable cause) {
-        super(cause);    
+        super(cause);
     }
 
 }

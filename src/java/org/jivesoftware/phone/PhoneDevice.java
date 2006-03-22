@@ -99,6 +99,7 @@ public class PhoneDevice {
         this.extension = extension;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -132,6 +133,7 @@ public class PhoneDevice {
 
     }
 
+    @Override
     public int hashCode() {
         int result;
         result = (int) (id ^ (id >>> 32));
@@ -145,6 +147,7 @@ public class PhoneDevice {
     }
 
 
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("PhoneDevice");

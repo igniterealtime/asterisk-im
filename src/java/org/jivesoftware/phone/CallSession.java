@@ -10,12 +10,10 @@
 package org.jivesoftware.phone;
 
 import org.xmpp.packet.JID;
-import org.jivesoftware.database.JiveID;
 
 /**
  * @author Andrew Wright
  */
-@JiveID(102)
 public class CallSession {
 
     private String id;
@@ -97,25 +95,47 @@ public class CallSession {
         this.forwardedJID = forwardedJID;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         final CallSession that = (CallSession) o;
 
-        if (isMonitored != that.isMonitored) return false;
-        if (callerID != null ? !callerID.equals(that.callerID) : that.callerID != null) return false;
-        if (channel != null ? !channel.equals(that.channel) : that.channel != null) return false;
-        if (dialedJID != null ? !dialedJID.equals(that.dialedJID) : that.dialedJID != null) return false;
-        if (forwardedExtension != null ? !forwardedExtension.equals(that.forwardedExtension) : that.forwardedExtension != null)
+        if (isMonitored != that.isMonitored) {
             return false;
-        if (forwardedJID != null ? !forwardedJID.equals(that.forwardedJID) : that.forwardedJID != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel) : that.linkedChannel != null) return false;
+        }
+        if (callerID != null ? !callerID.equals(that.callerID) : that.callerID != null) {
+            return false;
+        }
+        if (channel != null ? !channel.equals(that.channel) : that.channel != null) {
+            return false;
+        }
+        if (dialedJID != null ? !dialedJID.equals(that.dialedJID) : that.dialedJID != null) {
+            return false;
+        }
+        if (forwardedExtension != null ? !forwardedExtension.equals(that.forwardedExtension) : that.forwardedExtension != null)
+        {
+            return false;
+        }
+        if (forwardedJID != null ? !forwardedJID.equals(that.forwardedJID) : that.forwardedJID != null) {
+            return false;
+        }
+        if (id != null ? !id.equals(that.id) : that.id != null) {
+            return false;
+        }
+        if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel) : that.linkedChannel != null) {
+            return false;
+        }
         return !(username != null ? !username.equals(that.username) : that.username != null);
 
     }
 
+    @Override
     public int hashCode() {
         int result;
         result = (id != null ? id.hashCode() : 0);
