@@ -49,6 +49,7 @@ import java.util.*;
  * Asterisk dependent implementation of {@link PhoneManager}
  *
  * @author Andrew Wright
+ * @since 1.0
  */
 @PBXInfo(make = "Asterisk", version = "1.2")
 public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConstants {
@@ -331,8 +332,19 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
 
             Call call = asteriskManager.originateCall(action);
 
-            CallSession phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(
-                    call.getUniqueId(), username);
+            CallSession phoneSession;
+
+            if (call.getUniqueId() != null && !"".equals(call.getUniqueId())) {
+
+                phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(
+                        call.getUniqueId(), username);
+            }
+            else {
+                // BEWARE EVIL HACK, when you can actually get a uniqueID from the response we should use that instead
+                // We will create a call session for this device and then later parse out the info
+                phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(primaryDevice.getDevice(), username);
+
+            }
             phoneSession.setCallerID(extension);
 
             if (jid != null) {
