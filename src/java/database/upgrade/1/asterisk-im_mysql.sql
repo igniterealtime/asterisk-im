@@ -1,0 +1,1 @@
+alter table phoneDevice change column isPrimary isPrimary int not null;
