@@ -21,7 +21,7 @@
         <fileset dir="${lib.dir}">
             <include name="**/*.jar"/>
         </fileset>
-         <fileset dir="${wildfire.dir}/build/lib">
+        <fileset dir="${wildfire.dir}/build/lib">
             <include name="**/*.jar"/>
         </fileset>
         <pathelement path="${wildfire.dir}/target/classes"/>
@@ -36,7 +36,7 @@
     </taskdef>
 
     <target name="init">
-         <!-- Check for min build requirements -->
+        <!-- Check for min build requirements -->
         <condition property="ant.not.ok" value="true">
             <not>
                 <contains string="${ant.version}" substring="1.6"/>
@@ -51,15 +51,15 @@
         <fail if="java.not.ok" message="Must use JDK 1.5.x to build Wildfire"/>
     </target>
 
-    <target name="jspc" depends="init" >
+    <target name="jspc" depends="init">
 
         <mkdir dir="${web-inf.dir}"/>
         <!-- JSP to Java -->
         <jasper2 validateXml="false"
-                uriroot="${web.src.dir}"
-                outputDir="${work.src.dir}"
-                package="${jsp.package}"
-                webXml="${web-inf.dir}/web.xml"/>
+                 uriroot="${web.src.dir}"
+                 outputDir="${work.src.dir}"
+                 package="${jsp.package}"
+                 webXml="${web-inf.dir}/web.xml"/>
 
     </target>
 
@@ -77,6 +77,7 @@
             <fileset dir="${java.src.dir}">
                 <include name="**/*.properties"/>
                 <include name="**/*.xml"/>
+                <include name="**/*.sql"/>
             </fileset>
         </copy>
 
@@ -95,7 +96,7 @@
         </copy>
 
         <mkdir dir="${target.dir}/lib"/>
-        <copy todir="${target.dir}/lib"	>
+        <copy todir="${target.dir}/lib">
             <fileset dir="${lib.dir}"/>
         </copy>
 
@@ -103,9 +104,9 @@
         <copy todir="${target.dir}/web/images">
             <fileset dir="${web.src.dir}/images"/>
         </copy>
-	
 
-        <jar file="${jar.file}" basedir="${target.dir}" update="false" />
+
+        <jar file="${jar.file}" basedir="${target.dir}" update="false"/>
 
     </target>
 
@@ -119,7 +120,7 @@
         <delete dir="${work.src.dir}"/>
         <delete file="${jar.file}"/>
         <delete dir="${web-inf.dir}"/>
-	    <delete dir="${target.dir}/lib"/>
+        <delete dir="${target.dir}/lib"/>
         <delete dir="${target.dir}/web/images"/>
     </target>
 

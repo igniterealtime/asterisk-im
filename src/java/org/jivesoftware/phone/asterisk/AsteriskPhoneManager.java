@@ -116,7 +116,9 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             }
             restoreUserPresence(username);
         }
-        channelStatusRunnable.shouldRun = false;
+        if (channelStatusRunnable != null) {
+            channelStatusRunnable.shouldRun = false;
+        }
 
 
         Log.debug("Shutting down Manager connection");

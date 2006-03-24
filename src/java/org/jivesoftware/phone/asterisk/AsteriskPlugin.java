@@ -9,7 +9,9 @@
  */
 package org.jivesoftware.phone.asterisk;
 
+import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.database.DatabaseUtil;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.util.JiveGlobals;
@@ -27,6 +29,7 @@ import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 
 import java.io.File;
+import java.sql.Connection;
 
 /**
  * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
@@ -86,6 +89,20 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
 
     public void init() {
         Log.info("Initializing Asterisk-IM Plugin");
+
+        Connection con = null;
+
+        try {
+            con = DbConnectionManager.getConnection();
+            DatabaseUtil.upgradeDatabase(con);
+        }
+        catch (Exception e) {
+            Log.error(e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(con);
+        }
+
 
         try {
             initAsteriskManager();
