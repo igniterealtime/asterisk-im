@@ -85,7 +85,8 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
                 }
 
                 con = new DefaultManagerConnection(server, port, username, password);
-                asteriskManager = new JiveAsteriskManager(con, this);
+                con.addEventHandler(new AsteriskEventHandler(this));
+                asteriskManager = new DefaultAsteriskManager(con);
 
             }
             catch (Throwable e) {
@@ -330,26 +331,7 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
                 action.setVariables(varMap);
             }
 
-            Call call = asteriskManager.originateCall(action);
-
-            CallSession phoneSession;
-
-            if (call.getUniqueId() != null && !"".equals(call.getUniqueId())) {
-
-                phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(
-                        call.getUniqueId(), username);
-            }
-            else {
-                // BEWARE EVIL HACK, when you can actually get a uniqueID from the response we should use that instead
-                // We will create a call session for this device and then later parse out the info
-                phoneSession = CallSessionFactory.getCallSessionFactory().getCallSession(primaryDevice.getDevice(), username);
-
-            }
-            phoneSession.setCallerID(extension);
-
-            if (jid != null) {
-                phoneSession.setDialedJID(jid);
-            }
+            asteriskManager.originateCall(action);
 
         }
         catch (Exception e) {

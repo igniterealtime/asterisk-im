@@ -46,6 +46,7 @@ import java.io.File;
  * and call initAsteriskManager() when completed!
  *
  * @author Andrew Wright
+ * @since 1.0
  */
 @PluginVersion("1.1.0")
 @PBXInfo(make = "Asterisk", version = "1.2")
