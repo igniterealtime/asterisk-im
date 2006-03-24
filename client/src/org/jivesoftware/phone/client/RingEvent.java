@@ -10,26 +10,29 @@
 package org.jivesoftware.phone.client;
 
 
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
+import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
 
 /**
  * Event is thrown when the user's phone is ringing.
- * 
+ *
  * @author Andrew Wright
  */
 public class RingEvent extends PhoneEventPacketExtension {
 
     public static final String CALLER_ID_ELEMENT = "callerID";
+    public static final String CALLER_ID_NAME_ELEMENT = "callerIDName";
 
     private String callerID;
+    private String callerIDName;
 
     private Call call;
 
 
-    public RingEvent(String callID, String device, String callerID) {
+    public RingEvent(String callID, String device, String callerID, String callerIDName) {
         super(callID, device);
         this.callerID = callerID;
+        this.callerIDName = callerIDName;
     }
 
     /**
@@ -39,6 +42,15 @@ public class RingEvent extends PhoneEventPacketExtension {
      */
     public String getCallerID() {
         return callerID;
+    }
+
+    /**
+     * Returns the name of the caller
+     *
+     * @return the name of the caller
+     */
+    public String getCallerIDName() {
+        return callerIDName;
     }
 
 
@@ -59,6 +71,12 @@ public class RingEvent extends PhoneEventPacketExtension {
                 .append("</")
                 .append(CALLER_ID_ELEMENT)
                 .append(">")
+                .append("<")
+                .append(CALLER_ID_NAME_ELEMENT)
+                .append(callerIDName != null ? callerIDName : "")
+                .append("</")
+                .append(CALLER_ID_NAME_ELEMENT)
+                .append(">")
                 .toString();
     }
 
@@ -66,7 +84,7 @@ public class RingEvent extends PhoneEventPacketExtension {
         return call;
     }
 
-    public void initCall(PhoneEventDispatcher dispatcher)  {
+    public void initCall(PhoneEventDispatcher dispatcher) {
         call = new Call(getCallID(), dispatcher);
     }
 

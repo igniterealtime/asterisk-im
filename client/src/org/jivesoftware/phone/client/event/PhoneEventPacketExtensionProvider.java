@@ -9,10 +9,10 @@
  */
 package org.jivesoftware.phone.client.event;
 
-import org.jivesoftware.phone.client.OnPhoneEvent;
-import org.jivesoftware.phone.client.HangUpEvent;
-import org.jivesoftware.phone.client.RingEvent;
 import org.jivesoftware.phone.client.DialedEvent;
+import org.jivesoftware.phone.client.HangUpEvent;
+import org.jivesoftware.phone.client.OnPhoneEvent;
+import org.jivesoftware.phone.client.RingEvent;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.provider.PacketExtensionProvider;
 import org.xmlpull.v1.XmlPullParser;
@@ -97,7 +97,7 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
 
                 extension = parser.nextText();
             }
-	    else if ("callerID".equals(parser.getName()) &&
+            else if ("callerID".equals(parser.getName()) &&
                     parser.getEventType() == XmlPullParser.START_TAG) {
 
                 extension = parser.nextText();
@@ -118,19 +118,21 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
     private RingEvent createRingEvent(XmlPullParser parser, String callID, String device)
             throws XmlPullParserException, IOException {
 
-        String extension = null;
+        String callerID = null;
+        String callerIDName = null;
 
         while (!isDone(parser)) {
 
-            if ("extension".equals(parser.getName()) &&
+            if ("callerID".equals(parser.getName()) &&
                     parser.getEventType() == XmlPullParser.START_TAG) {
 
-                extension = parser.nextText();
+                callerID = parser.nextText();
             }
-	    else if ("callerID".equals(parser.getName()) &&
+            else if ("callerIDName".equals(parser.getName()) &&
                     parser.getEventType() == XmlPullParser.START_TAG) {
 
-                extension = parser.nextText();
+                callerIDName = parser.nextText();
+
             }
             else {
                 parser.next(); //keep parsing until we find something useful
@@ -138,7 +140,7 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
 
         }
 
-        return new RingEvent(callID, device, extension);
+        return new RingEvent(callID, device, callerID, callerIDName);
 
     }
 
