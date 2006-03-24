@@ -57,10 +57,10 @@ public class DatabaseUtil {
             // Resource will be like "/database/upgrade/6/wildfire_hsqldb.sql"
             String resourceName = "/database/asterisk-im_" + databaseType + ".sql";
 
-            InputStream resource = DbConnectionManager.class.getResourceAsStream(resourceName);
+            InputStream resource = DatabaseUtil.class.getResourceAsStream(resourceName);
 
             applyScript(resource, con);
-            updateVersionNumber(con);
+            insertVersionNumber(con);
             return true;
         }
 
@@ -75,22 +75,7 @@ public class DatabaseUtil {
             rs.close();
         }
         catch (SQLException sqle) {
-            // Releases of Wildfire before 2.6.0 stored a major and minor version
-            // number so the normal check for version can fail. Check for the
-            // version using the old format in that case.
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-                pstmt = con.prepareStatement(CHECK_VERSION_OLD);
-                ResultSet rs = pstmt.executeQuery();
-                rs.next();
-                version = rs.getInt(1);
-                rs.close();
-            }
-            catch (SQLException sqle2) {
-                // Must be database version 0.
-            }
+            // Must be database version 0.
         }
         finally {
             try {
@@ -129,7 +114,7 @@ public class DatabaseUtil {
                 // Resource will be like "/database/upgrade/6/wildfire_hsqldb.sql"
                 String resourceName = "/database/upgrade/" + i + "/asterisk-im_" +
                         databaseType + ".sql";
-                resource = DbConnectionManager.class.getResourceAsStream(resourceName);
+                resource = DatabaseUtil.class.getResourceAsStream(resourceName);
                 if (resource == null) {
                     // If the resource is null, the specific upgrade number is not available.
                     continue;
@@ -137,9 +122,9 @@ public class DatabaseUtil {
                 applyScript(resource, con);
                 // If the version is greater than 6, automatically update the version information.
                 // Previous to version 6, the upgrade scripts set the version themselves.
-                if (version > 6) {
+                if (version > 0) {
                     stmt = con.createStatement();
-                    stmt.execute("UPDATE jiveVersion SET version=" + i + " WHERE name='wildfire'");
+                    stmt.execute("UPDATE jiveVersion SET version=" + i + " WHERE name='asterisk-im'");
                     stmt.close();
                 }
             }
@@ -154,7 +139,6 @@ public class DatabaseUtil {
                 }
             }
         }
-        updateVersionNumber(con);
         Log.info(LocaleUtils.getLocalizedString("upgrade.database.success"));
         System.out.println(LocaleUtils.getLocalizedString("upgrade.database.success"));
         return true;
@@ -217,18 +201,12 @@ public class DatabaseUtil {
         return exists;
     }
 
-    private static void updateVersionNumber(Connection con) throws SQLException {
-
-        String sql = "DELETE FROM jiveVersion where name like 'asterisk-im'";
+    private static void insertVersionNumber(Connection con) throws SQLException {
 
         PreparedStatement psmt = null;
 
         try {
-            psmt = con.prepareStatement(sql);
-            psmt.executeUpdate();
-            psmt.close();
-
-            sql = "INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', ?)";
+            String sql = "INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', ?)";
             psmt = con.prepareStatement(sql);
             psmt.setInt(1, DATABASE_VERSION);
             psmt.executeUpdate();
