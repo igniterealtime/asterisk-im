@@ -25,9 +25,6 @@ public class DatabaseUtil {
     private static final String CHECK_VERSION =
             "SELECT version FROM jiveVersion WHERE name=?";
 
-    private static final String CHECK_VERSION_OLD =
-            "SELECT minorVersion FROM jiveVersion";
-
     private static final int DATABASE_VERSION = 1;
 
 
