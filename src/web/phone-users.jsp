@@ -9,7 +9,7 @@
                  org.jivesoftware.wildfire.user.UserNotFoundException,
                  java.util.Collection,
                  java.util.HashMap" %>
-<%@ page import="java.util.List"%>
+<%@ page import="java.util.List" %>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
@@ -45,9 +45,9 @@
     long deviceID = ParamUtils.getLongParameter(request, "deviceID", -1);
     long userID = ParamUtils.getLongParameter(request, "userID", -1);
     String username = request.getParameter("username");
-    String device = request.getParameter("device");
-    if(device == null || "".equals(device)) {
-        device = request.getParameter("devicetf");
+    String device = request.getParameter("devicetf");
+    if (device == null || "".equals(device)) {
+        device = request.getParameter("device");
     }
     String callerID = request.getParameter("callerID");
     String extension = request.getParameter("extension");
@@ -76,7 +76,7 @@
 
 
             if (phoneUser == null) {
-                Log.error("User with id "+userID+" was not found!");
+                Log.error("User with id " + userID + " was not found!");
             }
 
         }
@@ -92,7 +92,8 @@
                         phoneManager.remove(phoneDevice);
 
 
-                    } else {
+                    }
+                    else {
                         // only one remove the whole mapping
                         phoneManager.remove(phoneUser);
                     }
@@ -103,14 +104,16 @@
                 response.sendRedirect("phone-users.jsp?success=true&start=" + start + "&range=" + range);
                 return;
             }
-        } else if (save) {
+        }
+        else if (save) {
             // Save with no copy is add mode
 
             if (phoneUser == null) {
                 if (username == null || "".equals(username)) {
                     Log.debug("Username is required!!");
                     errors.put("username", "Username is required");
-                } else {
+                }
+                else {
                     UserManager userManager = XMPPServer.getInstance().getUserManager();
                     try {
                         userManager.getUser(username);
@@ -169,8 +172,9 @@
 
                     if (phoneDevice == null) {
                         // This is a new device
-                        phoneDevice = new PhoneDevice(device);
+                        phoneDevice = new PhoneDevice();
                     }
+                    phoneDevice.setDevice(device);
 
                     if ("".equals(callerID)) {
                         callerID = null;
@@ -240,6 +244,15 @@
         // the sublist, either the limit or how many is left
         List<PhoneUser> users = allusers.subList(start, endpoint < userCount ? endpoint : userCount);
 
+        // If there were no users on this page (this could happen with a delete)
+        // go to the page before it
+        if (start > 0 && users.size() < 1) {
+
+            start = 0;
+            endpoint = start + range;
+            users = allusers.subList(start, endpoint < userCount ? endpoint : userCount);
+        }
+
         // paginator vars
         int numPages = (int) Math.ceil((double) userCount / (double) range);
         int curPage = (start / range) + 1;
@@ -252,7 +265,8 @@
         if (useSipDropDown) {
             try {
                 sipDevices = phoneManager.getDevices();
-            } catch (PhoneException e) {
+            }
+            catch (PhoneException e) {
                 Log.error(e);
             }
         }
@@ -266,6 +280,7 @@
     <title>Phone Mappings</title>
     <meta name="pageID" content="item-phone-users"/>
 </head>
+
 <body>
 
 
@@ -284,13 +299,11 @@
     }
 
     #phone-users .jive-table .jive-odd-last TD {
-        border-bottom: 1px #ccc solid;
-        background-color: #fff;
+        border-bottom: 1px #ccc solid; /*background-color: #fff;*/
     }
 
     #phone-users .jive-table .jive-even-last TD {
-        border-bottom: 1px #ccc solid;
-        background-color: #eee;
+        border-bottom: 1px #ccc solid; /*background-color: #eee;*/
     }
 
 
@@ -299,7 +312,7 @@
 
 <div id="phone-users">
 
-    <%  if (success) { %>
+    <% if (success) { %>
 
     <div class="jive-success">
         <table cellpadding="0" cellspacing="0" border="0">
@@ -312,7 +325,8 @@
         </table>
     </div><br>
 
-    <%  } else if (errors.size() > 0) { %>
+    <% }
+    else if (errors.size() > 0) { %>
 
     <div class="jive-error">
         <table cellpadding="0" cellspacing="0" border="0">
@@ -325,7 +339,7 @@
         </table>
     </div><br>
 
-    <%  } %>
+    <% } %>
 
     Total Users:
     <%= LocaleUtils.getLocalizedNumber(userCount) %> --
@@ -336,22 +350,22 @@
     <select size="1"
             onchange="location.href='phone-users.jsp?start=0&range=' + this.options[this.selectedIndex].value;">
 
-        <%  for (int i = 0; i < RANGE_PRESETS.length; i++) { %>
+        <% for (int i = 0; i < RANGE_PRESETS.length; i++) { %>
 
         <option value="<%= RANGE_PRESETS[i] %>"
                 <%= (RANGE_PRESETS[i] == range ? "selected" : "") %>><%= RANGE_PRESETS[i] %></option>
 
-        <%  } %>
+        <% } %>
 
     </select>
 </p>
 
-<%  if (numPages > 1) { %>
+<% if (numPages > 1) { %>
 
 <p>
     Pages:
     [
-    <%  int num = 15 + curPage;
+    <% int num = 15 + curPage;
         int s = curPage - 1;
         if (s > 5) {
             s -= 5;
@@ -374,19 +388,19 @@
        class="<%= ((isCurrent) ? "jive-current" : "") %>"
             ><%= (i + 1) %></a><%= sep %>
 
-    <%  } %>
+    <% } %>
 
-    <%  if (i < numPages) { %>
+    <% if (i < numPages) { %>
 
     ... <a href="phone-users.jsp?start=<%= ((numPages-1)*range) %>&range=<%= range %>"><%= numPages %></a>
 
-    <%  } %>
+    <% } %>
 
     ]
 
 </p>
 
-<%  } %>
+<% } %>
 
 <div class="jive-table">
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -402,7 +416,7 @@
         </thead>
         <tbody>
 
-            <%  if (users.size() == 0) { %>
+            <% if (users.size() == 0) { %>
 
             <tr>
                 <td colspan="6">
@@ -410,7 +424,7 @@
                 </td>
             </tr>
 
-            <%  } %>
+            <% } %>
 
             <%
                 int i = start;
@@ -426,6 +440,14 @@
             <%
                 List<PhoneDevice> userDevices = phoneManager.getPhoneDevicesByUserID(currentUser.getID());
                 int deviceListSize = userDevices.size();
+
+
+                if (deviceListSize < 1 && start > 0) {
+
+
+                }
+
+
                 int j = 0;
                 for (PhoneDevice currentDevice : userDevices) {
                     j++;
@@ -442,12 +464,12 @@
                 <td><%=currentDevice.getExtension()%></td>
                 <td><%=currentDevice.getCallerId() != null ? currentDevice.getCallerId() : "&nbsp;"%></td>
                 <td align="center">
-                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>">
+                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= ((numPages-1)*range) %>&range=<%= range %>">
                         <img src="images/edit-16x16.gif" width="16" height="16" alt="Edit" border="0">
                     </a>
                 </td>
                 <td align="center" style="border-right:1px #ccc solid;">
-                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>">
+                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= ((numPages-1)*range) %>&range=<%= range %>">
                         <img src="images/delete-16x16.gif" width="16" height="16" alt="Delete" border="0">
                     </a>
                 </td>
@@ -461,12 +483,12 @@
 
 <div style="padding-top : 5px">
 
-    <%  if (numPages > 1) { %>
+    <% if (numPages > 1) { %>
 
     <p>
         Pages:
         [
-        <%  int num = 15 + curPage;
+        <% int num = 15 + curPage;
             int s = curPage - 1;
             if (s > 5) {
                 s -= 5;
@@ -489,19 +511,19 @@
            class="<%= ((isCurrent) ? "jive-current" : "") %>"
                 ><%= (i + 1) %></a><%= sep %>
 
-        <%  } %>
+        <% } %>
 
-        <%  if (i < numPages) { %>
+        <% if (i < numPages) { %>
 
         ... <a href="phone-users.jsp?start=<%= ((numPages-1)*range) %>&range=<%= range %>"><%= numPages %></a>
 
-        <%  } %>
+        <% } %>
 
         ]
 
     </p>
 
-    <%  } %>
+    <% } %>
 
 </div>
 
@@ -515,117 +537,118 @@
 <input type="hidden" name="range" value="<%=range%>"/>
 
 <div class="jive-table">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <thead>
-            <tr>
-                <th colspan="2">
-                    <%= phoneDevice != null ? "Edit" : "Add"%> User/Asterisk Phone mapping
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr valign="top">
-                <td width="1%">
-                    <nobr><label for="usernametf">* Username:</label></nobr>
-                </td>
-                <td width="99%">
-                    <% if (phoneDevice == null) { %>
-                        <input type="text" name="username" size="35" value="<%= username != null ? username : ""%>" id="usernametf"/>
-                    <% if (errors.containsKey("username")) { %>
-                        <br/>
-                        <span class="jive-error-text"><%=errors.get("username")%></span>
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<thead>
+    <tr>
+        <th colspan="2">
+            <%= phoneDevice != null ? "Edit" : "Add"%> User/Asterisk Phone mapping
+        </th>
+    </tr>
+</thead>
+<tbody>
+    <tr valign="top">
+        <td width="1%">
+            <nobr><label for="usernametf">* Username:</label></nobr>
+        </td>
+        <td width="99%">
+            <% if (phoneDevice == null) { %>
+            <input type="text" name="username" size="35" value="<%= username != null ? username : ""%>"
+                   id="usernametf"/>
+            <% if (errors.containsKey("username")) { %>
+            <br/>
+            <span class="jive-error-text"><%=errors.get("username")%></span>
+            <% } %>
+            <% }
+            else { %>
+            <%= username %>
+            <% } %>
+        </td>
+    </tr>
+    <tr valign="top">
+        <td width="1%">
+            <nobr><label for="devicetf">* Phone:</label></nobr>
+        </td>
+        <td width="99%">
+
+            <% if (useSipDropDown && sipDevices != null) { %>
+            <select name="device" id="devicetf">
+                <option value="">Select</option>
+
+                <% for (String current : sipDevices) { %>
+                <option value="<%=current%>"
+
+                        <% if (current.equals(device)) { %>
+
+                        selected="selected"
+
                         <% } %>
-                    <% } else { %>
-                        <%= username %>
-                    <% } %>
-                </td>
-            </tr>
-            <tr valign="top">
-                <td width="1%">
-                    <nobr><label for="devicetf">* Phone:</label></nobr>
-                </td>
-                <td width="99%">
 
-                    <% if (useSipDropDown && sipDevices != null) { %>
-                    <select name="device" id="devicetf">
-                        <option value="">Select</option>
+                        ><%=current%></option>
+                <% } %>
 
-                        <% for (String current : sipDevices) { %>
-                        <option value="<%=current%>"
+            </select>
 
-                                <% if (current.equals(device)) { %>
+            or
+            <% } %>
 
-                                selected="selected"
-
-                                <% } %>
-
-                                ><%=current%></option>
-                        <% } %>
-
-                    </select>
-
-                    or
-                    <% } %>
-
-                    <input type="text" name="devicetf" size="35" value="<%
+            <input type="text" name="devicetf" size="35" value="<%
                         if (device != null && (sipDevices != null && !sipDevices.contains(device))) {
                             out.println(device);
                         }
                         else {
                             out.println("");
                         }
-                     %>"
-                           id="devicetf"/>
-                    <% if (errors.containsKey("device")) { %>
-                    <br/>
-                    <span class="jive-error-text"><%=errors.get("device")%></span>
-                    <% } %>
-                </td>
-            </tr>
-            <tr valign="top">
-                <td width="1%">
-                    <nobr><label for="extensiontf">* Extension:</label></nobr>
-                </td>
-                <td width="99%">
-                    <input type="text" name="extension" size="35" value="<%= extension != null ? extension : ""%>"
-                           id="extensiontf"/>
-                    <% if (errors.containsKey("extension")) { %>
-                    <br/>
-                    <span class="jive-error-text"><%=errors.get("extension")%></span>
-                    <% } %>
-                </td>
-            </tr>
-            <tr valign="top">
-                <td width="1%">
-                    <nobr><label for="callerIDtf">Caller ID:</label></nobr>
-                </td>
-                <td width="99%">
-                    <input type="text" name="callerID" size="35" value="<%= callerID != null ? callerID : ""%>"
-                           id="callerIDtf"/>
-                    <% if (errors.containsKey("callerID")) { %>
-                    <br/>
-                    <span class="jive-error-text"><%=errors.get("callerID")%></span>
-                    <% } %>
-                </td>
-            </tr>
-            <tr>
-                <td width="1%">
-                    <nobr><label for="isPrimary">Primary:</label></nobr>
-                </td>
-                <td width="99%">
-                    <input type="checkbox" name="primary" value="true" <%= isPrimary ? "checked" : ""%> />
-                </td>
-            </tr>
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="2">
-                    <input type="submit" name="save" value="<%= phoneDevice != null ? "Edit" : "Add"%>"/>
-                    <input type="submit" name="cancel" value="Cancel"/>
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+                     %>" id="devicetf"/>
+            <% if (errors.containsKey("device")) { %>
+            <br/>
+            <span class="jive-error-text"><%=errors.get("device")%></span>
+            <% } %>
+        </td>
+    </tr>
+    <tr valign="top">
+        <td width="1%">
+            <nobr><label for="extensiontf">* Extension:</label></nobr>
+        </td>
+        <td width="99%">
+            <input type="text" name="extension" size="35" value="<%= extension != null ? extension : ""%>"
+                   id="extensiontf"/>
+            <% if (errors.containsKey("extension")) { %>
+            <br/>
+            <span class="jive-error-text"><%=errors.get("extension")%></span>
+            <% } %>
+        </td>
+    </tr>
+    <tr valign="top">
+        <td width="1%">
+            <nobr><label for="callerIDtf">Caller ID:</label></nobr>
+        </td>
+        <td width="99%">
+            <input type="text" name="callerID" size="35" value="<%= callerID != null ? callerID : ""%>"
+                   id="callerIDtf"/>
+            <% if (errors.containsKey("callerID")) { %>
+            <br/>
+            <span class="jive-error-text"><%=errors.get("callerID")%></span>
+            <% } %>
+        </td>
+    </tr>
+    <tr>
+        <td width="1%">
+            <nobr><label for="isPrimary">Primary:</label></nobr>
+        </td>
+        <td width="99%">
+            <input type="checkbox" name="primary" value="true" <%= isPrimary ? "checked" : ""%> />
+        </td>
+    </tr>
+</tbody>
+<tfoot>
+    <tr>
+        <td colspan="2">
+            <input type="submit" name="save" value="<%= phoneDevice != null ? "Edit" : "Add"%>"/>
+            <input type="submit" name="cancel" value="Cancel"/>
+        </td>
+    </tr>
+</tfoot>
+</table>
 </div>
 
 </form>
