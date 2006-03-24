@@ -6,7 +6,10 @@
 package org.jivesoftware.phone.asterisk;
 
 /**
+ * Utilities for handling asterisk manager events
+ *
  * @author Andrew Wright
+ * @since 1.0
  */
 public final class AsteriskUtil {
 

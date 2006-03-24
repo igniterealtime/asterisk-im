@@ -9,24 +9,27 @@
  */
 package org.jivesoftware.phone.database;
 
-import org.jivesoftware.phone.PhoneUser;
-import org.jivesoftware.phone.PhoneDevice;
 import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.database.SequenceManager;
+import org.jivesoftware.phone.PhoneDevice;
+import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.util.Log;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.ResultSet;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
+ * JBDC implemention of {@link PhoneDAO} that uses the database to access phone information.
+ *
  * @author Andrew Wright
+ * @since 1.1
  */
-@DAOInfo("JDBC")
+@DAOInfo(DAOInfo.daoType.JDBC)
 public class DbPhoneDAO implements PhoneDAO {
 
     public PhoneUser getPhoneUserByDevice(String device) {

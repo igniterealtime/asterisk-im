@@ -7,9 +7,11 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.DefaultAsteriskManager;
-import net.sf.asterisk.manager.ManagerConnection;
-import net.sf.asterisk.manager.event.*;
+import net.sf.asterisk.manager.ManagerEventHandler;
+import net.sf.asterisk.manager.event.DialEvent;
+import net.sf.asterisk.manager.event.HangupEvent;
+import net.sf.asterisk.manager.event.ManagerEvent;
+import net.sf.asterisk.manager.event.NewStateEvent;
 import org.dom4j.Element;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
@@ -33,41 +35,34 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
+ * Handles events that are delivered from an asterisk connection
  *
+ * @author Andrew Wright
  */
-public class JiveAsteriskManager extends DefaultAsteriskManager {
+public class AsteriskEventHandler implements ManagerEventHandler {
 
     private AsteriskPhoneManager phoneManager;
 
-    public JiveAsteriskManager(ManagerConnection connection, AsteriskPhoneManager asteriskPhoneManager) {
-        super(connection);
+    public AsteriskEventHandler(AsteriskPhoneManager asteriskPhoneManager) {
         this.phoneManager = asteriskPhoneManager;
     }
 
-    @Override
-    protected void handleDisconnectEvent(DisconnectEvent disconnectEvent) {
-        super.handleDisconnectEvent(disconnectEvent);
-    }
 
+    public void handleEvent(ManagerEvent event) {
 
-    @Override
-    protected void handleHangupEvent(HangupEvent event) {
-        super.handleHangupEvent(event);
-        handleHangup(event);
-    }
-
-    @Override
-    protected void handleNewExtenEvent(NewExtenEvent event) {
-        super.handleNewExtenEvent(event);
-
-        if ("Dial".equals(event.getApplication())) {
-            handleDial(event);
+        if (event instanceof HangupEvent) {
+            handleHangupEvent((HangupEvent) event);
         }
+        else if (event instanceof NewStateEvent) {
+            handleNewStateEvent((NewStateEvent) event);
+        }
+        else if (event instanceof DialEvent) {
+            handleDialEvent((DialEvent) event);
+        }
+
     }
 
-    @Override
     protected void handleNewStateEvent(NewStateEvent event) {
-        super.handleNewStateEvent(event);
 
         if ("Up".equals(event.getState())) {
 
@@ -78,109 +73,8 @@ public class JiveAsteriskManager extends DefaultAsteriskManager {
             handleOnPhone(event);
         }
 
-
     }
 
-    protected void handleNewChannelEvent(NewChannelEvent event) {
-        super.handleNewChannelEvent(event);
-
-        if (event.getState().equals("Ringing")) {
-
-            if (Log.isDebugEnabled()) {
-                Log.debug("Asterisk-IM: Processing NewChannel:RINGING event channel : " + event.getChannel() + " id: " + event.getUniqueId());
-            }
-
-
-            handleRinging(event);
-        }
-    }
-
-    protected void handleDial(NewExtenEvent event) {
-
-        String device = getDevice(event.getChannel());
-
-        try {
-            PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
-
-            //If there is no jid for this device don't do anything else
-            if (phoneUser == null) {
-                return;
-            }
-
-
-            CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId(), phoneUser.getUsername());
-            if (callSession.getCallerID() != null) {
-                // We have already reported a Dial event to the user, no need to do it gain
-                return;
-            }
-
-            callSession.setChannel(event.getChannel());
-
-            Message message = new Message();
-            message.setID(event.getUniqueId());
-            message.setFrom(phoneManager.getComponentJID());
-
-            String appData = event.getAppData();
-
-            String callerID;
-
-            if (appData != null) {
-                if (appData.contains("Zap/")) {
-                    String[] tokens = appData.split("/");
-                    callerID = tokens[tokens.length - 1];
-                }
-                else if (appData.contains("IAX/") || appData.contains("SIP/")) {
-
-                    // Hopefully they used useful names like SIP/exten
-                    String name = getDevice(appData);
-
-                    // string may be like this SIP/6131&SIP/232|20
-                    int index = name.indexOf("|");
-                    if (index > 0) {
-                        name = name.substring(0, index);
-                    }
-
-                    // string may be like SIP/6131&SIP/232
-                    index = name.indexOf("&");
-                    if (index > 0) {
-                        name = name.substring(0, index);
-                    }
-
-                    // string will be like SIP/6131
-                    index = name.indexOf("/");
-                    name = name.substring(index + 1);
-
-                    callerID = name;
-                }
-                else {
-                    // Whatever it is use it (hack)
-                    callerID = appData;
-                }
-            }
-            else {
-                //finally just put something in there (hack)
-                callerID = event.getUniqueId();
-            }
-            callSession.setCallerID(callerID);
-
-            PhoneEvent phoneEvent =
-                    new PhoneEvent(event.getUniqueId(), PhoneEvent.Type.DIALED, device);
-            message.getElement().add(phoneEvent);
-
-            phoneEvent.addElement("callerID").setText(callerID);
-
-            // Send the message to each of jids for this user
-            SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-            Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
-            for (ClientSession session : sessions) {
-                message.setTo(session.getAddress());
-                phoneManager.sendPacket(message);
-            }
-        }
-        catch (Throwable e) {
-            Log.error(e.getMessage(), e);
-        }
-    }
 
     protected void handleOnPhone(NewStateEvent event) {
 
@@ -284,7 +178,7 @@ public class JiveAsteriskManager extends DefaultAsteriskManager {
         }
     }
 
-    public void handleHangup(HangupEvent event) {
+    protected void handleHangupEvent(HangupEvent event) {
         //everything after the hyphen should be skipped
         String device = getDevice(event.getChannel());
 
@@ -378,64 +272,105 @@ public class JiveAsteriskManager extends DefaultAsteriskManager {
         }
     }
 
-    public void handleRinging(NewChannelEvent event) {
+    protected void handleDialEvent(DialEvent event) {
 
-        String device = getDevice(event.getChannel());
+
+        String destDevice = getDevice(event.getDestination());
+        String sourceDevice = getDevice(event.getSrc());
 
         try {
-            PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
+            PhoneUser destPhoneUser = phoneManager.getPhoneUserByDevice(destDevice);
+            PhoneUser srcPhoneUser = phoneManager.getPhoneUserByDevice(sourceDevice);
 
-            //If there is no jid for this device don't do anything else
-            if (phoneUser == null) {
-                return;
+
+            if (destPhoneUser != null) {
+
+                handleDialDestination(destPhoneUser, destDevice, event);
             }
 
-            Log.debug("Asterisk-IM RingTask called for user " + phoneUser);
+            if (srcPhoneUser != null) {
 
-            // try and see if we have a fake call session
-            // This will be created if there was an originated call
-            CallSession fakeSession = getCallSessionFactory().destroyPhoneSession(device);
+                handleDialSource(srcPhoneUser, sourceDevice, event);
+            }
+
+        }
+        catch (Throwable e) {
+            Log.error(e);
+        }
+    }
+
+    private void handleDialDestination(PhoneUser destPhoneUser, String destDevice, DialEvent event) {
+        try {
+            Log.debug("Asterisk-IM RingTask called for user " + destPhoneUser);
 
 
-            CallSession callSession = getCallSessionFactory()
-                    .getCallSession(event.getUniqueId(), phoneUser.getUsername());
+            CallSession destCallSession = getCallSessionFactory()
+                    .getCallSession(event.getDestUniqueId(), destPhoneUser.getUsername());
 
-            callSession.setChannel(event.getChannel());
+
+            destCallSession.setChannel(destDevice);
 
             Message message = new Message();
-            message.setID(event.getUniqueId()); //just put something in here
+            message.setID(event.getDestUniqueId()); //just put something in here
             message.setFrom(phoneManager.getComponentJID());
 
-            if (fakeSession != null) {
+            String callerIDName = event.getCallerIdName();
 
-                callSession.setCallerID(fakeSession.getCallerID());
-                callSession.setDialedJID(fakeSession.getDialedJID());
 
-                PhoneEvent dialEvent =
-                        new PhoneEvent(event.getUniqueId(), PhoneEvent.Type.DIALED, device);
+            PhoneEvent phoneEvent =
+                    new PhoneEvent(event.getDestUniqueId(), PhoneEvent.Type.RING, destDevice);
+            String callerID = StringUtils.stripTags(event.getCallerId());
+            phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
+            phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
 
-                dialEvent.addElement("callerID").setText(fakeSession.getCallerID());
-                callSession.setCallerID(fakeSession.getCallerID());
+            destCallSession.setCallerID(callerID);
 
-                if (fakeSession.getDialedJID() != null) {
-                    dialEvent.addElement("jid", fakeSession.getDialedJID().toString());
-                }
-                message.getElement().add(dialEvent);
-
-            }
-            else {
-                PhoneEvent phoneEvent =
-                        new PhoneEvent(event.getUniqueId(), PhoneEvent.Type.RING, device);
-                String callerID = StringUtils.stripTags(event.getCallerId());
-                phoneEvent.addElement("callerID").setText(callerID);
-                callSession.setCallerID(callerID);
-
-                message.getElement().add(phoneEvent);
-            }
+            message.getElement().add(phoneEvent);
 
             // Send the message to each of jids for this user
             SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-            Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
+            Collection<ClientSession> sessions = sessionManager.getSessions(destPhoneUser.getUsername());
+            for (ClientSession session : sessions) {
+                message.setTo(session.getAddress());
+                phoneManager.sendPacket(message);
+            }
+        }
+        catch (Throwable e) {
+            Log.error(e);
+        }
+    }
+
+
+    protected void handleDialSource(PhoneUser srcUser, String srcDevice, DialEvent event) {
+
+        try {
+
+            CallSession callSession = getCallSessionFactory()
+                    .getCallSession(event.getSrcUniqueId(), srcUser.getUsername());
+            callSession.setChannel(srcDevice);
+
+
+            Message message = new Message();
+            message.setID(event.getSrcUniqueId());
+            message.setFrom(phoneManager.getComponentJID());
+
+
+            String callerID = event.getCallerId();
+            String callerIDName = event.getCallerIdName();
+
+
+            callSession.setCallerID(callerID);
+
+            PhoneEvent phoneEvent =
+                    new PhoneEvent(event.getSrcUniqueId(), PhoneEvent.Type.DIALED, srcDevice);
+            message.getElement().add(phoneEvent);
+
+            phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
+            phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
+
+            // Send the message to each of jids for this user
+            SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
+            Collection<ClientSession> sessions = sessionManager.getSessions(srcUser.getUsername());
             for (ClientSession session : sessions) {
                 message.setTo(session.getAddress());
                 phoneManager.sendPacket(message);
