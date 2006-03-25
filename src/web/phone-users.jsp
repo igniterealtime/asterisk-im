@@ -464,12 +464,12 @@
                 <td><%=currentDevice.getExtension()%></td>
                 <td><%=currentDevice.getCallerId() != null ? currentDevice.getCallerId() : "&nbsp;"%></td>
                 <td align="center">
-                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= ((numPages-1)*range) %>&range=<%= range %>">
+                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= start %>&range=<%= range %>">
                         <img src="images/edit-16x16.gif" width="16" height="16" alt="Edit" border="0">
                     </a>
                 </td>
                 <td align="center" style="border-right:1px #ccc solid;">
-                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= ((numPages-1)*range) %>&range=<%= range %>">
+                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= start %>&range=<%= range %>">
                         <img src="images/delete-16x16.gif" width="16" height="16" alt="Delete" border="0">
                     </a>
                 </td>
