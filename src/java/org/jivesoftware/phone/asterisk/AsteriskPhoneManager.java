@@ -316,9 +316,9 @@ public class AsteriskPhoneManager extends BasePhoneManager implements PhoneConst
             action.setContext(context);
             action.setPriority(1);
 
-            String variables = getProperty(Properties.DIAL_VARIABLES);
+            String variables = getProperty(Properties.DIAL_VARIABLES, "").trim();
 
-            if (variables != null) {
+            if (variables != null && !"".equals(variables)) {
 
                 String[] varArray = variables.split(",");
 
