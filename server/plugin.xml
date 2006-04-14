@@ -5,16 +5,18 @@
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Wildfire.</description>
     <author>Andrew Wright</author>
-    <version>1.0</version>
-    <minServerVersion>2.4.0</minServerVersion>
+    <version>1.1</version>
+    <minServerVersion>2.5.1</minServerVersion>
 
     <adminconsole>
         <tab id="tab-phone" name="Asterisk-IM" url="phone-settings.jsp"
-            description="Click to manage Asterisk integration settings">
+             description="Click to manage Asterisk integration settings">
 
             <sidebar id="siderbar-phone" name="Asterisk-IM">
-                <item id="item-phone-settings" name="General Settings" description="phone admin tool" url="phone-settings.jsp"/>
-                <item id="item-phone-users" name="Phone Mappings" description="Mapping between usernames and phones" url="phone-users.jsp"/>
+                <item id="item-phone-settings" name="General Settings" description="phone admin tool"
+                      url="phone-settings.jsp"/>
+                <item id="item-phone-users" name="Phone Mappings" description="Mapping between usernames and phones"
+                      url="phone-users.jsp"/>
             </sidebar>
 
         </tab>
