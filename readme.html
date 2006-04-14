@@ -103,8 +103,6 @@
         default to 5038 if it is not specified.</li>
     <li><b>Username: </b>Username to use when connecting to the Asterisk Manager Proxy. This field is required.</li>
     <li><b>Password: </b>Password to use when connecting to the Asterisk Manager Proxy. This field is required.</li>
-    <li><b>Pool Size: </b>How many connection to the Asterisk Manager Proxy we should make. This will default to
-        5 if not specified. Atleast 2 connections are required (one for reading, one for writing)</li>
     <li><b>Asterisk Context: </b> The Asterisk context that users will be dialing from. If this field is not specified
         it
         will default to "from-sip". Please note that this default value may change for the final release.</li>
@@ -203,7 +201,8 @@
                 org.jivesoftware.phone.client.RingingEvent
             </td>
             <td>
-                Contains a callerID child element containg the caller id of the caller.
+                Can contains a callerID child element containing the phone number of the caller.
+                Can contains a callerIDName child element containing the name of the caller.
             </td>
         </tr>
         <tr>
