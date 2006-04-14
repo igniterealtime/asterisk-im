@@ -335,8 +335,8 @@ public class DbPhoneDAO implements PhoneDAO {
 
     public void update(PhoneDevice device) {
 
-        String sql = "UPDATE phoneDevice SET extension = ?, callerId = ?, isPrimary = ? " +
-                "WHERE deviceID  = ?";
+        String sql = "UPDATE phoneDevice SET extension = ?, callerId = ?, isPrimary = ?, " +
+                " device = ? WHERE deviceID  = ?";
 
         PreparedStatement psmt = null;
         Connection con = null;
@@ -347,7 +347,8 @@ public class DbPhoneDAO implements PhoneDAO {
             psmt.setString(1, device.getExtension());
             psmt.setString(2, device.getCallerId());
             psmt.setLong(3, device.isPrimary() ? 1 : 0);
-            psmt.setLong(4, device.getID());
+            psmt.setString(4, device.getDevice());
+            psmt.setLong(5, device.getID());
             psmt.executeUpdate();
         }
         catch (SQLException e) {
