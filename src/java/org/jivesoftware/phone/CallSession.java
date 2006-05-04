@@ -20,6 +20,7 @@ public class CallSession {
     private String channel;
     private String linkedChannel;
     private String callerID;
+    private String callerIDName;
     private String forwardedExtension;
     private JID forwardedJID;
     private JID dialedJID;
@@ -69,6 +70,14 @@ public class CallSession {
 
     public void setCallerID(String callerID) {
         this.callerID = callerID;
+    }
+
+    public String getCallerIDName() {
+        return callerIDName;
+    }
+
+    public void setCallerIDName(String callerIDName) {
+        this.callerIDName = callerIDName;
     }
 
     public JID getDialedJID() {
