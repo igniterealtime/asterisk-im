@@ -10,8 +10,8 @@
 package org.jivesoftware.phone.client;
 
 
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
+import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
 
 /**
  * This event will be dispatched when the user answer's his/her phone.
@@ -23,18 +23,21 @@ import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
 public class OnPhoneEvent extends PhoneEventPacketExtension {
 
     public static final String CALLER_ID_ELEMENT = "callerID";
+    public static final String CALLER_ID_NAME_ELEMENT = "callerIDName";
 
     private String callerID;
+    private String callerIDName;
 
     private Call call;
 
-    public OnPhoneEvent(String callID, String device, String callerID) {
+    public OnPhoneEvent(String callID, String device, String callerID, String callerIDName) {
         super(callID, device);
         this.callerID = callerID;
+        this.callerIDName = callerIDName;
     }
 
     /**
-     * Returns the caller Id of the caller
+     * Returns the caller Id (phone number representation) of the caller
      *
      * @return The caller id of the caller
      */
@@ -43,7 +46,17 @@ public class OnPhoneEvent extends PhoneEventPacketExtension {
     }
 
     /**
+     * Returns the caller Id name (textual representation) of the caller
+     *
+     * @return The caller id of the caller
+     */
+    public String getCallerIDName() {
+        return callerIDName;
+    }
+
+    /**
      * Returns {@link EventStatus#ON_PHONE}
+     *
      * @return {@link EventStatus#ON_PHONE}
      */
     public EventStatus getEventStatus() {
@@ -64,6 +77,13 @@ public class OnPhoneEvent extends PhoneEventPacketExtension {
                 .append("</")
                 .append(CALLER_ID_ELEMENT)
                 .append(">")
+                .append("<")
+                .append(CALLER_ID_NAME_ELEMENT)
+                .append(">")
+                .append(callerIDName)
+                .append("</")
+                .append(CALLER_ID_NAME_ELEMENT)
+                .append(">")
                 .toString();
     }
 
@@ -71,10 +91,9 @@ public class OnPhoneEvent extends PhoneEventPacketExtension {
         return call;
     }
 
-    public void initCall(PhoneEventDispatcher dispatcher)  {
+    public void initCall(PhoneEventDispatcher dispatcher) {
         call = new Call(getCallID(), dispatcher);
     }
-
 
 
 }

@@ -89,18 +89,25 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
             throws XmlPullParserException, IOException {
 
         String extension = null;
+        String callerId = null;
+        String callerIdName = null;
 
         while (!isDone(parser)) {
 
             if ("extension".equals(parser.getName()) &&
                     parser.getEventType() == XmlPullParser.START_TAG) {
-
+                // TODO:  KD - I'm not sure why this is here - extension isn't part of the OnPhoneEvent
                 extension = parser.nextText();
             }
             else if ("callerID".equals(parser.getName()) &&
                     parser.getEventType() == XmlPullParser.START_TAG) {
 
-                extension = parser.nextText();
+                callerId = parser.nextText();
+            }
+            else if ("callerIDName".equals(parser.getName()) &&
+                    parser.getEventType() == XmlPullParser.START_TAG) {
+
+                callerIdName = parser.nextText();
             }
             else {
                 parser.next(); //keep parsing until we find something useful
@@ -108,7 +115,7 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
 
         }
 
-        return new OnPhoneEvent(callID, device, extension);
+        return new OnPhoneEvent(callID, device, callerId, callerIdName);
 
     }
 

@@ -112,7 +112,9 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             // Get the callerID to add to the phone-event. If no callerID info is available
             // then just set an empty string and let clients do the proper rendering
             String callerID = callSession.getCallerID() == null ? "" : callSession.getCallerID();
+            String callerIDName = callSession.getCallerIDName() == null ? "" : callSession.getCallerIDName();
             phoneEvent.addElement("callerID").setText(callerID);
+            phoneEvent.addElement("callerIDName").setText(callerIDName);
             message.getElement().add(phoneEvent);
 
             //Acquire the xmpp sessions for the user
@@ -309,21 +311,23 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
 
             destCallSession.setChannel(destDevice);
+            destCallSession.setLinkedChannel(event.getSrc());
 
             Message message = new Message();
             message.setID(event.getDestUniqueId()); //just put something in here
             message.setFrom(phoneManager.getComponentJID());
 
+            String callerID = StringUtils.stripTags(event.getCallerId());
             String callerIDName = event.getCallerIdName();
 
+            destCallSession.setCallerID(callerID);
+            destCallSession.setCallerIDName(callerIDName);
 
             PhoneEvent phoneEvent =
                     new PhoneEvent(event.getDestUniqueId(), PhoneEvent.Type.RING, destDevice);
-            String callerID = StringUtils.stripTags(event.getCallerId());
             phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
             phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
 
-            destCallSession.setCallerID(callerID);
 
             message.getElement().add(phoneEvent);
 
@@ -349,6 +353,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
                     .getCallSession(event.getSrcUniqueId(), srcUser.getUsername());
             callSession.setChannel(srcDevice);
 
+            callSession.setLinkedChannel(event.getDestination());
 
             Message message = new Message();
             message.setID(event.getSrcUniqueId());
@@ -360,6 +365,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
 
             callSession.setCallerID(callerID);
+            callSession.setCallerIDName(callerIDName);
 
             PhoneEvent phoneEvent =
                     new PhoneEvent(event.getSrcUniqueId(), PhoneEvent.Type.DIALED, srcDevice);

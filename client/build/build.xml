@@ -10,7 +10,7 @@
     <property name="javadoc.dest.dir" value="${target.dir}/documentation/api"/>
 
     <property name="version.major" value="1"/>
-    <property name="version.minor" value="0"/>
+    <property name="version.minor" value="1"/>
     <property name="version.revision" value="0"/>
     <property name="version.extra" value=""/>
 
@@ -34,7 +34,8 @@
         <!-- Setup the full version property correctly -->
 
         <property name="version" value="${version.major}.${version.minor}.${version.revision}.${version.extra}"/>
-        <property name="version.filename" value="asterisk-im-client_${version.major}_${version.minor}_${version.revision}_${version.extra}"/>
+        <property name="version.filename"
+                  value="asterisk-im-client_${version.major}_${version.minor}_${version.revision}_${version.extra}"/>
     </target>
 
     <target name="compile" depends="init">
@@ -75,12 +76,12 @@
 
     <target name="javadoc">
         <javadoc
-            packagenames="org.jivesoftware.*, org.xmpp.*"
-            destdir="${javadoc.dest.dir}"
-            windowtitle="Wildfire ${version} Javadoc"
-            overview="${src.dir}/overview.html"
-            failonerror="yes"
-            >
+                packagenames="org.jivesoftware.*, org.xmpp.*"
+                destdir="${javadoc.dest.dir}"
+                windowtitle="Wildfire ${version} Javadoc"
+                overview="${src.dir}/overview.html"
+                failonerror="yes"
+                >
             <sourcepath>
                 <path location="${src.dir}"/>
             </sourcepath>
@@ -103,7 +104,7 @@
         <mkdir dir="${target.dir}/lib"/>
 
         <copy todir="${target.dir}/lib">
-            <fileset dir="${lib.dir}/runtime" />
+            <fileset dir="${lib.dir}/runtime"/>
         </copy>
 
         <zip destfile="${version.filename}.zip">
@@ -128,7 +129,6 @@
         <delete dir="${target.dir}"/>
         <delete dir="${classes.dir}"/>
     </target>
-
 
 
 </project>
