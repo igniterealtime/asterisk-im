@@ -148,7 +148,7 @@ public interface PhoneManager {
     void forward(String callSessionID, String username, String extension) throws PhoneException;
 
     /**
-     * Returns a list of all devices the system nows about.
+     * Returns a list of all devices the system knows about.
      *
      * @return
      * @throws PhoneException
@@ -163,13 +163,15 @@ public interface PhoneManager {
      */
     PhoneDevice getDevice(String device);
 
-    /**
-     * Stop monitoring the channel
-     *
-     * @param channel Channel that is being monitored
-     * @throws PhoneException Thrown if there are any problems with the asterisk manager
-     */
-    void stopMonitor(String channel) throws PhoneException;
+// FIXME: what is this? a generic interface should not know a channel.... ;jw
+//
+//    /**
+//     * Stop monitoring the channel
+//     *
+//     * @param channel Channel that is being monitored
+//     * @throws PhoneException Thrown if there are any problems with the asterisk manager
+//     */
+//    void stopMonitor(String channel) throws PhoneException;
 
     /**
      * Used to see how many messages are in a mailbox
@@ -213,4 +215,11 @@ public interface PhoneManager {
      * @return whether or not we are connected to the asterisk manager
      */
     boolean isConnected();
+    
+    void destroy();
+    
+    /**
+     * Returns the user of the device if active session exist, null otherwise
+     */
+	public PhoneUser getActivePhoneUserByDevice(String device);
 }
