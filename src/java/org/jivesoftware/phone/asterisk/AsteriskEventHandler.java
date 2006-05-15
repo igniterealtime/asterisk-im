@@ -12,27 +12,18 @@ import net.sf.asterisk.manager.event.DialEvent;
 import net.sf.asterisk.manager.event.HangupEvent;
 import net.sf.asterisk.manager.event.ManagerEvent;
 import net.sf.asterisk.manager.event.NewStateEvent;
-import org.dom4j.Element;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 import org.jivesoftware.phone.PhoneUser;
+import org.jivesoftware.phone.PhonePlugin;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneStatus;
-import org.jivesoftware.phone.util.UserPresenceUtil;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
-import org.jivesoftware.wildfire.ClientSession;
-import org.jivesoftware.wildfire.SessionManager;
-import org.jivesoftware.wildfire.XMPPServer;
-import static org.jivesoftware.wildfire.XMPPServer.getInstance;
-import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Presence;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Handles events that are delivered from an asterisk connection
@@ -42,11 +33,12 @@ import java.util.Collection;
 public class AsteriskEventHandler implements ManagerEventHandler {
 
     private AsteriskPhoneManager phoneManager;
+    private PhonePlugin plugin;
 
-    public AsteriskEventHandler(AsteriskPhoneManager asteriskPhoneManager) {
+    public AsteriskEventHandler(AsteriskPhoneManager asteriskPhoneManager, PhonePlugin ppb) {
         this.phoneManager = asteriskPhoneManager;
+        this.plugin = ppb;
     }
-
 
     public void handleEvent(ManagerEvent event) {
 
@@ -87,7 +79,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         String device = getDevice(event.getChannel());
 
         try {
-            PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
+            PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
 
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
@@ -100,79 +92,28 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
             CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId(), phoneUser.getUsername());
 
-            XMPPServer server = getInstance();
-
             // Notify the client that they have answered the phone
             Message message = new Message();
-            message.setFrom(phoneManager.getComponentJID());
             message.setID(event.getUniqueId());
-
+            
             PhoneEvent phoneEvent =
                     new PhoneEvent(callSession.getId(), PhoneEvent.Type.ON_PHONE, device);
             // Get the callerID to add to the phone-event. If no callerID info is available
             // then just set an empty string and let clients do the proper rendering
             String callerID = callSession.getCallerID() == null ? "" : callSession.getCallerID();
-            String callerIDName = callSession.getCallerIDName() == null ? "" : callSession.getCallerIDName();
             phoneEvent.addElement("callerID").setText(callerID);
-            phoneEvent.addElement("callerIDName").setText(callerIDName);
             message.getElement().add(phoneEvent);
+            phoneManager.plugin.sendPacket2User(phoneUser.getUsername(), message);
 
-            //Acquire the xmpp sessions for the user
-            SessionManager sessionManager = server.getSessionManager();
-            Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
+            // Iterate through all of the sessions sending out new presences for each
+            Presence presence = new Presence();
+            presence.setShow(Presence.Show.away);
+            presence.setStatus("On the phone");
 
-            // We don't care about people without a session
-            if (sessions.size() == 0) {
-                // Release call session since the user is not logged into the server
-                getCallSessionFactory().destroyPhoneSession(event.getUniqueId());
-                return;
-            }
-
-            Log.debug("Asterisk-IM OnPhoneTask: setting presence to away for " + phoneUser);
-
-            // If we haven't determined their original presence, set it
-            // If there is already and original presence, it means the user is
-            // receiving an additional phone call. In this case we should not save the presence
-            // because the current precense would also be "on phone"
-            synchronized (phoneUser.getUsername().intern()) {
-
-                if (UserPresenceUtil.getPresences(phoneUser.getUsername()) == null ||
-                        UserPresenceUtil.getPresences(phoneUser.getUsername()).isEmpty()) {
-
-                    // Iterate through all of the sessions sending out new presences for each
-                    Presence presence = new Presence();
-                    presence.setShow(Presence.Show.away);
-                    presence.setStatus("On the phone");
-
-                    PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
-                    presence.getElement().add(phoneStatus);
-
-
-                    Collection<Presence> prevPresences = new ArrayList<Presence>();
-
-                    for (ClientSession session : sessions) {
-
-                        message.setTo(session.getAddress());
-                        phoneManager.sendPacket(message);
-
-
-                        Presence prevPresence = session.getPresence();
-
-                        // Only add the presence if it does not contain a phone element
-                        if (prevPresence.getElement().element(PhoneStatus.Status.ON_PHONE.name()) == null) {
-                            prevPresences.add(prevPresence);
-
-                            JID fullJID = session.getAddress();
-                            presence.setFrom(fullJID);
-
-                            server.getPresenceRouter().route(presence);
-                        }
-
-                    }
-
-                    UserPresenceUtil.setPresences(phoneUser.getUsername(), prevPresences);
-                }
-            }
+            PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
+            presence.getElement().add(phoneStatus);
+            
+            plugin.setPresence(phoneUser.getUsername(), presence);
 
         }
         catch (Throwable e) {
@@ -185,7 +126,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         String device = getDevice(event.getChannel());
 
         try {
-            PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
+            PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
 
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
@@ -204,30 +145,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             synchronized (phoneUser.getUsername().intern()) {
                 int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
                 if (callSessionCount <= 1) {
-
-                    // Set the user's presence back to what it was before the phone call. The
-                    // presence will be broadcasted to corresponding users
-                    if (!phoneManager.restoreUserPresence(phoneUser.getUsername())) {
-                        // TODO Remove this code when the "always on-the-phone problem is fixed"
-                        // Check if the user is available and his presence is still
-                        // on-the-phone (and no there are no more calls)
-                        SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-                        Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
-                        for (ClientSession session : sessions) {
-                            Presence presence = session.getPresence();
-                            Element phoneStatusElement = presence.getElement().element("phone-status");
-                            // If the phone-status attribute exists check to see if the status is avaialbable
-                            if (phoneStatusElement != null && PhoneStatus.Status.ON_PHONE.name().equals(phoneStatusElement.attributeValue("status")))
-                            {
-                                Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() +
-                                        " has no more call sessions, but his presence is " +
-                                        "still ON_PHONE. Changing to AVAILABLE");
-                                // Change presence to available since there are no more active calls
-                                phoneStatusElement.addAttribute("status", PhoneStatus.Status.AVAILABLE.name());
-                                getInstance().getPresenceRouter().route(presence);
-                            }
-                        }
-                    }
+                	plugin.restorePresence(phoneUser.getUsername());
                 }
                 else {
                     if (Log.isDebugEnabled()) {
@@ -305,39 +223,27 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         try {
             Log.debug("Asterisk-IM RingTask called for user " + destPhoneUser);
 
-
             CallSession destCallSession = getCallSessionFactory()
                     .getCallSession(event.getDestUniqueId(), destPhoneUser.getUsername());
 
 
             destCallSession.setChannel(destDevice);
-            destCallSession.setLinkedChannel(event.getSrc());
 
             Message message = new Message();
             message.setID(event.getDestUniqueId()); //just put something in here
-            message.setFrom(phoneManager.getComponentJID());
-
-            String callerID = StringUtils.stripTags(event.getCallerId());
             String callerIDName = event.getCallerIdName();
-
-            destCallSession.setCallerID(callerID);
-            destCallSession.setCallerIDName(callerIDName);
 
             PhoneEvent phoneEvent =
                     new PhoneEvent(event.getDestUniqueId(), PhoneEvent.Type.RING, destDevice);
+            String callerID = StringUtils.stripTags(event.getCallerId());
             phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
             phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
 
+            destCallSession.setCallerID(callerID);
 
             message.getElement().add(phoneEvent);
-
-            // Send the message to each of jids for this user
-            SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-            Collection<ClientSession> sessions = sessionManager.getSessions(destPhoneUser.getUsername());
-            for (ClientSession session : sessions) {
-                message.setTo(session.getAddress());
-                phoneManager.sendPacket(message);
-            }
+            
+            phoneManager.plugin.sendPacket2User(destPhoneUser.getUsername(), message);
         }
         catch (Throwable e) {
             Log.error(e);
@@ -353,11 +259,9 @@ public class AsteriskEventHandler implements ManagerEventHandler {
                     .getCallSession(event.getSrcUniqueId(), srcUser.getUsername());
             callSession.setChannel(srcDevice);
 
-            callSession.setLinkedChannel(event.getDestination());
 
             Message message = new Message();
             message.setID(event.getSrcUniqueId());
-            message.setFrom(phoneManager.getComponentJID());
 
 
             String callerID = event.getCallerId();
@@ -365,7 +269,6 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
 
             callSession.setCallerID(callerID);
-            callSession.setCallerIDName(callerIDName);
 
             PhoneEvent phoneEvent =
                     new PhoneEvent(event.getSrcUniqueId(), PhoneEvent.Type.DIALED, srcDevice);
@@ -374,13 +277,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
             phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
 
-            // Send the message to each of jids for this user
-            SessionManager sessionManager = XMPPServer.getInstance().getSessionManager();
-            Collection<ClientSession> sessions = sessionManager.getSessions(srcUser.getUsername());
-            for (ClientSession session : sessions) {
-                message.setTo(session.getAddress());
-                phoneManager.sendPacket(message);
-            }
+            phoneManager.plugin.sendPacket2User(srcUser.getUsername(), message);
+
         }
         catch (Throwable e) {
             Log.error(e.getMessage(), e);
