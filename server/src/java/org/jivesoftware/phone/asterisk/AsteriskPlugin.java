@@ -9,27 +9,10 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.phone.*;
-import org.jivesoftware.phone.database.DatabaseUtil;
 import org.jivesoftware.phone.database.DbPhoneDAO;
-import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
-import org.jivesoftware.wildfire.container.Plugin;
-import org.jivesoftware.wildfire.container.PluginManager;
-import org.jivesoftware.wildfire.event.SessionEventDispatcher;
-import org.jivesoftware.wildfire.interceptor.InterceptorManager;
-import org.xmpp.component.Component;
-import org.xmpp.component.ComponentException;
-import org.xmpp.component.ComponentManager;
-import org.xmpp.component.ComponentManagerFactory;
-import org.xmpp.packet.IQ;
-import org.xmpp.packet.JID;
-import org.xmpp.packet.Packet;
-
-import java.io.File;
-import java.sql.Connection;
 
 /**
  * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
@@ -53,7 +36,7 @@ import java.sql.Connection;
  */
 @PluginVersion("1.1.0")
 @PBXInfo(make = "Asterisk", version = "1.2")
-public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
+public class AsteriskPlugin extends PhonePlugin {
 
     /**
      * The name of this plugin
@@ -65,118 +48,7 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
      */
     public static final String DESCRIPTION = "Asterisk integration component";
 
-    // The jid for this component
-    private JID componentJID = null;
-
-    // Current instance of the component manager
-    private ComponentManager componentManager = null;
-
-    /**
-     * Flag that indicates if the plugin is being shutdown. When shutting down presences
-     * of users that start a new conversation will not be modified to on-the-phone.
-     */
-    private boolean isComponentReady = false;
-
-    private AsteriskPhoneManager asteriskPhoneManager;
-    private PacketHandler packetHandler;
-
-    private final OnPhonePacketInterceptor onPhoneInterceptor = new OnPhonePacketInterceptor(this);
-
-
-    public void initializePlugin(PluginManager manager, File pluginDirectory) {
-        init();
-    }
-
-    public void init() {
-        Log.info("Initializing Asterisk-IM Plugin");
-
-        Connection con = null;
-
-        try {
-            con = DbConnectionManager.getConnection();
-            DatabaseUtil.upgradeDatabase(con);
-        }
-        catch (Exception e) {
-            Log.error(e);
-        }
-        finally {
-            DbConnectionManager.closeConnection(con);
-        }
-
-
-        try {
-            initAsteriskManager();
-
-        }
-        catch (Throwable e) {
-            // Make sure we catch all exceptions show we can Log anything that might be
-            // going on
-            Log.error(e.getMessage(), e);
-            Log.error("Asterisk-IM not Initializing because of errors");
-            return;
-        }
-
-        // only register the component if we are enabled
-        if (JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
-            try {
-                Log.info("Registering phone plugin as a component");
-                ComponentManagerFactory.getComponentManager().addComponent(NAME, this);
-            }
-            catch (ComponentException e) {
-                Log.error(e.getMessage(), e);
-                // Do nothing. Should never happen.
-                ComponentManagerFactory.getComponentManager().getLog().error(e);
-            }
-        }
-
-        // Register a packet interceptor for handling on on phone presence changes
-        InterceptorManager.getInstance().addInterceptor(onPhoneInterceptor);
-
-        // Register OnPhonePacketInterceptor as a session event listener
-        SessionEventDispatcher.addListener(onPhoneInterceptor);
-    }
-
-    public void destroyPlugin() {
-        destroy();
-    }
-
-    public void destroy() {
-        Log.info("unloading asterisk-im plugin resources");
-
-        try {
-            Log.info("Unregistering asterisk-im plugin as a component");
-            // Unregister this component. When unregistering the isComponentReady variable
-            // will be set to false so new phone calls won't be processed.
-            ComponentManagerFactory.getComponentManager().removeComponent(NAME);
-        }
-        catch (Throwable e) {
-            Log.error(e.getMessage(), e);
-            // Do nothing. Should never happen.
-            ComponentManagerFactory.getComponentManager().getLog().error(e);
-        }
-
-        asteriskPhoneManager.destroy();
-
-        // Remove the packet interceptor
-        InterceptorManager.getInstance().removeInterceptor(onPhoneInterceptor);
-
-        // Remove OnPhonePacketInterceptor as a session event listener
-        SessionEventDispatcher.removeListener(onPhoneInterceptor);
-    }
-
-    /**
-     * sets isComponentReady to true so we start accepting requests
-     */
-    public void start() {
-        isComponentReady = true;
-    }
-
-    /**
-     * Sets isComponentReady to false we will quit accepting requests
-     */
-    public void shutdown() {
-        isComponentReady = false;
-    }
+	private AsteriskPhoneManager asteriskPhoneManager;
 
     /**
      * Returns the name of this component, "phone"
@@ -196,59 +68,17 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         return DESCRIPTION;
     }
 
-    public boolean isComponentReady() {
-        return isComponentReady;
-    }
-
-    /**
-     * Processes all IQ packets passed in, other types of packets will be ignored
-     *
-     * @param packet packet to process
-     */
-    public void processPacket(Packet packet) {
-
-        if (!isComponentReady) {
-            Log.warn("Phone component not ready, ignoring request");
-            return;
-
-        }
-
-        if (!(packet instanceof IQ)) {
-            Log.debug("Phone components expects packets to be IQ packets, ignoring!");
-            return;
-        }
-
-        IQ iq = (IQ) packet;
-        packetHandler.processPacket(iq);
-
-    }
-
-    /**
-     * Initializes the component.
-     *
-     * @param jid              the jid of the component
-     * @param componentManager instance of the componentManager
-     * @throws ComponentException thrown if there are issues initializing this component
-     */
-    public void initialize(JID jid, ComponentManager componentManager) throws ComponentException {
-        this.componentJID = jid;
-        this.componentManager = componentManager;
-        packetHandler = new PacketHandler(this);
-    }
-
     /**
      * Initializes the manager connection with the asterisk server
      */
-    public void initAsteriskManager() {
+    public void initPhoneManager() {
 
         // Only initialize things if the plugin is enabled
-        if (JiveGlobals.getBooleanProperty(Properties.ENABLED, false)) {
+        if (JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
 
             try {
-
-                asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
+                phoneManager = asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
                 asteriskPhoneManager.init(this);
-                PhoneManagerFactory.init(asteriskPhoneManager);
             }
             catch (Throwable e) {
                 Log.error(e);
@@ -257,27 +87,15 @@ public class AsteriskPlugin implements Plugin, Component, PhoneConstants {
         }
     }
 
-    /**
-     * Used to send a packet with this component
-     *
-     * @param packet the package to send
-     */
-    public void sendPacket(Packet packet) {
-        try {
-            componentManager.sendPacket(this, packet);
-        }
-        catch (Exception e) {
-            Log.error(e);
-        }
-    }
+	@Override
+	public PhoneManager getPhoneManager() {
+		return phoneManager;
+	}
 
-    /**
-     * Returns JID for this component
-     *
-     * @return the jid for this component
-     */
-    public JID getComponentJID() {
-        return componentJID;
+	@Override
+	public PhoneOption[] getOptions() {
+		// FIXME: needs implementation!!! ;jw
+		return null;
+	}
 
-    }
 }
