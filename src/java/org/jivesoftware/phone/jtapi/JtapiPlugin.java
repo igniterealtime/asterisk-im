@@ -81,7 +81,11 @@ public class JtapiPlugin extends PhonePlugin {
     	    			"Provider"),
     	    	new RequiredOption("Parameters",
 						JtapiProperties.JTAPI_PARAMS,
-						"Params")};
+						"Params"),
+				new PhoneOption("Drop-down device selection",
+						PhoneProperties.DEVICE_DROP_DOWN,
+						"DropDown",
+						PhoneOption.FLAG)};
     }
     
     public PhoneManager getPhoneManager() {
