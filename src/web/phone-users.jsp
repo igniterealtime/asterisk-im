@@ -1,5 +1,4 @@
 <%@ page import="org.jivesoftware.phone.*,
-                 org.jivesoftware.phone.asterisk.AsteriskPlugin,
                  org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.LocaleUtils,
                  org.jivesoftware.util.Log,
@@ -7,6 +6,7 @@
                  org.jivesoftware.wildfire.XMPPServer,
                  org.jivesoftware.wildfire.user.UserManager,
                  org.jivesoftware.wildfire.user.UserNotFoundException,
+                 org.jivesoftware.wildfire.container.PluginManager,
                  java.util.Collection,
                  java.util.HashMap" %>
 <%@ page import="java.util.List" %>
@@ -29,9 +29,18 @@
         return;
     }
 
-    if (!JiveGlobals.getBooleanProperty(AsteriskPlugin.Properties.ENABLED, false)) {
+    if (!JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
         response.sendRedirect("phone-settings.jsp?usersDisabled=true");
         return;
+    }
+    
+    PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
+    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
+    if (plugin==null) {
+	    // Complain about not being able to get the plugin
+    	String msg = "Unable to acquire asterisk plugin instance!";
+	    Log.error(msg);
+        throw new IllegalStateException(msg);
     }
 
     boolean delete = request.getParameter("delete") != null;
@@ -57,7 +66,7 @@
 
     PhoneManager phoneManager;
     try {
-        phoneManager = PhoneManagerFactory.getPhoneManager();
+        phoneManager = plugin.getPhoneManager();
 
         PhoneUser phoneUser = null;
         List<PhoneDevice> devices = null;
@@ -258,7 +267,7 @@
         int curPage = (start / range) + 1;
 
         // wheteher or not to use sip device drop down
-        boolean useSipDropDown = JiveGlobals.getBooleanProperty(AsteriskPlugin.Properties.DEVICE_DROP_DOWN, true);
+       	boolean useSipDropDown = JiveGlobals.getBooleanProperty(PhoneProperties.DEVICE_DROP_DOWN, true);
 
 
         List<String> sipDevices = null;
