@@ -65,8 +65,8 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public PhoneDevice getDevice(String deviceName) {
-
-        String sql = "SELECT deviceID, device, extension, callerId, userID " +
+    	
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID " +
                 "from phoneDevice WHERE device = ?";
 
         PhoneDevice device = null;
