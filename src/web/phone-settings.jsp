@@ -1,6 +1,7 @@
 <%@ page import="org.jivesoftware.phone.PhoneManager,
-                 org.jivesoftware.phone.PhoneManagerFactory,
-                 org.jivesoftware.phone.asterisk.AsteriskPlugin,
+				 org.jivesoftware.phone.PhonePlugin,
+				 org.jivesoftware.phone.PhoneOption,
+ 				 org.jivesoftware.phone.PhoneProperties,
                  org.jivesoftware.util.JiveConstants,
                  org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.Log,
@@ -15,119 +16,64 @@
 
 <%
 
-    boolean isSave = request.getParameter("save") != null;
-    boolean success = request.getParameter("success") != null;
-    boolean usersDisabled = request.getParameter("usersDisabled") != null;
-
-    String server = request.getParameter("server");
-    int port = ParamUtils.getIntParameter(request, "port", -1);
-    String username = request.getParameter("username");
-    String password = request.getParameter("password");
+	// if we were not enabled before and we are now restart the plugin
+    PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
+    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
+    if (plugin==null) {
+	    // Complain about not being able to get the plugin
+    	String msg = "Unable to acquire asterisk plugin instance!";
+	    Log.error(msg);
+        throw new IllegalStateException(msg);
+    }
+    
     boolean enabled = ParamUtils.getBooleanParameter(request, "enabled", false);
-    String callerID = request.getParameter("callerID");
-    String context = request.getParameter("context");
-    String dialVariables = request.getParameter("dialVariables");
+    boolean isSave = request.getParameter("save") != null;
+	HttpServletRequest req = null;
+    boolean success = request.getParameter("success") != null;
 
     HashMap<String, String> errors = new HashMap<String, String>();
 
     if (isSave) {
 
-        if (server == null || "".equals(server)) {
-            errors.put("server", "Server is required");
-        }
-
-        if (username == null || "".equals(username)) {
-            errors.put("username", "Username is required");
-        }
-
-        if (password == null || "".equals(password)) {
-            errors.put("password", "Password is required");
-        }
-
-        // If a port was specified make sure that it is valid
-        if (isParamPresent(request, "port") && port < 1025) {
-            errors.put("port", "Port must be greater than 1024 and not in use");
-        }
-
+    	// get displayed parameters from request
+    	req = request;
+    	PhoneOption[] options = plugin.getOptions();
+    	
+    	// check parameters
+    	for (int i=0; i<options.length; i++) {
+    		String param = options[i].getParamName();
+    	    String err = 
+    	    	options[i].check(request.getParameter(param));
+    	   	if (err!=null) {
+    	   		errors.put(param, err);
+    	   	}
+    	}
+        
         // If there are no errors initialize the manager
         if (errors.size() == 0) {
-
-            JiveGlobals.setProperty(AsteriskPlugin.Properties.SERVER, server);
-            JiveGlobals.setProperty(AsteriskPlugin.Properties.USERNAME, username);
-
-            if (!"passwordtf".equals(password)) {
-                JiveGlobals.setProperty(AsteriskPlugin.Properties.PASSWORD, password);
-            }
-
-            JiveGlobals.setProperty(AsteriskPlugin.Properties.DEFAULT_CALLER_ID, callerID);
-            JiveGlobals.setProperty(AsteriskPlugin.Properties.CONTEXT, context);
-
-            JiveGlobals.setProperty(AsteriskPlugin.Properties.ENABLED, String.valueOf(enabled));
-
-            if (port > 1024) {
-                JiveGlobals.setProperty(AsteriskPlugin.Properties.PORT, String.valueOf(port));
-            }
-
-
-            JiveGlobals.setProperty(AsteriskPlugin.Properties.DIAL_VARIABLES, dialVariables);
-
-                // if we were not enabled before and we are now restart the plugin
-            PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
-            AsteriskPlugin plugin = (AsteriskPlugin) pluginManager.getPlugin(AsteriskPlugin.NAME);
-
-            if (plugin != null) {
-                plugin.destroy();
-                try {
-                    Thread.sleep(1 * JiveConstants.SECOND);
-                }
-                catch (InterruptedException e) {
-                    Log.error(e);
-                }
-
-                plugin.init();
-                try {
-                    Thread.sleep(1 * JiveConstants.SECOND);
-                }
-                catch (InterruptedException e) {
-                   Log.error(e);
-                }
-            }
-            else {
-                // Complain about not being able to get the plugin
-                String msg = "Unable to acquire asterisk plugin instance!";
-                Log.error(msg);
-                throw new IllegalStateException(msg);
-            }
-
-
-            response.sendRedirect("phone-settings.jsp?success=true");
+	    	for (int i=0; i<options.length; i++) {
+    			String prop = options[i].getPropertyName();
+    			String param = options[i].getParamName();
+				String val = request.getParameter(param);
+	            if (options[i].isPassword() && "passwordtf".equals(val)) {
+	            	continue;
+        	    }
+   	            JiveGlobals.setProperty(prop, val);
+			}    			
+			plugin.restart();
+			// FIXME: maybe get some results of the restart here? ;jw
+			response.sendRedirect("phone-settings.jsp?success=true");
             return;
-
-        }
-
+    	}
     } else {
-
-        // See what the values are
-        server = JiveGlobals.getProperty(AsteriskPlugin.Properties.SERVER);
-        port = JiveGlobals.getIntProperty(AsteriskPlugin.Properties.PORT, -1);
-        username = JiveGlobals.getProperty(AsteriskPlugin.Properties.USERNAME);
-        if (JiveGlobals.getProperty(AsteriskPlugin.Properties.PASSWORD) != null) {
-            password = "passwordtf"; // show some value
-        } else if (password == null) {
-            password = "";
-        }
-        enabled = JiveGlobals.getBooleanProperty(AsteriskPlugin.Properties.ENABLED, false);
-        callerID = JiveGlobals.getProperty(AsteriskPlugin.Properties.DEFAULT_CALLER_ID);
-        context = JiveGlobals.getProperty(AsteriskPlugin.Properties.CONTEXT);
-        dialVariables = JiveGlobals.getProperty(AsteriskPlugin.Properties.DIAL_VARIABLES);
-
+        enabled = JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false);
     }
 
     //try to establish a connection, if there is an error we log it below
     boolean isConnected = false;
 
     if (enabled) {
-        PhoneManager phoneManager = PhoneManagerFactory.getPhoneManager();
+        PhoneManager phoneManager = plugin.getPhoneManager();
         isConnected = phoneManager != null && phoneManager.isConnected();
     }
 
@@ -148,7 +94,7 @@
 <div id="phone-settings">
 
 <p>
-    Use the form below to edit Asterisk integration settings.
+    Use the form below to edit Phone integration settings.
     Changing settings will cause the plugin to be reloaded.<br>
 </p>
 
@@ -161,7 +107,7 @@
             <tr>
                 <td class="jive-icon"><img src="images/success-16x16.gif" width="16" height="16" border="0"></td>
                 <td class="jive-icon-label">Service settings updated successfully. It will take a couple seconds to
-                    reconnect to the asterisk manager</td>
+                    reconnect to the telephony interface</td>
             </tr>
         </tbody>
     </table>
@@ -178,39 +124,24 @@
             </tr>
         </tbody>
     </table>
-</div><br>
+</div><br/>
 
 <% } else if (!isConnected) { %>
 
 <p>
-
     <div class="jive-error">
         <table cellpadding="0" cellspacing="0" border="0">
             <tbody>
                 <tr>
                     <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
-                    <td class="jive-icon-label">Unable to establish a connection to the manager server, please see error
+                    <td class="jive-icon-label">Unable to establish a connection to the telephony server, please see error
                         log</td>
                 </tr>
             </tbody>
         </table>
-    </div><br>
+    </div><br/>
 
 </p>
-
-
-<%  } else if (usersDisabled) { %>
-
-<div class="jive-error">
-    <table cellpadding="0" cellspacing="0" border="0">
-        <tbody>
-            <tr>
-                <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
-                <td class="jive-icon-label">Plugin must be enabled to manage users</td>
-            </tr>
-        </tbody>
-    </table>
-</div><br>
 
 <% } %>
 
@@ -228,7 +159,7 @@
         <td width="99%">
             <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                    <td><input type="radio" name="enabled" id="enabledtf" value="true" <%=enabled ? "checked" : ""%> /></td>
+                    <td><input type="radio" name="enabled" id="enabledtf" value="true" <%= enabled ? "checked" : ""%> /></td>
                     <td style="padding-right : 10px;">Yes</td>
                     <td><input type="radio" name="enabled" value="false" <%=!enabled ? "checked" : ""%> /></td>
                     <td>No</td>
@@ -236,95 +167,84 @@
             </table>
         </td>
     </tr>
+<% 
+
+	PhoneOption[] options = plugin.getOptions();
+	for (int i=0; i<options.length; i++) {
+		PhoneOption opt = options[i];
+		String pn = opt.getParamName();
+		String txt = opt.getDescription();
+		String cn = opt.getPropertyName();
+		String type = "text";
+		// FIXME: we need html escaping for the value we put in! ;jw
+		String val = getParameter(req, pn, cn);
+		if (opt.isPassword()) {
+			type = "password";
+			val = "passwordtf";
+		}
+		if (opt.getType() == PhoneOption.TEXTBOX) {
+%>
     <tr>
         <td width="1%">
-            <nobr><label for="servertf">* Server:</label></nobr>
+            <nobr><label for="<%= pn %>">
+            	<%= opt.isRequired() ? "* " : "" %>
+            	<%= txt %>:
+            </label></nobr>
         </td>
         <td width="99%">
-            <input type="text" name="server" id="servertf" size="30" maxlength="100" value="<%=server != null ? server : ""%>"/>
-            <% if (errors.containsKey("server")) { %>
+        	<textarea cols="45" rows="5" name="<%= pn  %>" wrap="virtual" id=<%= pn %>><%= val %></textarea>
+            <% if (errors.containsKey(pn)) { %>
             <br/>
-            <span class="jive-error-text"><%=errors.get("server")%></span>
+            <span class="jive-error-text"><%=errors.get(pn)%></span>
             <% } %>
         </td>
     </tr>
+<%		
+			
+		} else if (opt.getType() == PhoneOption.FLAG) {
+%>
     <tr>
         <td width="1%">
-            <nobr><label for="porttf">Port:</label></nobr>
+            <nobr><label for="<%= pn %>">
+            	<%= opt.isRequired() ? "* " : "" %>
+            	<%= txt %>:
+			</label></nobr>
         </td>
         <td width="99%">
-            <input type="text" name="port" id="porttf" size="30" maxlength="100"
-                   value="<%= port != -1 ? String.valueOf(port) : "" %>" />
-            <% if (errors.containsKey("port")) { %>
+            <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td><input type="radio" name="<%= pn %>" id="<%= pn %>" value="true" <%= "true".equals(val) ? "checked" : "" %> /></td>
+                    <td style="padding-right : 10px;">Yes</td>
+                    <td><input type="radio" name="<%= pn %>" value="false" <%= !"true".equals(val) ? "checked" : ""%> /></td>
+                    <td>No</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+<%
+		} else {
+%>
+    <tr>
+        <td width="1%">
+            <nobr><label for="<%= pn %>">
+            	<%= opt.isRequired() ? "* " : "" %>
+            	<%= txt %>:
+            </label></nobr>
+        </td>
+        <td width="99%">
+            <input type="<%= type %>" size="30" maxlength="100" name="<%= pn %>" value="<%= val %>"
+                   id="<%= pn %>"/>
+            <% if (errors.containsKey(pn)) { %>
             <br/>
-            <span class="jive-error-text"><%=errors.get("port")%></span>
+            <span class="jive-error-text"><%=errors.get(pn)%></span>
             <% } %>
         </td>
     </tr>
-    <tr>
-        <td width="1%">
-            <nobr><label for="usernametf">* Username:</label></nobr>
-        </td>
-        <td width="99%">
-            <input type="text" name="username" size="30" maxlength="100" value="<%=username != null ? username : ""%>"
-                   id="usernametf"/>
-            <% if (errors.containsKey("username")) { %>
-            <br/>
-            <span class="jive-error-text"><%=errors.get("username")%></span>
-            <% } %>
-        </td>
-    </tr>
-    <tr>
-        <td width="1%">
-            <nobr>* <label for="passwordtf">Password:</label></nobr>
-        </td>
-        <td width="99%">
-            <input type="password" name="password" size="30" maxlength="100" value="<%=password%>" id="passwordtf"/>
-            <% if (errors.containsKey("password")) { %>
-            <br/>
-            <span class="jive-error-text"><%=errors.get("password")%></span>
-            <% } %>
-        </td>
-    </tr>
-    <tr>
-        <td width="1%">
-            <nobr><label for="contexttf">Asterisk Context:</label></nobr>
-        </td>
-        <td width="99%">
-            <input type="text" name="context" size="30" maxlength="100" value="<%= context != null ? context : "" %>"
-                   id="contexttf"/>
-            <% if (errors.containsKey("context")) { %>
-            <br/>
-            <span class="jive-error-text"><%=errors.get("context")%></span>
-            <% } %>
-        </td>
-    </tr>
-    <tr>
-        <td width="1%">
-            <nobr><label for="callerIDtf">Default Caller ID:</label></nobr>
-        </td>
-        <td width="99%">
-            <input type="text" name="callerID" size="30" maxlength="100" value="<%= callerID != null ? callerID : "" %>"
-                   id="callerIDtf"/>
-            <% if (errors.containsKey("callerID")) { %>
-            <br/>
-            <span class="jive-error-text"><%=errors.get("callerID")%></span>
-            <% } %>
-        </td>
-    </tr>
-    <tr>
-        <td width="1%">
-            <nobr><label for="dialVariablestf">Dial Command Variables:</label></nobr>
-        </td>
-        <td width="99%">
-            <input type="text" name="dialVariables" size="30" maxlength="100" value="<%= dialVariables != null ? dialVariables : "" %>"
-                   id="dialVariablestf"/>
-            <% if (errors.containsKey("dialVariables")) { %>
-            <br/>
-            <span class="jive-error-text"><%=errors.get("dialVariables")%></span>
-            <% } %>
-        </td>
-    </tr>
+<% 
+		}
+
+	} 
+%>
 </tbody>
 </table>
 
@@ -344,9 +264,21 @@
 </body>
 </html>
 
-
-
 <%!
+
+	String getParameter(HttpServletRequest q, String pn, String cn) {
+		String s = null;
+		if (q!=null) {
+			s = q.getParameter(pn);
+		} else {
+			s = JiveGlobals.getProperty(cn);
+		}
+		if (s==null) {
+			s = "";
+		}
+		return s;
+    }
+
     boolean isParamPresent(HttpServletRequest request, String param) {
         String value = request.getParameter(param);
         if (value == null) {
