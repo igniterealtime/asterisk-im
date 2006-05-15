@@ -10,7 +10,6 @@
 package org.jivesoftware.phone;
 
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.phone.asterisk.AsteriskPlugin;
 import org.jivesoftware.phone.element.PhoneAction;
 import org.jivesoftware.util.Log;
 import org.dom4j.Element;
@@ -28,12 +27,14 @@ public class PacketHandler implements PhoneConstants {
 
     private static final Logger log = Logger.getLogger(PacketHandler.class.getName());
 
-    private AsteriskPlugin plugin;
+    private PhoneManager phoneManager;
+    private PhonePlugin plugin;
 
-    public PacketHandler(AsteriskPlugin plugin) {
-        this.plugin = plugin;
+    public PacketHandler(PhoneManager pm, PhonePlugin pi) {
+        this.phoneManager = pm;
+        this.plugin = pi;
     }
-
+    
     public void processPacket(IQ iq) {
 
 
@@ -72,9 +73,7 @@ public class PacketHandler implements PhoneConstants {
 
         Element phoneElement = iq.getChildElement();
 
-        PhoneManager phoneManager;
         try {
-            phoneManager = PhoneManagerFactory.getPhoneManager();
 
             String extension = phoneElement.elementText("extension");
             if (extension != null) {
@@ -116,10 +115,7 @@ public class PacketHandler implements PhoneConstants {
 
         Element phoneElement = iq.getChildElement();
 
-        PhoneManager phoneManager;
         try {
-            phoneManager = PhoneManagerFactory.getPhoneManager();
-
             String callSessionID = phoneElement.attributeValue("id");
 
             if (callSessionID == null || "".equals(callSessionID)) {
@@ -168,12 +164,12 @@ public class PacketHandler implements PhoneConstants {
     public void handleDisco(IQ iq) {
 
         if (iq.getType().equals(IQ.Type.error)) {
-            Log.info("Received disco error - " + iq);
+            // Log.info("Received disco error - " + iq);
             return;
         }
 
         if (!(iq.getType() == IQ.Type.get || iq.getType() == IQ.Type.set)) {
-            Log.debug("Not set or get - " + iq);
+            // Log.debug("Not set or get - " + iq);
             return;
         }
 
@@ -216,12 +212,8 @@ public class PacketHandler implements PhoneConstants {
 
             }
             else {
-
                 // This is a query against a specific user
-                PhoneManager phoneManager;
                 try {
-
-                    phoneManager = PhoneManagerFactory.getPhoneManager();
 
                     PhoneUser user = phoneManager.getPhoneUserByUsername(node);
 
@@ -239,10 +231,7 @@ public class PacketHandler implements PhoneConstants {
                 }
 
             }
-
             send(reply);
-
-
         }
         else {
             // todo implement
@@ -250,7 +239,6 @@ public class PacketHandler implements PhoneConstants {
 
 
     }
-
 
     private void send(Packet packet) {
         plugin.sendPacket(packet);
