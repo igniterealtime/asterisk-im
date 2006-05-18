@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <plugin>
-    <class>org.jivesoftware.phone.ajtapi.AjtapiPlugin</class>
+    <class>org.jivesoftware.phone.asterisk.AsteriskPlugin</class>
     <name>Asterisk-IM</name>
-    <description>Integration for Asterisk-JTAPI and Wildfire.</description>
+    <description>Integration for Asterisk and Wildfire.</description>
     <author>Andrew Wright, Jens Wilke</author>
     <version>1.2CVS</version>
     <minServerVersion>2.6.0</minServerVersion>
