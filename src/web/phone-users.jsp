@@ -652,7 +652,7 @@
 <tfoot>
     <tr>
         <td colspan="2">
-            <input type="submit" name="save" value="<%= phoneDevice != null ? "Edit" : "Add"%>"/>
+            <input type="submit" name="save" value="<%= phoneDevice != null ? "Save" : "Add"%>"/>
             <input type="submit" name="cancel" value="Cancel"/>
         </td>
     </tr>
