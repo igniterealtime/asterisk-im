@@ -15,6 +15,8 @@
     <property name="jsp.package" value="org.jivesoftware.wildfire.plugin.phone"/>
     <property name="wildfire.dir" value="${basedir}/../../wildfire"/>
     <property name="jar.file" value="${basedir}/asterisk-im.jar"/>
+    <property name="jar-jtapi.file" value="${basedir}/asterisk-im-jtapi.jar"/>
+    <property name="jar-ajtapi.file" value="${basedir}/asterisk-im-ajtapi.jar"/>
 
     <path id="lib.path">
         <pathelement path="${classes.dir}"/>
@@ -105,8 +107,11 @@
             <fileset dir="${web.src.dir}/images"/>
         </copy>
 
-
         <jar file="${jar.file}" basedir="${target.dir}" update="false"/>
+		<copy file="${basedir}/plugin-jtapi.xml" tofile="${target.dir}/puglin.xml"/>
+        <jar file="${jar-jtapi.file}" basedir="${target.dir}" update="false"/>
+		<copy file="${basedir}/plugin-ajtapi.xml" tofile="${target.dir}/puglin.xml"/>
+        <jar file="${jar-ajtapi.file}" basedir="${target.dir}" update="false"/>
 
     </target>
 
