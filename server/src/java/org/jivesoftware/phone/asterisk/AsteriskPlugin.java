@@ -94,8 +94,34 @@ public class AsteriskPlugin extends PhonePlugin {
 
 	@Override
 	public PhoneOption[] getOptions() {
-		// FIXME: needs implementation!!! ;jw
-		return null;
+		return new PhoneOption[]{
+			new RequiredOption("Server",
+	    			PhoneProperties.SERVER,
+	    			"Server"),
+	 		new RequiredOption("Port",
+	    			PhoneProperties.PORT,
+	    			"Port"),
+	    	new RequiredOption("Username",
+					PhoneProperties.USERNAME,
+					"Login"),
+			new RequiredOption("Password",
+					PhoneProperties.PASSWORD,
+					"Password"){
+					public boolean isPassword() { return true; }
+					},
+			new PhoneOption("Drop-down device selection",
+	    			PhoneProperties.DEVICE_DROP_DOWN,
+	    			"DropDown",
+	    			PhoneOption.FLAG),
+   	    	new PhoneOption("Asterisk Context",
+   	    			PhoneProperties.CONTEXT,
+   	    			"Context"),
+	    	new PhoneOption("Default Caller ID",
+	    			PhoneProperties.DEFAULT_CALLER_ID,
+	    			"DefaultCallerId"),
+	    	new PhoneOption("Dial Command Variables",
+	    			PhoneProperties.DIAL_VARIABLES,
+	    			"DialVariables")};
 	}
 
 }
