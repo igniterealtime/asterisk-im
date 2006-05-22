@@ -107,10 +107,17 @@
             <fileset dir="${web.src.dir}/images"/>
         </copy>
 
+        <delete file="${target.dir}/plugin.xml"/>
+        <delete file="${target.dir}/plugin-ajtapi.xml"/>
+        <delete file="${target.dir}/plugin-jtapi.xml"/>
+
+	<copy file="${basedir}/plugin.xml" tofile="${target.dir}/plugin.xml"/>
         <jar file="${jar.file}" basedir="${target.dir}" update="false"/>
-		<copy file="${basedir}/plugin-jtapi.xml" tofile="${target.dir}/puglin.xml"/>
+        <delete file="${target.dir}/plugin.xml"/>
+	<copy file="${basedir}/plugin-jtapi.xml" tofile="${target.dir}/plugin.xml"/>
         <jar file="${jar-jtapi.file}" basedir="${target.dir}" update="false"/>
-		<copy file="${basedir}/plugin-ajtapi.xml" tofile="${target.dir}/puglin.xml"/>
+        <delete file="${target.dir}/plugin.xml"/>
+	<copy file="${basedir}/plugin-ajtapi.xml" tofile="${target.dir}/plugin.xml"/>
         <jar file="${jar-ajtapi.file}" basedir="${target.dir}" update="false"/>
 
     </target>
