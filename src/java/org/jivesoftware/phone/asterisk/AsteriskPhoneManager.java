@@ -21,7 +21,6 @@ import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.util.PhoneConstants;
-
 import org.jivesoftware.util.JiveGlobals;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
 import org.jivesoftware.util.Log;
@@ -96,7 +95,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
     }
 
     public void destroy() {
-        
+
 //        if (channelStatusRunnable != null) {
 //            channelStatusRunnable.shouldRun = false;
 //        }
@@ -114,7 +113,6 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         }
     }
 
-    
 // FIXME what is this? ;jw
 //    public void stopMonitor(String channel) throws PhoneException {
 //
@@ -243,10 +241,15 @@ public class AsteriskPhoneManager extends BasePhoneManager {
             action.setChannel(primaryDevice.getDevice());
             action.setCallerId(primaryDevice.getCallerId() != null ? primaryDevice.getCallerId() :
                     getProperty(PhoneProperties.DEFAULT_CALLER_ID, ""));
+
+            // fix leading spaces and + signs
+            extension = extension.replaceAll("\\s+", "");
+            extension = extension.replaceAll("^\\+", "00");
+
             action.setExten(extension);
             String context = getProperty(
-            		PhoneProperties.CONTEXT, 
-            		PhoneConstants.DEFAULT_CONTEXT);
+                    PhoneProperties.CONTEXT,
+                    PhoneConstants.DEFAULT_CONTEXT);
             if ("".equals(context)) {
                 context = PhoneConstants.DEFAULT_CONTEXT;
             }
@@ -320,11 +323,11 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         action.setPriority(1);
 
 
-        String context = 
-        	getProperty(PhoneProperties.CONTEXT, 
-        				PhoneConstants.DEFAULT_CONTEXT);
+        String context =
+                getProperty(PhoneProperties.CONTEXT,
+                        PhoneConstants.DEFAULT_CONTEXT);
         if ("".equals(context)) {
-            context =PhoneConstants.DEFAULT_CONTEXT;
+            context = PhoneConstants.DEFAULT_CONTEXT;
         }
 
         action.setContext(context);
@@ -350,7 +353,6 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     }
 
-    
 // FIXME: check whether we really need this ;jw
 //
 //    /**
