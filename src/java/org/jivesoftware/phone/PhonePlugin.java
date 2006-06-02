@@ -230,7 +230,7 @@ public abstract class PhonePlugin  implements Plugin, Component, PhoneConstants 
 						ret.setBody("Dialing "+num+"...");
 					} catch (PhoneException e) {
 						ret.setBody("Got exception "+e);
-						e.printStackTrace();
+						Log.error(e);
 					}
     				sendPacket2User(msg.getFrom().getNode(), ret);
     			}
