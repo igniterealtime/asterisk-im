@@ -8,7 +8,7 @@
     <property name="target.dir" value="${basedir}/target" />
     <property name="work.dir" value="${basedir}/work"/>
     <property name="web-inf.dir" value="${work.dir}/web/WEB-INF"/>
-    <property name="classes.dir" value="${work.dir}/classes"/>
+    <property name="classes.dir" value="${basedir}/classes"/>
     <property name="java.src.dir" value="${basedir}/src/java"/>
     <property name="lib.dir" value="${basedir}/build/lib"/>
     <property name="work.src.dir" value="${basedir}/src/work"/>
@@ -111,6 +111,11 @@
             <fileset dir="${web.src.dir}/images"/>
         </copy>
 
+        <!-- jar the classes and place in here -->
+        <jar file="${work.dir}/lib/asterisk-im-classes.jar"
+             basedir="${classes.dir}"/>
+
+
         <delete file="${work.dir}/plugin.xml"/>
         <delete file="${work.dir}/plugin-ajtapi.xml"/>
         <delete file="${work.dir}/plugin-jtapi.xml"/>
@@ -136,8 +141,7 @@
         <delete dir="${work.src.dir}"/>
         <delete file="${jar.file}"/>
         <delete dir="${web-inf.dir}"/>
-        <delete dir="${work.dir}/lib"/>
-        <delete dir="${work.dir}/web/images"/>
+        <delete dir="${work.dir}"/>
         <delete dir="${target.dir}"/>
     </target>
 
