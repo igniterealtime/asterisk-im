@@ -155,7 +155,7 @@ public class DatabaseUtil {
                     break;
                 }
                 // Ignore comments and blank lines.
-                if (DbConnectionManager.isSQLCommandPart(line)) {
+                if (isSQLCommandPart(line)) {
                     command.append(line);
                 }
                 if (line.endsWith(";")) {
@@ -212,6 +212,27 @@ public class DatabaseUtil {
             DbConnectionManager.closePreparedStatement(psmt);
         }
 
+    }
+
+    /**
+     * Returns true if a line from a SQL schema is a valid command part.
+     *
+     * @param line the line of the schema.
+     * @return true if a valid command part.
+     */
+    private static boolean isSQLCommandPart(String line) {
+        line = line.trim();
+        if (line.equals("")) {
+            return false;
+        }
+        // Check to see if the line is a comment. Valid comment types:
+        //   "//" is HSQLDB
+        //   "--" is DB2 and Postgres
+        //   "#" is MySQL
+        //   "REM" is Oracle
+        //   "/*" is SQLServer
+        return !(line.startsWith("//") || line.startsWith("--") || line.startsWith("#") ||
+                line.startsWith("REM") || line.startsWith("/*") || line.startsWith("*"));
     }
 
 }
