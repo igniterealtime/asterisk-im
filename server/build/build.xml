@@ -5,18 +5,19 @@
     <property file="${basedir}/build.properties"/>
 
 
-    <property name="target.dir" value="${basedir}/target"/>
-    <property name="web-inf.dir" value="${target.dir}/web/WEB-INF"/>
-    <property name="classes.dir" value="${target.dir}/classes"/>
+    <property name="target.dir" value="${basedir}/target" />
+    <property name="work.dir" value="${basedir}/work"/>
+    <property name="web-inf.dir" value="${work.dir}/web/WEB-INF"/>
+    <property name="classes.dir" value="${work.dir}/classes"/>
     <property name="java.src.dir" value="${basedir}/src/java"/>
     <property name="lib.dir" value="${basedir}/build/lib"/>
     <property name="work.src.dir" value="${basedir}/src/work"/>
     <property name="web.src.dir" value="${basedir}/src/web"/>
     <property name="jsp.package" value="org.jivesoftware.wildfire.plugin.phone"/>
     <property name="wildfire.dir" value="${basedir}/../../wildfire"/>
-    <property name="jar.file" value="${basedir}/asterisk-im.jar"/>
-    <property name="jar-jtapi.file" value="${basedir}/asterisk-im-jtapi.jar"/>
-    <property name="jar-ajtapi.file" value="${basedir}/asterisk-im-ajtapi.jar"/>
+    <property name="jar.file" value="${target.dir}/asterisk-im.jar"/>
+    <property name="jar-jtapi.file" value="${target.dir}/jtapi/asterisk-im.jar"/>
+    <property name="jar-ajtapi.file" value="${target.dir}/ajtapi/asterisk-im.jar"/>
 
     <path id="lib.path">
         <pathelement path="${classes.dir}"/>
@@ -92,32 +93,36 @@
 
     <target name="jar" depends="clean,compile">
         <mkdir dir="${target.dir}"/>
-        <copy todir="${target.dir}">
+        <mkdir dir="${target.dir}/ajtapi"/>
+        <mkdir dir="${target.dir}/jtapi"/>
+
+        <mkdir dir="${work.dir}"/>
+        <copy todir="${work.dir}">
             <fileset dir="${basedir}" includes="*.*" excludes="*.jar"/>
         </copy>
 
-        <mkdir dir="${target.dir}/lib"/>
-        <copy todir="${target.dir}/lib">
+        <mkdir dir="${work.dir}/lib"/>
+        <copy todir="${work.dir}/lib">
             <fileset dir="${lib.dir}"/>
         </copy>
 
-        <mkdir dir="${target.dir}/web/images"/>
-        <copy todir="${target.dir}/web/images">
+        <mkdir dir="${work.dir}/web/images"/>
+        <copy todir="${work.dir}/web/images">
             <fileset dir="${web.src.dir}/images"/>
         </copy>
 
-        <delete file="${target.dir}/plugin.xml"/>
-        <delete file="${target.dir}/plugin-ajtapi.xml"/>
-        <delete file="${target.dir}/plugin-jtapi.xml"/>
+        <delete file="${work.dir}/plugin.xml"/>
+        <delete file="${work.dir}/plugin-ajtapi.xml"/>
+        <delete file="${work.dir}/plugin-jtapi.xml"/>
 
-	<copy file="${basedir}/plugin.xml" tofile="${target.dir}/plugin.xml"/>
-        <jar file="${jar.file}" basedir="${target.dir}" update="false"/>
-        <delete file="${target.dir}/plugin.xml"/>
-	<copy file="${basedir}/plugin-jtapi.xml" tofile="${target.dir}/plugin.xml"/>
-        <jar file="${jar-jtapi.file}" basedir="${target.dir}" update="false"/>
-        <delete file="${target.dir}/plugin.xml"/>
-	<copy file="${basedir}/plugin-ajtapi.xml" tofile="${target.dir}/plugin.xml"/>
-        <jar file="${jar-ajtapi.file}" basedir="${target.dir}" update="false"/>
+        <copy file="${basedir}/plugin.xml" tofile="${work.dir}/plugin.xml"/>
+        <jar file="${jar.file}" basedir="${work.dir}" update="false"/>
+        <delete file="${work.dir}/plugin.xml"/>
+        <copy file="${basedir}/plugin-jtapi.xml" tofile="${work.dir}/plugin.xml"/>
+        <jar file="${jar-jtapi.file}" basedir="${work.dir}" update="false"/>
+        <delete file="${work.dir}/plugin.xml"/>
+        <copy file="${basedir}/plugin-ajtapi.xml" tofile="${work.dir}/plugin.xml"/>
+        <jar file="${jar-ajtapi.file}" basedir="${work.dir}" update="false"/>
 
     </target>
 
@@ -131,8 +136,9 @@
         <delete dir="${work.src.dir}"/>
         <delete file="${jar.file}"/>
         <delete dir="${web-inf.dir}"/>
-        <delete dir="${target.dir}/lib"/>
-        <delete dir="${target.dir}/web/images"/>
+        <delete dir="${work.dir}/lib"/>
+        <delete dir="${work.dir}/web/images"/>
+        <delete dir="${target.dir}"/>
     </target>
 
 
