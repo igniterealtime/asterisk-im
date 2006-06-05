@@ -48,10 +48,14 @@
     	   		errors.put(param, err);
     	   	}
     	}
-        
+
+
         // If there are no errors initialize the manager
         if (errors.size() == 0) {
-	    	for (int i=0; i<options.length; i++) {
+            JiveGlobals.setProperty(PhoneProperties.ENABLED, String.valueOf(enabled));
+
+
+            for (int i=0; i<options.length; i++) {
     			String prop = options[i].getPropertyName();
     			String param = options[i].getParamName();
 				String val = request.getParameter(param);
