@@ -61,7 +61,8 @@
         <jasper2 validateXml="false"
                  uriroot="${web.src.dir}"
                  outputDir="${work.src.dir}"
-                 package="${jsp.package}"/>
+                 package="${jsp.package}"
+                 webXml="${web-inf.dir}/web.xml"/>
 
     </target>
 
