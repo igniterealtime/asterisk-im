@@ -106,7 +106,7 @@ public abstract class PhonePlugin  implements Plugin, Component, PhoneConstants 
                 componentManager.getLog().error(e);
             }
         }
-        
+
         packetHandler = new PacketHandler(phoneManager, this);
         interceptor = new PresenceLayerer();
 
@@ -138,7 +138,10 @@ public abstract class PhonePlugin  implements Plugin, Component, PhoneConstants 
         
         interceptor.restoreCompletely();
 
-        phoneManager.destroy();
+        // If there isn't a manager instance established don't try to destroy it.
+        if (phoneManager != null) {
+            phoneManager.destroy();
+        }
 
         // Remove the packet interceptor
         InterceptorManager.getInstance().removeInterceptor(interceptor);
