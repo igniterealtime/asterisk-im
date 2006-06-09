@@ -24,6 +24,7 @@ import org.jivesoftware.wildfire.interceptor.InterceptorManager;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
+import org.xmpp.component.ComponentManagerFactory;
 import org.xmpp.packet.IQ;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
@@ -92,6 +93,16 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
             return;
         }
 
+        packetHandler = new PacketHandler(phoneManager, this);
+        interceptor = new PresenceLayerer();
+
+        // Register a packet interceptor for handling on phone presence changes
+        InterceptorManager.getInstance().addInterceptor(interceptor);
+
+        // Register OnPhonePacketInterceptor as a session event listener
+        SessionEventDispatcher.addListener(interceptor);
+
+        componentManager = ComponentManagerFactory.getComponentManager();
         // only register the component if we are enabled
         if (JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
             try {
@@ -106,15 +117,6 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
                 }
             }
         }
-
-        packetHandler = new PacketHandler(phoneManager, this);
-        interceptor = new PresenceLayerer();
-
-        // Register a packet interceptor for handling on phone presence changes
-        InterceptorManager.getInstance().addInterceptor(interceptor);
-
-        // Register OnPhonePacketInterceptor as a session event listener
-        SessionEventDispatcher.addListener(interceptor);
     }
 
     public void destroyPlugin() {
@@ -223,7 +225,6 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
      */
     public void initialize(JID jid, ComponentManager componentManager) throws ComponentException {
         this.componentJID = jid;
-        this.componentManager = componentManager;
     }
 
 
