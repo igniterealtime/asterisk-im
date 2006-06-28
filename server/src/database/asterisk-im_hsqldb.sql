@@ -1,3 +1,6 @@
+
+INSERT INTO jiveVersion (name, version) VALUES ('asterisks', 0);
+
 create table phoneDevice (
    deviceID bigint not null,
    device varchar(255) not null,

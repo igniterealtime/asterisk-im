@@ -122,6 +122,9 @@
         <delete file="${work.dir}/plugin-jtapi.xml"/>
 
         <copy file="${basedir}/plugin.xml" tofile="${work.dir}/plugin.xml"/>
+        <copy todir="${work.dir}/database">
+            <fileset dir="${basedir}/src/database" includes="*.sql"/>
+        </copy>
         <jar file="${jar.file}" basedir="${work.dir}" update="false"/>
         <delete file="${work.dir}/plugin.xml"/>
         <copy file="${basedir}/plugin-jtapi.xml" tofile="${work.dir}/plugin.xml"/>
