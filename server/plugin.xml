@@ -5,9 +5,9 @@
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Wildfire.</description>
     <author>Andrew Wright, Jens Wilke</author>
-    <version>1.2CVS</version>
+    <version>1.1.1</version>
     <minServerVersion>3.0.0</minServerVersion>
-    <databaseKey>asterisks</databaseKey>
+    <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>0</databaseVersion>
 
     <adminconsole>

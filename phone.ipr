@@ -1,21 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="4" relativePaths="true">
+<project version="4" relativePaths="false">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
-    <buildFile url="file://$PROJECT_DIR$/client/build/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
-      <properties />
-    </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/server/build/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
-      <properties />
-    </buildFile>
+  </component>
+  <component name="BSFConsole">
+    <sendcommandbycontrolenter>false</sendcommandbycontrolenter>
+    <restoresystemstreams>false</restoresystemstreams>
+    <outwaitsforerr>false</outwaitsforerr>
+    <errwaitsforout>false</errwaitsforout>
+    <storedupsinrecentcommands>false</storedupsinrecentcommands>
+    <moduleforclasspath />
+    <includeoutputpath>false</includeoutputpath>
+    <includetestsoutputpath>false</includetestsoutputpath>
+    <languages>
+      <language name="ant" engine="org.kos.bsfconsoleplugin.languages.AntConsoleBSFEngine" />
+      <language name="groovy" engine="org.codehaus.groovy.bsf.GroovyEngine" />
+      <language name="netrexx" engine="org.apache.bsf.engines.netrexx.NetRexxEngine" />
+      <language name="xslt" engine="org.apache.bsf.engines.xslt.XSLTEngine" />
+      <language name="beanbasic" engine="org.apache.bsf.engines.beanbasic.BeanBasicEngine" />
+      <language name="beanshell" engine="bsh.util.BeanShellBSFEngine" />
+      <language name="bml" engine="org.apache.bml.ext.BMLEngine" />
+      <language name="jacl" engine="org.apache.bsf.engines.jacl.JaclEngine" />
+      <language name="java" engine="org.apache.bsf.engines.java.JavaEngine" />
+      <language name="javaclass" engine="org.apache.bsf.engines.javaclass.JavaClassEngine" />
+      <language name="javascript" engine="org.apache.bsf.engines.javascript.JavaScriptEngine" />
+      <language name="jpython" engine="org.apache.bsf.engines.jpython.JPythonEngine" />
+      <language name="jruby" engine="org.jruby.javasupport.bsf.JRubyEngine" />
+      <language name="jscript" engine="org.apache.bsf.engines.activescript.ActiveScriptEngine" />
+      <language name="judoscript" engine="com.judoscript.BSFJudoEngine" />
+      <language name="jython" engine="org.apache.bsf.engines.jython.JythonEngine" />
+      <language name="lotusscript" engine="org.apache.bsf.engines.lotusscript.LsEngine" />
+      <language name="perl" engine="org.apache.bsf.engines.perl.PerlEngine" />
+      <language name="perlscript" engine="org.apache.bsf.engines.activescript.ActiveScriptEngine" />
+      <language name="pnuts" engine="pnuts.ext.PnutsBSFEngine" />
+      <language name="vbscript" engine="org.apache.bsf.engines.activescript.ActiveScriptEngine" />
+    </languages>
+    <startupscripts />
+    <preferredrecentcommandsdividerlocations />
+    <BSFConsoleSearchOptions searchfromcursor="false">
+      <recentsearches />
+    </BSFConsoleSearchOptions>
   </component>
   <component name="CodeStyleSettingsManager">
     <option name="PER_PROJECT_SETTINGS" />
@@ -39,6 +63,15 @@
       <entry name="?*.html" />
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
+      <entry name="?*.properties" />
+      <entry name="?*.xml" />
+      <entry name="?*.html" />
+      <entry name="?*.dtd" />
+      <entry name="?*.tld" />
+      <entry name="?*.gif" />
+      <entry name="?*.png" />
+      <entry name="?*.jpeg" />
+      <entry name="?*.jpg" />
     </wildcardResourcePatterns>
   </component>
   <component name="DataSourceManagerImpl" />
@@ -59,7 +92,7 @@
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="false" />
     <option name="DEPRECATION" value="true" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="-Xlint" />
+    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
   <component name="JavadocGenerationManager">
@@ -192,9 +225,6 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../smack/build/projects/Smack.iml" filepath="$PROJECT_DIR$/../smack/build/projects/Smack.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../whack/build/projects/Whack.iml" filepath="$PROJECT_DIR$/../whack/build/projects/Whack.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../wildfire/Wildfire.iml" filepath="$PROJECT_DIR$/../wildfire/Wildfire.iml" />
       <module fileurl="file://$PROJECT_DIR$/client/build/project/phone-client.iml" filepath="$PROJECT_DIR$/client/build/project/phone-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/build/project/phone-server.iml" filepath="$PROJECT_DIR$/server/build/project/phone-server.iml" />
     </modules>
@@ -206,6 +236,11 @@
     <option name="GENERATE_NO_WARNINGS" value="false" />
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
+  </component>
+  <component name="copyright">
+    <Base>
+      <setting name="state" value="2" />
+    </Base>
   </component>
   <component name="libraryTable" />
   <component name="uidesigner-configuration">
