@@ -1,5 +1,3 @@
-INSERT INTO jiveVersion (name, version) VALUES ('asterisks', 0);
-
 create table phoneDevice (
    deviceID integer not null,
    device varchar2(255) not null,
@@ -15,3 +13,5 @@ create table phoneUser (
    primary key (userID)
 );
 alter table phoneDevice add constraint pD_userID_fk foreign key (userID) references phoneUser;
+
+INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', 0);

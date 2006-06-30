@@ -104,7 +104,9 @@
 
         <mkdir dir="${work.dir}/lib"/>
         <copy todir="${work.dir}/lib">
-            <fileset dir="${lib.dir}"/>
+            <fileset dir="${lib.dir}">
+                <exclude name="wildfire.jar"/>
+            </fileset>
         </copy>
 
         <mkdir dir="${work.dir}/web/images"/>

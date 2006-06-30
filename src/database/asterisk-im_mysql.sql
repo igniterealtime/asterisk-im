@@ -1,5 +1,3 @@
-INSERT INTO jiveVersion (name, version) VALUES ('asterisks', 0);
-
 create table phoneDevice (
    deviceID bigint not null,
    device varchar(255) not null,
@@ -14,3 +12,5 @@ create table phoneUser (
    username varchar(255) not null unique,
    primary key (userID)
 );
+
+INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', 0);

@@ -1,6 +1,3 @@
-
-INSERT INTO jiveVersion (name, version) VALUES ('asterisks', 0);
-
 create table phoneDevice (
    deviceID bigint not null,
    device varchar(255) not null,
@@ -16,3 +13,5 @@ create table phoneUser (
    constraint phoneUser_pk primary key (userID)
 );
 create unique index phoneUser_username_idx on phoneUser(username);
+
+INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', 0);

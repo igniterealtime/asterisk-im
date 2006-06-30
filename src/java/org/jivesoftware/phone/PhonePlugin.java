@@ -8,8 +8,6 @@
  */
 package org.jivesoftware.phone;
 
-import org.jivesoftware.database.DbConnectionManager;
-import org.jivesoftware.phone.database.DatabaseUtil;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.util.JiveConstants;
 import org.jivesoftware.util.JiveGlobals;
@@ -31,7 +29,6 @@ import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
 
 import java.io.File;
-import java.sql.Connection;
 import java.util.Collection;
 
 public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
@@ -69,18 +66,6 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     public void init() {
         Log.info("Initializing phone plugin");
-
-        Connection con = null;
-        try {
-            con = DbConnectionManager.getConnection();
-            DatabaseUtil.upgradeDatabase(con);
-        }
-        catch (Exception e) {
-            Log.error(e);
-        }
-        finally {
-            DbConnectionManager.closeConnection(con);
-        }
 
         try {
             initPhoneManager();
