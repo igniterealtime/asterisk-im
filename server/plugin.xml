@@ -4,7 +4,7 @@
     <class>org.jivesoftware.phone.asterisk.AsteriskPlugin</class>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Wildfire.</description>
-    <author>Andrew Wright, Jens Wilke</author>
+    <author>Jive Software</author>
     <version>1.1.1</version>
     <minServerVersion>3.0.0</minServerVersion>
     <databaseKey>asterisk-im</databaseKey>

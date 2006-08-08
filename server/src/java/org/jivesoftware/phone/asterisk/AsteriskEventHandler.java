@@ -15,8 +15,8 @@ import net.sf.asterisk.manager.event.NewStateEvent;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
-import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.phone.PhonePlugin;
+import org.jivesoftware.phone.PhoneUser;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneStatus;
@@ -43,13 +43,13 @@ public class AsteriskEventHandler implements ManagerEventHandler {
     public void handleEvent(ManagerEvent event) {
 
         if (event instanceof HangupEvent) {
-            handleHangupEvent((HangupEvent) event);
+            handleHangupEvent((HangupEvent)event);
         }
         else if (event instanceof NewStateEvent) {
-            handleNewStateEvent((NewStateEvent) event);
+            handleNewStateEvent((NewStateEvent)event);
         }
         else if (event instanceof DialEvent) {
-            handleDialEvent((DialEvent) event);
+            handleDialEvent((DialEvent)event);
         }
 
     }
@@ -60,7 +60,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
             if (Log.isDebugEnabled()) {
                 Log.debug("Asterisk-IM: Processing NewState:UP event channel : "
-                        + event.getChannel() + " id: " + event.getUniqueId());
+                    + event.getChannel() + " id: " + event.getUniqueId());
             }
             handleOnPhone(event);
         }
@@ -84,7 +84,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
                 Log.debug("Asterisk-IM OnPhoneTask: Could not find device/jid mapping for device " +
-                        device + " returning");
+                    device + " returning");
                 return;
             }
 
@@ -95,9 +95,9 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             // Notify the client that they have answered the phone
             Message message = new Message();
             message.setID(event.getUniqueId());
-            
+
             PhoneEvent phoneEvent =
-                    new PhoneEvent(callSession.getId(), PhoneEvent.Type.ON_PHONE, device);
+                new PhoneEvent(callSession.getId(), PhoneEvent.Type.ON_PHONE, device);
             // Get the callerID to add to the phone-event. If no callerID info is available
             // then just set an empty string and let clients do the proper rendering
             String callerID = callSession.getCallerID() == null ? "" : callSession.getCallerID();
@@ -112,7 +112,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
             PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
             presence.getElement().add(phoneStatus);
-            
+
             plugin.setPresence(phoneUser.getUsername(), presence);
 
         }
@@ -128,8 +128,12 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         try {
             PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
 
+            CallSessionFactory callSessionFactory = getCallSessionFactory();
+
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
+                Log.debug("Asterisk-IM HangupTask not active " + device);
+                callSessionFactory.destroyPhoneSession(event.getUniqueId());
                 return;
             }
 
@@ -138,21 +142,19 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             // Send hang up message to user
             phoneManager.sendHangupMessage(event.getUniqueId(), device, phoneUser.getUsername());
 
-            CallSessionFactory callSessionFactory = getCallSessionFactory();
-
             // If the user does not have any more call sessions, set back
             // the presence to what it was before they received any calls
             synchronized (phoneUser.getUsername().intern()) {
                 int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
                 if (callSessionCount <= 1) {
-                	plugin.restorePresence(phoneUser.getUsername());
+                    plugin.restorePresence(phoneUser.getUsername());
                 }
                 else {
                     if (Log.isDebugEnabled()) {
                         Log.debug("Asterisk-IM HangupTask: User " + phoneUser.getUsername() +
-                                " has " + callSessionCount +
-                                " call sessions,  not restoring presence. Destroying CallSession{id=" +
-                                event.getUniqueId() + ", channel=" + event.getChannel() + "}");
+                            " has " + callSessionCount +
+                            " call sessions,  not restoring presence. Destroying CallSession{id=" +
+                            event.getUniqueId() + ", channel=" + event.getChannel() + "}");
                     }
                 }
 
@@ -162,19 +164,19 @@ public class AsteriskEventHandler implements ManagerEventHandler {
                     // the CallSession to destroy based on the channel
                     if (event.getChannel().contains("<ZOMBIE>")) {
                         CallSession destroyedSession = callSessionFactory.destroyPhoneSession(
-                                event.getChannel().replace("<ZOMBIE>", ""),
-                                phoneUser.getUsername());
+                            event.getChannel().replace("<ZOMBIE>", ""),
+                            phoneUser.getUsername());
                         if (Log.isDebugEnabled()) {
                             Log.debug("Asterisk-IM HangupTask: Found ZOMBIE channel so " +
-                                    "trying to destroy CallSession based on channel " +
-                                    "instead of id. User: " + phoneUser.getUsername() +
-                                    " channel to destroy" + event.getChannel() +
-                                    " . Destruction status: " + destroyedSession == null ? "FAILED" : "SUCCEEDED");
+                                "trying to destroy CallSession based on channel " +
+                                "instead of id. User: " + phoneUser.getUsername() +
+                                " channel to destroy" + event.getChannel() +
+                                " . Destruction status: " + destroyedSession == null ? "FAILED" : "SUCCEEDED");
                         }
                     }
                 }
 
-                if (callSessionCount > 1) {
+                if (callSessionCount >= 1) {
                     for (CallSession session : callSessionFactory.getUserCallSessions(phoneUser.getUsername())) {
                         Log.debug("Asterisk-IM HangupTask: Remaining CallSession " + session);
                     }
@@ -224,7 +226,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             Log.debug("Asterisk-IM RingTask called for user " + destPhoneUser);
 
             CallSession destCallSession = getCallSessionFactory()
-                    .getCallSession(event.getDestUniqueId(), destPhoneUser.getUsername());
+                .getCallSession(event.getDestUniqueId(), destPhoneUser.getUsername());
 
 
             destCallSession.setChannel(destDevice);
@@ -234,7 +236,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             String callerIDName = event.getCallerIdName();
 
             PhoneEvent phoneEvent =
-                    new PhoneEvent(event.getDestUniqueId(), PhoneEvent.Type.RING, destDevice);
+                new PhoneEvent(event.getDestUniqueId(), PhoneEvent.Type.RING, destDevice);
             String callerID = StringUtils.stripTags(event.getCallerId());
             phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
             phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
@@ -242,7 +244,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             destCallSession.setCallerID(callerID);
 
             message.getElement().add(phoneEvent);
-            
+
             phoneManager.plugin.sendPacket2User(destPhoneUser.getUsername(), message);
         }
         catch (Throwable e) {
@@ -256,7 +258,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         try {
 
             CallSession callSession = getCallSessionFactory()
-                    .getCallSession(event.getSrcUniqueId(), srcUser.getUsername());
+                .getCallSession(event.getSrcUniqueId(), srcUser.getUsername());
             callSession.setChannel(srcDevice);
 
 
@@ -271,7 +273,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             callSession.setCallerID(callerID);
 
             PhoneEvent phoneEvent =
-                    new PhoneEvent(event.getSrcUniqueId(), PhoneEvent.Type.DIALED, srcDevice);
+                new PhoneEvent(event.getSrcUniqueId(), PhoneEvent.Type.DIALED, srcDevice);
             message.getElement().add(phoneEvent);
 
             phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
