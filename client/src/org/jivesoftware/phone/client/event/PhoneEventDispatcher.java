@@ -7,15 +7,13 @@
  *
  * This software is the proprietary information of Jive Software. Use is subject to license terms.
  */
+
 package org.jivesoftware.phone.client.event;
 
-import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
 import org.jivesoftware.phone.client.PhoneEvent;
 import org.jivesoftware.phone.client.PhoneEventListener;
-
-import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Event dispatcher for phone events.
@@ -24,8 +22,7 @@ import java.util.ArrayList;
  */
 public class PhoneEventDispatcher {
 
-    private final List listeners = new CopyOnWriteArrayList();
-
+    private final List<PhoneEventListener> listeners = new CopyOnWriteArrayList<PhoneEventListener>();
 
     /**
      * Adds a new listener to this event dispatcher instance
@@ -56,12 +53,8 @@ public class PhoneEventDispatcher {
      * @param event event to dispatch
      */
     public void dispatchEvent(PhoneEvent event) {
-        final List eventListeners = new ArrayList(listeners);
-        for (Iterator i = eventListeners.iterator(); i.hasNext();) {
-            PhoneEventListener listener = (PhoneEventListener) i.next();
+        for (PhoneEventListener listener : listeners) {
             listener.handle(event);
         }
-
     }
-
 }

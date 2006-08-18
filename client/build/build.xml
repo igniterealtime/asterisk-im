@@ -10,7 +10,7 @@
     <property name="javadoc.dest.dir" value="${target.dir}/documentation/api"/>
 
     <property name="version.major" value="1"/>
-    <property name="version.minor" value="1"/>
+    <property name="version.minor" value="2"/>
     <property name="version.revision" value="0"/>
     <property name="version.extra" value=""/>
 
@@ -42,8 +42,8 @@
 
         <javac srcdir="${src.dir}"
                destdir="${classes.dir}"
-               source="1.4"
-               target="1.4"
+               source="1.5"
+               target="1.5"
                includeantruntime="no"
                includejavaruntime="no"
                debug="on">
@@ -87,7 +87,7 @@
             </sourcepath>
             <doctitle><![CDATA[<font face="arial,helvetica,sans-serif">Wildfire ${version} Javadoc</font>]]></doctitle>
             <header><![CDATA[<b>Wildfire ${version} Javadoc</b>]]></header>
-            <bottom><![CDATA[<i>Copyright &copy; 1999-2004 Jive Software.</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright &copy; 1999-2006 Jive Software.</i>]]></bottom>
             <classpath>
                 <path refid="lib.path"/>
             </classpath>

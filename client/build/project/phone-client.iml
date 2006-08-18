@@ -49,15 +49,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../lib/runtime/backport-util-concurrent.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="Groovy from GroovyJ 0.1.7 (Irida)" level="application" />
     <orderEntryProperties />
   </component>
