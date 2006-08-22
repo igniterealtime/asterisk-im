@@ -159,6 +159,14 @@ public class PhoneServer {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        int result;
+        result = (int) (id ^ (id >>> 32));
+        result = 29 * result + (int) (id ^ (id >>> 32));
+        result = 29 * result + (name != null ? name.hashCode() : 0 );
+        result = 29 * result + (hostname != null ? hostname.hashCode() : 0);
+        result = 29 * result + port;
+        result = 29 * result + (username != null ? username.hashCode() : 0);
+        result = 29 * result + (password != null ? password.hashCode() : 0);
+        return result;
     }
 }

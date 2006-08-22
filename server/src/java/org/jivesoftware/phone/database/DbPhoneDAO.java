@@ -556,8 +556,8 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public PhoneServer getPhoneServerByServerName(String serverName) {
-        String sql = "SELECT serverID, name, hostname, port, username, password FROM phoneServer " +
-                "WHERE name = ?";
+        String sql = "SELECT serverID, serverName, hostname, port, username, password " +
+                "FROM phoneServer WHERE name = ?";
 
         PhoneServer server = null;
         PreparedStatement psmt = null;
@@ -584,7 +584,7 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public PhoneServer getPhoneServerByID(long id) {
-        String sql = "SELECT serverID, name, hostname, port, username, password FROM phoneServer " +
+        String sql = "SELECT serverID, serverName, hostname, port, username, password FROM phoneServer " +
                 "WHERE serverID = ?";
 
         PhoneServer server = null;
@@ -612,7 +612,7 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public Collection<PhoneServer> getPhoneServers() {
-        String sql = "SELECT serverID, name, hostname, port, username, password FROM phoneServer";
+        String sql = "SELECT serverID, serverName, hostname, port, username, password FROM phoneServer";
 
         List<PhoneServer> servers = new ArrayList<PhoneServer>();
         PreparedStatement psmt = null;
@@ -718,7 +718,7 @@ public class DbPhoneDAO implements PhoneDAO {
     private PhoneServer readServer(ResultSet rs) throws SQLException {
         PhoneServer server = new PhoneServer();
         server.setID(rs.getLong("serverID"));
-        server.setName(rs.getString("name"));
+        server.setName(rs.getString("serverName"));
         server.setHostname(rs.getString("hostname"));
         server.setPort(rs.getInt("port"));
         server.setUsername(rs.getString("username"));
