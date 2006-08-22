@@ -13,6 +13,7 @@ import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.database.SequenceManager;
 import org.jivesoftware.phone.PhoneDevice;
 import org.jivesoftware.phone.PhoneUser;
+import org.jivesoftware.phone.PhoneServer;
 import org.jivesoftware.util.Log;
 
 import java.sql.Connection;
@@ -21,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
 
 /**
@@ -65,7 +68,7 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public PhoneDevice getDevice(String deviceName) {
-    	
+
         String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID " +
                 "from phoneDevice WHERE device = ?";
 
@@ -336,7 +339,7 @@ public class DbPhoneDAO implements PhoneDAO {
     public void update(PhoneDevice device) {
 
         String sql = "UPDATE phoneDevice SET extension = ?, callerId = ?, isPrimary = ?, " +
-                " device = ? WHERE deviceID  = ?";
+                " device = ?, serverID = ? WHERE deviceID  = ?";
 
         PreparedStatement psmt = null;
         Connection con = null;
@@ -349,6 +352,33 @@ public class DbPhoneDAO implements PhoneDAO {
             psmt.setLong(3, device.isPrimary() ? 1 : 0);
             psmt.setString(4, device.getDevice());
             psmt.setLong(5, device.getID());
+            psmt.setLong(6, device.getServerID());
+            psmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(psmt, con);
+        }
+    }
+
+    public void update(PhoneServer server) {
+        String sql = "UPDATE phoneServer SET name = ?, hostname = ?, port = ?, username = ?, " +
+                "password = ? WHERE serverID = ?";
+
+        PreparedStatement psmt = null;
+        Connection con = null;
+
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setString(1, server.getName());
+            psmt.setString(2, server.getHostname());
+            psmt.setInt(3, server.getPort());
+            psmt.setString(4, server.getUsername());
+            psmt.setString(5, server.getPassword());
+            psmt.setLong(6, server.getID());
             psmt.executeUpdate();
         }
         catch (SQLException e) {
@@ -362,8 +392,8 @@ public class DbPhoneDAO implements PhoneDAO {
     public void insert(PhoneDevice device) {
 
         String sql = "INSERT INTO phoneDevice " +
-                "(deviceID, extension, callerId, isPrimary, userID, device) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+                "(deviceID, serverID, extension, callerId, isPrimary, userID, device, serverID) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         long id = SequenceManager.nextID(device);
 
@@ -379,6 +409,7 @@ public class DbPhoneDAO implements PhoneDAO {
             psmt.setLong(4, device.isPrimary() ? 1 : 0);
             psmt.setLong(5, device.getPhoneUserID());
             psmt.setString(6, device.getDevice());
+            psmt.setLong(7, device.getServerID());
             psmt.executeUpdate();
             device.setID(id);
         }
@@ -389,6 +420,35 @@ public class DbPhoneDAO implements PhoneDAO {
             DbConnectionManager.closeConnection(psmt, con);
         }
 
+    }
+
+    public void insert(PhoneServer server) {
+        String sql = "INSERT INTO phoneServer " +
+                "(serverID, name, hostname, port, username, password) VALUES (?, ?, ?, ?, ?, ?)";
+
+        PreparedStatement psmt = null;
+        Connection con = null;
+
+        long id = SequenceManager.nextID(server);
+
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setLong(1, id);
+            psmt.setString(2, server.getName());
+            psmt.setString(3, server.getHostname());
+            psmt.setInt(4, server.getPort());
+            psmt.setString(5, server.getUsername());
+            psmt.setString(6, server.getPassword());
+            psmt.executeUpdate();
+            server.setID(id);
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(psmt, con);
+        }
     }
 
     public void remove(PhoneDevice device) {
@@ -411,9 +471,29 @@ public class DbPhoneDAO implements PhoneDAO {
         }
     }
 
+    public void remove(PhoneServer server) {
+        String sql = "DELETE FROM phoneServer WHERE serverID = ?";
+
+        PreparedStatement psmt = null;
+        Connection con = null;
+
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setLong(1, server.getID());
+            psmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(psmt, con);
+        }
+    }
+
     public PhoneDevice getPrimaryDevice(long phoneUserID) {
 
-        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID " +
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID, serverID " +
                 "FROM phoneDevice WHERE userID = ? AND isPrimary = 1";
 
         PhoneDevice device = null;
@@ -475,12 +555,156 @@ public class DbPhoneDAO implements PhoneDAO {
         return list;
     }
 
+    public PhoneServer getPhoneServerByServerName(String serverName) {
+        String sql = "SELECT serverID, name, hostname, port, username, password FROM phoneServer " +
+                "WHERE name = ?";
+
+        PhoneServer server = null;
+        PreparedStatement psmt = null;
+        Connection con = null;
+        ResultSet rs = null;
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setString(1, serverName);
+            rs = psmt.executeQuery();
+
+            if (rs.next()) {
+                server = readServer(rs);
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return server;
+    }
+
+    public PhoneServer getPhoneServerByID(long id) {
+        String sql = "SELECT serverID, name, hostname, port, username, password FROM phoneServer " +
+                "WHERE serverID = ?";
+
+        PhoneServer server = null;
+        PreparedStatement psmt = null;
+        Connection con = null;
+        ResultSet rs = null;
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setLong(1, id);
+            rs = psmt.executeQuery();
+
+            if (rs.next()) {
+                server = readServer(rs);
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return server;
+    }
+
+    public Collection<PhoneServer> getPhoneServers() {
+        String sql = "SELECT serverID, name, hostname, port, username, password FROM phoneServer";
+
+        List<PhoneServer> servers = new ArrayList<PhoneServer>();
+        PreparedStatement psmt = null;
+        Connection con = null;
+        ResultSet rs = null;
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                servers.add(readServer(rs));
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return Collections.unmodifiableCollection(servers);
+    }
+
+    public Collection<PhoneDevice> getPhoneDevicesByServerName(String serverName) {
+        String sql = "SELECT serverID FROM phoneServer WHERE name = ?";
+
+        Connection con = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+        long serverID = -1;
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setString(1, serverName);
+            rs = psmt.executeQuery();
+
+            if (rs.next()) {
+                serverID = rs.getLong(1);
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        if(serverID <= 0) {
+            //noinspection unchecked
+            return Collections.EMPTY_LIST;
+        }
+        else {
+            return getPhoneDevicesByServerID(serverID);
+        }
+    }
+
+    public Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID) {
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID, serverID " +
+                "FROM phoneDevice WHERE serverID = ?";
+
+        Connection con = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+        List<PhoneDevice> devices = new ArrayList<PhoneDevice>();
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setLong(1, serverID);
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                devices.add(read(new PhoneDevice(), rs));
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return Collections.unmodifiableCollection(devices);
+    }
+
     private PhoneDevice read(PhoneDevice device, ResultSet rs) throws SQLException {
         device.setID(rs.getLong("deviceID"));
         device.setPhoneUserID(rs.getLong("userID"));
         device.setDevice(rs.getString("device"));
         device.setExtension(rs.getString("extension"));
         device.setCallerId(rs.getString("callerId"));
+        device.setServerID(rs.getLong("serverID"));
         device.setPrimary(rs.getLong("isPrimary") == 1);
         return device;
     }
@@ -491,5 +715,14 @@ public class DbPhoneDAO implements PhoneDAO {
         return user;
     }
 
-
+    private PhoneServer readServer(ResultSet rs) throws SQLException {
+        PhoneServer server = new PhoneServer();
+        server.setID(rs.getLong("serverID"));
+        server.setName(rs.getString("name"));
+        server.setHostname(rs.getString("hostname"));
+        server.setPort(rs.getInt("port"));
+        server.setUsername(rs.getString("username"));
+        server.setPassword(rs.getString("password"));
+        return server;
+    }
 }
