@@ -25,5 +25,13 @@ public interface PhoneConstants {
      */
     public static final String DEFAULT_CONTEXT = "from-sip";
 
+    /**
+     * JiveID sequence type for Phone Devices
+     */
+    public static final int DEVICE_SEQUENCE = 100;
 
+    /**
+     * JiveID sequence type for Phone Servers
+     */
+    public static final int SERVER_SEQUENCE = 101;
 }

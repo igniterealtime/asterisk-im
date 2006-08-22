@@ -10,14 +10,16 @@
 package org.jivesoftware.phone;
 
 import org.jivesoftware.database.JiveID;
+import org.jivesoftware.phone.util.PhoneConstants;
 
 /**
  * @author Andrew Wright
  */
-@JiveID(101)
+@JiveID(PhoneConstants.DEVICE_SEQUENCE)
 public class PhoneDevice {
 
     private long id;
+    private long serverID;
     private long phoneUserID;
     private String callerId;
     private String device;
@@ -39,6 +41,14 @@ public class PhoneDevice {
 
     public void setID(long id) {
         this.id = id;
+    }
+
+    public long getServerID() {
+        return serverID;
+    }
+
+    public void setServerID(long serverID) {
+        this.serverID = serverID;
     }
 
     public long getPhoneUserID() {
@@ -137,6 +147,7 @@ public class PhoneDevice {
     public int hashCode() {
         int result;
         result = (int) (id ^ (id >>> 32));
+        result = 29 * result + (int) (serverID ^ (serverID >>> 32));
         result = 29 * result + (int) (phoneUserID ^ (phoneUserID >>> 32));
         result = 29 * result + (callerId != null ? callerId.hashCode() : 0);
         result = 29 * result + (device != null ? device.hashCode() : 0);
@@ -152,6 +163,7 @@ public class PhoneDevice {
         final StringBuilder sb = new StringBuilder();
         sb.append("PhoneDevice");
         sb.append("{id=").append(id);
+        sb.append(", serverID=").append(serverID);
         sb.append(", phoneUserID=").append(phoneUserID);
         sb.append(", callerId='").append(callerId).append('\'');
         sb.append(", device='").append(device).append('\'');
