@@ -1,6 +1,6 @@
 create table phoneServer (
     serverID bigint not null,
-    name varcahr(255) not null unique
+    serverName varchar(255) not null unique,
     hostname varchar(255) not null,
     port int not null,
     username varchar(255) not null,
