@@ -24,9 +24,7 @@ import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -127,7 +125,7 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 		}
 	}
 
-	public MailboxStatus mailboxStatus(String mailbox) throws PhoneException {
+	public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {
     	// not possible
     	return new MailboxStatus(mailbox, 0,0);
     }
@@ -173,7 +171,7 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 		t.removeCallListener(events);
 	}
 
-	public List<String> getDevices() throws PhoneException {
+	public Map<Long, Collection<String>> getDevices() throws PhoneException {
     	Terminal ta[];
     	try {
     		ta = provider.getTerminals();
@@ -181,32 +179,40 @@ public class JtapiPhoneManager extends BasePhoneManager  {
             log.log(Level.SEVERE, e.getMessage(), e);
             throw new PhoneException("Unable to retrieve terminal list ", e);
         }
-    	ArrayList<String> devices = new ArrayList<String>();
+    	List<String> devices = new ArrayList<String>();
     	for (Terminal t : ta) {
     		devices.add(t.getName());
     	}
         Collections.sort(devices);
-        return devices;
+        Map<Long, Collection<String>> toReturn = new HashMap<Long, Collection<String>>();
+
+        toReturn.put((long) 0, devices);
+
+        return toReturn;
+    }
+
+    public Collection<String> getDevices(long serverID) throws PhoneException {
+        return getDevices().get(0);
     }
 
     public void dial(String username, String extension, JID jid) throws PhoneException {
         PhoneUser user = getPhoneUserByUsername(username);
         PhoneDevice primaryDevice = getPrimaryDevice(user.getID());
         try {
-        	Terminal t = provider.getTerminal(primaryDevice.getDevice());
-        	// check for the right caller id
-        	Address aa[] = t.getAddresses();
-        	Address callerId = null;
-        	for (Address a : aa) {
-        		if (a.getName().equals(primaryDevice.getCallerId())) {
-        			callerId = a;
-        		}
-        	}
-        	if (callerId == null) {
-        		callerId = aa[0];
-        	}
-        	Call c = provider.createCall();
-        	c.connect(t, callerId, extension);
+            Terminal t = provider.getTerminal(primaryDevice.getDevice());
+            // check for the right caller id
+            Address aa[] = t.getAddresses();
+            Address callerId = null;
+            for (Address a : aa) {
+                if (a.getName().equals(primaryDevice.getCallerId())) {
+                    callerId = a;
+                }
+            }
+            if (callerId == null) {
+                callerId = aa[0];
+            }
+            Call c = provider.createCall();
+            c.connect(t, callerId, extension);
         }
         catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage(), e);

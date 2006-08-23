@@ -270,10 +270,10 @@
        	boolean useSipDropDown = JiveGlobals.getBooleanProperty(PhoneProperties.DEVICE_DROP_DOWN, true);
 
 
-        List<String> sipDevices = null;
+        Collection<String> sipDevices = null;
         if (useSipDropDown) {
             try {
-                sipDevices = phoneManager.getDevices();
+                sipDevices = phoneManager.getDevices(1);
             }
             catch (PhoneException e) {
                 Log.error(e);

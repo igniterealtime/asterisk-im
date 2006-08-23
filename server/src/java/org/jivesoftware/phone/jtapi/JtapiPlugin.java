@@ -87,9 +87,17 @@ public class JtapiPlugin extends PhonePlugin {
 						"DropDown",
 						PhoneOption.FLAG)};
     }
-    
+
+    public PhoneServerConfiguration getServerConfiguration() {
+        return new PhoneServerConfiguration() {
+            public boolean supportsMultipleServers() {
+                return false;
+            }
+        };
+    }
+
     public PhoneManager getPhoneManager() {
-    	return phoneManager;
+        return phoneManager;
     }
     
 }

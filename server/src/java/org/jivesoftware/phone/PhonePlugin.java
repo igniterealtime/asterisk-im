@@ -246,4 +246,13 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     public abstract PhoneOption[] getOptions();
 
+    /**
+     * Returns the configuration options for connecting to a phone server or multiple phone
+     * servers.
+     *
+     * @return the configuration options for connecting to a phone server or multiple phone
+     * servers.
+     */
+    public abstract PhoneServerConfiguration getServerConfiguration();
+
 }

@@ -97,7 +97,29 @@ public abstract class BasePhoneManager implements PhoneManager {
     public PhoneDevice getPhoneDeviceByDevice(String device) {
         return phoneDAO.getDevice(device);
     }
-    
+
+    public Collection<PhoneServer> getPhoneServers() {
+        return phoneDAO.getPhoneServers();
+    }
+
+    public PhoneServer createPhoneServer(String name, String serverAddress, int port,
+                                         String username, String password)
+    {
+        if(name == null || serverAddress == null || port < 0 || username == null ||
+                password == null) {
+            return null;
+        }
+        PhoneServer server = new PhoneServer();
+        server.setName(name);
+        server.setHostname(serverAddress);
+        server.setUsername(username);
+        server.setPassword(password);
+        server.setPort(port);
+
+        phoneDAO.insert(server);
+        return server;
+    }
+
     /** FIXME: rename to originate ;jw */
     public abstract void dial(String username, String extension, JID jid) throws PhoneException;
     

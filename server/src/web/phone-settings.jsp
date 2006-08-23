@@ -1,15 +1,13 @@
-<%@ page import="org.jivesoftware.phone.PhoneManager,
-				 org.jivesoftware.phone.PhonePlugin,
-				 org.jivesoftware.phone.PhoneOption,
- 				 org.jivesoftware.phone.PhoneProperties,
-                 org.jivesoftware.util.JiveConstants,
-                 org.jivesoftware.util.JiveGlobals,
+<%@ page import="org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.Log,
                  org.jivesoftware.util.ParamUtils,
                  org.jivesoftware.wildfire.XMPPServer,
-                 org.jivesoftware.wildfire.container.PluginManager" %>
-<%@ page import="javax.servlet.http.HttpServletRequest"%>
-<%@ page import="java.util.HashMap"%>
+                 org.jivesoftware.wildfire.container.PluginManager,
+                 javax.servlet.http.HttpServletRequest,
+                 java.util.HashMap" %>
+<%@ page import="java.util.Map"%>
+<%@ page import="java.util.Collection"%>
+<%@ page import="org.jivesoftware.phone.*"%>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
@@ -31,7 +29,7 @@
 	HttpServletRequest req = null;
     boolean success = request.getParameter("success") != null;
 
-    HashMap<String, String> errors = new HashMap<String, String>();
+    Map<String, String> errors = new HashMap<String, String>();
 
     if (isSave) {
 
@@ -73,14 +71,6 @@
         enabled = JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false);
     }
 
-    //try to establish a connection, if there is an error we log it below
-    boolean isConnected = false;
-
-    if (enabled) {
-        PhoneManager phoneManager = plugin.getPhoneManager();
-        isConnected = phoneManager != null && phoneManager.isConnected();
-    }
-
 
 %>
 
@@ -91,6 +81,11 @@
 
   <style type="text/css">
     #enabledtf {}
+
+    .div-border {
+        border: 1px solid #CCCCCC;
+        -moz-border-radius: 3px;
+    }
   </style>
 </head>
 <body>
@@ -123,32 +118,53 @@
     <table cellpadding="0" cellspacing="0" border="0">
         <tbody>
             <tr>
-                <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
+                <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16"
+                                           border="0"></td>
                 <td class="jive-icon-label">Error saving the service settings.</td>
             </tr>
         </tbody>
     </table>
-</div><br/>
-
-<% } else if (!isConnected) { %>
-
-<p>
-    <div class="jive-error">
-        <table cellpadding="0" cellspacing="0" border="0">
-            <tbody>
-                <tr>
-                    <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
-                    <td class="jive-icon-label">Unable to establish a connection to the telephony server, please see error
-                        log</td>
-                </tr>
-            </tbody>
-        </table>
-    </div><br/>
-
-</p>
-
+</div>
+<br/>
 <% } %>
 
+<div class="div-border" style="padding: 12px; width: 95%;">
+    <table class="jive-table" cellspacing="0" width="100%">
+        <th>Name</th>
+        <th>Address</th>
+        <th>Port</th>
+        <th>Username</th>
+        <th>Options</th>
+        <%  boolean hasServers = false;
+            PhoneManager manager = plugin.getPhoneManager();
+            if(manager != null) {
+            Collection<PhoneServer> servers = manager.getPhoneServers();
+            for(PhoneServer phoneServer : servers) {
+                hasServers = true;
+        %>
+        <tr style="border-left: none;">
+            <td><%=phoneServer.getName()%></td>
+            <td><%=phoneServer.getHostname()%></td>
+            <td><%=phoneServer.getPort()%></td>
+            <td><%=phoneServer.getUsername()%></td>
+            <td>
+                <a href=""><img src="/images/edit-16x16.gif" border="0"
+                                alt="Edit Bookmark"/></a>
+                <a href=""><img src="/images/delete-16x16.gif" border="0"
+                                alt="Delete Bookmark"/></a>
+            </td>
+        </tr>
+        <%  }
+        } %>
+        <% if(!hasServers) { %>
+        <tr>
+                <td colspan="5" align="center">No Servers Configured</td>
+        </tr>
+        <% } %>
+    </table>
+</div>
+<br/>
+<br/>
 <form action="phone-settings.jsp" method="get">
 <fieldset>
 <legend>General Configuration</legend>
@@ -262,6 +278,7 @@
 <br/>
 
 <input type="submit" name="save" value="Save"/>
+</form>
 
 </div>
 
