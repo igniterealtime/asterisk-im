@@ -48,8 +48,6 @@ public class AsteriskPlugin extends PhonePlugin {
      */
     public static final String DESCRIPTION = "Asterisk integration component";
 
-	private AsteriskPhoneManager asteriskPhoneManager;
-
     /**
      * Returns the name of this component, "phone"
      *
@@ -77,51 +75,45 @@ public class AsteriskPlugin extends PhonePlugin {
         if (JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
 
             try {
+                AsteriskPhoneManager asteriskPhoneManager;
                 phoneManager = asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
                 asteriskPhoneManager.init(this);
             }
             catch (Throwable e) {
-                Log.error(e);
+                Log.error("Error initializing asterisk phone manager", e);
             }
 
         }
     }
 
-	@Override
-	public PhoneManager getPhoneManager() {
-		return phoneManager;
-	}
+    @Override
+    public PhoneManager getPhoneManager() {
+        return phoneManager;
+    }
 
-	@Override
-	public PhoneOption[] getOptions() {
-		return new PhoneOption[]{
-			new RequiredOption("Server",
-	    			PhoneProperties.SERVER,
-	    			"Server"),
-	 		new RequiredOption("Port",
-	    			PhoneProperties.PORT,
-	    			"Port"),
-	    	new RequiredOption("Username",
-					PhoneProperties.USERNAME,
-					"Login"),
-			new RequiredOption("Password",
-					PhoneProperties.PASSWORD,
-					"Password"){
-					public boolean isPassword() { return true; }
-					},
-			new PhoneOption("Drop-down device selection",
-	    			PhoneProperties.DEVICE_DROP_DOWN,
-	    			"DropDown",
-	    			PhoneOption.FLAG),
-   	    	new PhoneOption("Asterisk Context",
-   	    			PhoneProperties.CONTEXT,
-   	    			"Context"),
-	    	new PhoneOption("Default Caller ID",
-	    			PhoneProperties.DEFAULT_CALLER_ID,
-	    			"DefaultCallerId"),
-	    	new PhoneOption("Dial Command Variables",
-	    			PhoneProperties.DIAL_VARIABLES,
-	    			"DialVariables")};
-	}
+    @Override
+    public PhoneOption[] getOptions() {
+        return new PhoneOption[]{
+                new PhoneOption("Drop-down device selection",
+                        PhoneProperties.DEVICE_DROP_DOWN,
+                        "DropDown",
+                        PhoneOption.FLAG),
+                new PhoneOption("Asterisk Context",
+                        PhoneProperties.CONTEXT,
+                        "Context"),
+                new PhoneOption("Default Caller ID",
+                        PhoneProperties.DEFAULT_CALLER_ID,
+                        "DefaultCallerId"),
+                new PhoneOption("Dial Command Variables",
+                        PhoneProperties.DIAL_VARIABLES,
+                        "DialVariables")};
+    }
 
+    public PhoneServerConfiguration getServerConfiguration() {
+        return new PhoneServerConfiguration() {
+            public boolean supportsMultipleServers() {
+                return true;
+            }
+        };
+    }
 }

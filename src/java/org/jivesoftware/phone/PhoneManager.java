@@ -3,6 +3,8 @@ package org.jivesoftware.phone;
 import org.xmpp.packet.JID;
 
 import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Used for acquiring Phone information and performing phone actions like dialing.
@@ -148,12 +150,21 @@ public interface PhoneManager {
     void forward(String callSessionID, String username, String extension) throws PhoneException;
 
     /**
-     * Returns a list of all devices the system knows about.
+     * Returns a map of all devices the system knows about.
      *
      * @return
      * @throws PhoneException
      */
-    List<String> getDevices() throws PhoneException;
+    Map<Long,Collection<String>> getDevices() throws PhoneException;
+
+    /**
+     * Returns a collection of all devices on a given server.
+     *
+     * @param serverID the serverID to grab the list of devices for.
+     * @return
+     * @throws PhoneException
+     */
+    Collection<String> getDevices(long serverID) throws PhoneException;
 
     /**
      * Acquire a phone device by its name
@@ -163,24 +174,15 @@ public interface PhoneManager {
      */
     PhoneDevice getDevice(String device);
 
-// FIXME: what is this? a generic interface should not know a channel.... ;jw
-//
-//    /**
-//     * Stop monitoring the channel
-//     *
-//     * @param channel Channel that is being monitored
-//     * @throws PhoneException Thrown if there are any problems with the asterisk manager
-//     */
-//    void stopMonitor(String channel) throws PhoneException;
-
     /**
      * Used to see how many messages are in a mailbox
      *
+     * @param serverID the serverID of the server that this mailbox resides on
      * @param mailbox the mailbox to check
      * @return mailbox status object
      * @throws PhoneException thrown if there are problems with the asterisk manager
      */
-    MailboxStatus mailboxStatus(String mailbox) throws PhoneException;
+    MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException;
 
     /**
      * Forward a call an existing call to another device that has been registered to a
@@ -209,17 +211,30 @@ public interface PhoneManager {
      */
     void insert(PhoneDevice phoneDevice);
 
-    /**
-     * Used to check and see if Asterisk-IM is connected to asterisk manager
-     *
-     * @return whether or not we are connected to the asterisk manager
-     */
-    boolean isConnected();
-    
     void destroy();
-    
+
     /**
      * Returns the user of the device if active session exist, null otherwise
      */
-	public PhoneUser getActivePhoneUserByDevice(String device);
+    public PhoneUser getActivePhoneUserByDevice(String device);
+
+    /**
+     * Returns a list of all PhoneServers currently being managed.
+     *
+     * @return a list of all PhoneServers currently being managed.
+     */
+    Collection<PhoneServer> getPhoneServers();
+
+    /**
+     * Creates a new phone server.
+     *
+     * @param name the name used to identify the server to the user.
+     * @param serverAddress the address on which the server can be connected to.
+     * @param port the port to connect to the server on
+     * @param username the username to use to connect to the server.
+     * @param password the password to use to connect to the server.
+     * @return the created phone server.
+     */
+    PhoneServer createPhoneServer(String name, String serverAddress, int port, String username,
+                                  String password);
 }
