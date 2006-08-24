@@ -10,6 +10,7 @@
 package org.jivesoftware.phone.asterisk;
 
 import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 
 /**
@@ -116,6 +117,10 @@ public class AsteriskPlugin extends PhonePlugin {
         return new PhoneServerConfiguration() {
             public boolean supportsMultipleServers() {
                 return true;
+            }
+
+            public int getDefaultPort() {
+                return PhoneConstants.DEFAULT_ASTERISK_PORT;
             }
         };
     }

@@ -34,4 +34,9 @@ public interface PhoneConstants {
      * JiveID sequence type for Phone Servers
      */
     public static final int SERVER_SEQUENCE = 101;
+
+    /**
+     * The default port that asterisk servers run on.
+     */
+    int DEFAULT_ASTERISK_PORT = 5038;
 }

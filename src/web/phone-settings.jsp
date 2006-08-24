@@ -187,8 +187,8 @@
             <td><%=phoneServer.getPort()%></td>
             <td><%=phoneServer.getUsername()%></td>
             <td>
-                <a href=""><img src="/images/edit-16x16.gif" border="0"
-                                alt="Edit Bookmark"/></a>
+                <a href="create-server.jsp?serverID=<%=phoneServer.getID()%>">
+                    <img src="/images/edit-16x16.gif" border="0" alt="Edit Bookmark"/></a>
                 <a href=""><img src="/images/delete-16x16.gif" border="0"
                                 alt="Delete Bookmark"/></a>
             </td>
@@ -207,8 +207,8 @@
         <% if(enabled) { %>
         <tr>
                 <td colspan="5">
-                    <a href="">
-                        <img src="/images/add-16x16.gif" border="0" alt="add"
+                    <a href="create-server.jsp">
+                        <img src="/images/add-16x16.gif" border="0" alt="add server"
                              style="margin-right: 3px;"/>Add Server</a>
                  </td>
         </tr>

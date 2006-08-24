@@ -237,4 +237,9 @@ public interface PhoneManager {
      */
     PhoneServer createPhoneServer(String name, String serverAddress, int port, String username,
                                   String password);
+
+    PhoneServer getPhoneServerByID(int serverID);
+
+    PhoneServer updatePhoneServer(int serverID, String serverName, String serverAddress,
+                                  int serverPort, String username, String password);
 }
