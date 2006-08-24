@@ -86,8 +86,11 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     public void init(boolean isEnabled) throws Exception {
         Log.info("Initializing phone plugin");
-        initPhoneManager(isEnabled);
+        if(!isEnabled) {
+            return;
+        }
 
+        initPhoneManager(isEnabled);
 
         packetHandler = new PacketHandler(getPhoneManager(), this);
         interceptor = new PresenceLayerer();
@@ -100,19 +103,8 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
         componentManager = ComponentManagerFactory.getComponentManager();
         // only register the component if we are enabled
-        if (isEnabled) {
-            try {
-                Log.info("Registering phone plugin as a component");
-                componentManager.addComponent(getName(), this);
-            }
-            catch (Throwable e) {
-                Log.error(e.getMessage(), e);
-                // Do nothing. Should never happen.
-                if (componentManager != null) {
-                    componentManager.getLog().error(e);
-                }
-            }
-        }
+
+        componentManager.addComponent(getName(), this);
     }
 
     public void destroyPlugin() {
@@ -137,11 +129,8 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
         interceptor.restoreCompletely();
 
-        // If there isn't a manager instance established don't try to destroy it.
-        PhoneManager manager = getPhoneManager();
-        if (manager != null) {
-            manager.destroy();
-        }
+        // Disable the phone manager
+        disablePhoneManager();
 
         // Remove the packet interceptor
         InterceptorManager.getInstance().removeInterceptor(interceptor);
@@ -149,6 +138,8 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         // Remove OnPhonePacketInterceptor as a session event listener
         SessionEventDispatcher.removeListener(interceptor);
     }
+
+    protected abstract void disablePhoneManager();
 
     /**
      * sets isComponentReady to true so we start accepting requests

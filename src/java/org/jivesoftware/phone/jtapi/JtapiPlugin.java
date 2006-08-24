@@ -66,9 +66,17 @@ public class JtapiPlugin extends PhonePlugin {
 
         }
     }
-    
+
+    protected void disablePhoneManager() {
+        if(jtpaiPhoneManager == null) {
+            return;
+        }
+        jtpaiPhoneManager.destroy();
+        jtpaiPhoneManager = null;
+    }
+
     public PhoneOption[] getJtapiOptions() {
-    	return null;
+        return null;
     }
     
     public PhoneOption[] getOptions() {
