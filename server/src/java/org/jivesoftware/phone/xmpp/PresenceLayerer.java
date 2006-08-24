@@ -6,7 +6,7 @@
  * a copy of which is included in this distribution.
  *
  */
-package org.jivesoftware.phone;
+package org.jivesoftware.phone.xmpp;
 
 import org.jivesoftware.util.Log;
 import org.jivesoftware.wildfire.ClientSession;
@@ -68,10 +68,7 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
         final String username = from.getNode();
 
         // If the user is anonymous, or is a service
-        if (username == null) {
-            return false;
-        }
-        return true;
+        return username != null;
     }
 
     /*

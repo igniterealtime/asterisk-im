@@ -9,9 +9,12 @@
 package org.jivesoftware.phone;
 
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.util.JiveConstants;
+import org.jivesoftware.phone.util.PhoneExecutionService;
+import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
+import org.jivesoftware.util.PropertyEventListener;
+import org.jivesoftware.util.PropertyEventDispatcher;
 import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.XMPPServer;
@@ -30,17 +33,25 @@ import org.xmpp.packet.Presence;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     // FIXME: a plugin should get the server reference throuh initialization ;jw
     protected XMPPServer server = XMPPServer.getInstance();
-    protected PhoneManager phoneManager;
     protected PacketHandler packetHandler;
     protected PresenceLayerer interceptor;
     private boolean isComponentReady;
     private JID componentJID;
     private ComponentManager componentManager;
+    private Future<Boolean> enableProcess;
+    private PropertyListener propertyListener;
+
+    public PhonePlugin() {
+        this.propertyListener = new PropertyListener();
+    }
 
     /**
      * Send a packet to all user sessions
@@ -58,17 +69,17 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         }
     }
 
-    public abstract void initPhoneManager();
+    public abstract void initPhoneManager(boolean enabled);
 
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
-        init();
+        PropertyEventDispatcher.addListener(propertyListener);
+        init(JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false));
     }
 
-    public void init() {
+    public void init(boolean isEnabled) {
         Log.info("Initializing phone plugin");
-
         try {
-            initPhoneManager();
+            initPhoneManager(isEnabled);
         }
         catch (Throwable e) {
             // Make sure we catch all exceptions show we can Log anything that might be
@@ -78,7 +89,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
             return;
         }
 
-        packetHandler = new PacketHandler(phoneManager, this);
+        packetHandler = new PacketHandler(getPhoneManager(), this);
         interceptor = new PresenceLayerer();
 
         // Register a packet interceptor for handling on phone presence changes
@@ -105,6 +116,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     }
 
     public void destroyPlugin() {
+        PropertyEventDispatcher.removeListener(propertyListener);
         destroy();
     }
 
@@ -126,8 +138,9 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         interceptor.restoreCompletely();
 
         // If there isn't a manager instance established don't try to destroy it.
-        if (phoneManager != null) {
-            phoneManager.destroy();
+        PhoneManager manager = getPhoneManager();
+        if (manager != null) {
+            manager.destroy();
         }
 
         // Remove the packet interceptor
@@ -154,22 +167,6 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     public boolean isComponentReady() {
         return isComponentReady;
-    }
-
-    /**
-     * Restart the plugin, used by the web configuration after the
-     * configuration changed
-     */
-    public void restart() {
-        try {
-            destroy();
-            Thread.sleep(1 * JiveConstants.SECOND);
-            init();
-            Thread.sleep(1 * JiveConstants.SECOND);
-        }
-        catch (InterruptedException e) {
-            Log.error(e);
-        }
     }
 
     public abstract PhoneManager getPhoneManager();
@@ -246,6 +243,41 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     public abstract PhoneOption[] getOptions();
 
+    public void setEnabled(boolean enabled) {
+        JiveGlobals.setProperty(PhoneProperties.ENABLED, String.valueOf(enabled));
+    }
+
+    public synchronized boolean isEnabled() throws Exception {
+        final Future<Boolean> enableTask = enableProcess;
+        if(enableTask != null) {
+            try {
+                return enableTask.get();
+            } catch (Throwable t) {
+                Log.error("Error starting or stoping Asterisk-IM", t);
+            }
+        }
+        return getPhoneManager() != null;
+    }
+
+    /**
+     * Enables or disables the plugin.
+     *
+     * @param shouldEnable true to enable and false to disable
+     */
+    private void doEnable(final boolean shouldEnable) {
+        enableProcess = PhoneExecutionService.getService().submit(new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                if(shouldEnable) {
+                    init(true);
+                }
+                else {
+                    destroy();
+                }
+                return shouldEnable;
+            }
+        });
+    }
+
     /**
      * Returns the configuration options for connecting to a phone server or multiple phone
      * servers.
@@ -254,5 +286,39 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
      * servers.
      */
     public abstract PhoneServerConfiguration getServerConfiguration();
+
+    private class PropertyListener implements PropertyEventListener  {
+
+        public void propertySet(String property, Map params) {
+            if(PhoneProperties.ENABLED.equals(property)) {
+                Object value = params.get("value");
+                handleEnable((value != null && Boolean.valueOf(value.toString())));
+            }
+        }
+
+        public void propertyDeleted(String property, Map params) {
+            if (PhoneProperties.ENABLED.equals(property)) {
+                handleEnable(false);
+            }
+        }
+
+        public void xmlPropertySet(String property, Map params) {
+        }
+
+        public void xmlPropertyDeleted(String property, Map params) {
+        }
+
+        private void handleEnable(boolean shouldEnable) {
+            try {
+                boolean isCurrentlyEnabled = isEnabled();
+                if (isCurrentlyEnabled != shouldEnable) {
+                    doEnable(shouldEnable);
+                }
+            }
+            catch (Exception ex) {
+                /* Do Nothing as this exception is logged in isEnabled() */
+            }
+        }
+    }
 
 }
