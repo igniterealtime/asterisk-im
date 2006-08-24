@@ -120,6 +120,28 @@ public abstract class BasePhoneManager implements PhoneManager {
         return server;
     }
 
+    public PhoneServer getPhoneServerByID(int serverID) {
+        return phoneDAO.getPhoneServerByID(serverID);
+    }
+
+    public PhoneServer updatePhoneServer(int serverID, String serverName, String serverAddress,
+                                         int serverPort, String username, String password) {
+        if (serverName == null || serverAddress == null || serverPort <= 0 || username == null ||
+                password == null || serverID <= 0) {
+            return null;
+        }
+        PhoneServer server = new PhoneServer();
+        server.setID(serverID);
+        server.setName(serverName);
+        server.setHostname(serverAddress);
+        server.setUsername(username);
+        server.setPassword(password);
+        server.setPort(serverPort);
+
+        phoneDAO.update(server);
+        return server;
+    }
+
     /** FIXME: rename to originate ;jw */
     public abstract void dial(String username, String extension, JID jid) throws PhoneException;
     

@@ -8,6 +8,7 @@
 package org.jivesoftware.phone.jtapi;
 
 import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
@@ -100,6 +101,10 @@ public class JtapiPlugin extends PhonePlugin {
         return new PhoneServerConfiguration() {
             public boolean supportsMultipleServers() {
                 return false;
+            }
+
+            public int getDefaultPort() {
+                return PhoneConstants.DEFAULT_ASTERISK_PORT;
             }
         };
     }

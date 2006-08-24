@@ -13,4 +13,6 @@ package org.jivesoftware.phone;
  */
 public interface PhoneServerConfiguration {
     boolean supportsMultipleServers();
+
+    int getDefaultPort();
 }

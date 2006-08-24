@@ -364,8 +364,8 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public void update(PhoneServer server) {
-        String sql = "UPDATE phoneServer SET name = ?, hostname = ?, port = ?, username = ?, " +
-                "password = ? WHERE serverID = ?";
+        String sql = "UPDATE phoneServer SET serverName = ?, hostname = ?, port = ?, " +
+                "username = ?, password = ? WHERE serverID = ?";
 
         PreparedStatement psmt = null;
         Connection con = null;
@@ -423,8 +423,8 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public void insert(PhoneServer server) {
-        String sql = "INSERT INTO phoneServer " +
-                "(serverID, name, hostname, port, username, password) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO phoneServer (serverID, serverName, hostname, port, username, " +
+                "password) VALUES (?, ?, ?, ?, ?, ?)";
 
         PreparedStatement psmt = null;
         Connection con = null;
