@@ -17,7 +17,7 @@
 	// if we were not enabled before and we are now restart the plugin
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
     PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
-    if (plugin==null) {
+    if (plugin == null) {
 	    // Complain about not being able to get the plugin
     	String msg = "Unable to acquire asterisk plugin instance!";
 	    Log.error(msg);
@@ -50,8 +50,7 @@
 
         // If there are no errors initialize the manager
         if (errors.size() == 0) {
-            JiveGlobals.setProperty(PhoneProperties.ENABLED, String.valueOf(enabled));
-
+            plugin.setEnabled(enabled);
 
             for (int i=0; i<options.length; i++) {
     			String prop = options[i].getPropertyName();
@@ -61,8 +60,7 @@
 	            	continue;
         	    }
    	            JiveGlobals.setProperty(prop, val);
-			}    			
-			plugin.restart();
+			}
 			// FIXME: maybe get some results of the restart here? ;jw
 			response.sendRedirect("phone-settings.jsp?success=true");
             return;
@@ -80,12 +78,39 @@
     <meta name="pageID" content="item-phone-settings"/>
 
   <style type="text/css">
-    #enabledtf {}
+      #enabledtf {
+      }
 
-    .div-border {
-        border: 1px solid #CCCCCC;
-        -moz-border-radius: 3px;
-    }
+      .div-border {
+          border: 1px solid #CCCCCC;
+          -moz-border-radius: 3px;
+      }
+
+      table.settingsTable {
+          display: block;
+          border: 1px solid #BBBBBB;
+          margin: 5px 0px 15px 0px;
+      }
+
+      table.settingsTable thead th {
+          background-color: #EAF1F8;
+          border-bottom: 1px solid #BBBBBB;
+          padding: 3px 8px 3px 12px;
+          font-weight: bold;
+          text-align: left;
+      }
+
+      table.settingsTable tbody tr td {
+          padding: 5px 10px 5px 15px;
+      }
+
+      table.settingsTable tbody tr td p {
+          padding: 10px 0px 5px 0px;
+      }
+
+      table.settingsTable tr {
+          padding: 0px 0px 10px 0px;
+      }
   </style>
 </head>
 <body>
@@ -128,6 +153,16 @@
 <br/>
 <% } %>
 
+<form action="phone-settings.jsp" method="get">
+<div class="div-border" style="background-color : #EAF1F8; width: 200px; padding: 4px; ">
+    <span style="font-weight:bold;">Asterisk-IM:</span>
+        <span><input type="radio" name="enabled" value="true" <%= enabled ? "checked" : ""%> />ON
+        </span>
+        <span><input type="radio" name="enabled" value="false" <%=!enabled ? "checked" : ""%> />OFF
+        </span>
+</div>
+<br/>
+<br/>
 <div class="div-border" style="padding: 12px; width: 95%;">
     <table class="jive-table" cellspacing="0" width="100%">
         <th>Name</th>
@@ -154,39 +189,39 @@
                                 alt="Delete Bookmark"/></a>
             </td>
         </tr>
-        <%  }
-        } %>
-        <% if(!hasServers) { %>
+        <%  } %>
+        <tr>
+                <td colspan="5" align="center">
+                    <a href="">
+                        <img src="/images/add-16x16.gif" border="0" align="texttop" alt="add"
+                             style="margin-right: 3px;"/>
+                        Add Server</a>
+                 </td>
+        </tr>
+       <%
+       } %>
+        <% if(enabled && !hasServers) { %>
         <tr>
                 <td colspan="5" align="center">No Servers Configured</td>
         </tr>
-        <% } %>
+        <% } else if(!enabled) { %>
+        <tr>
+                <td colspan="5" align="center">Asterisk IM Not Enabled</td>
+        </tr>
+        <% }%>
     </table>
 </div>
 <br/>
 <br/>
-<form action="phone-settings.jsp" method="get">
-<fieldset>
-<legend>General Configuration</legend>
 
 <div>
-<table cellpadding="3" cellspacing="0" border="0" width="100%">
-<tbody>
-    <tr>
-        <td width="1%">
-            <nobr><label for="enabledtf">* Enabled:</label></nobr>
-        </td>
-        <td width="99%">
-            <table cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                    <td><input type="radio" name="enabled" id="enabledtf" value="true" <%= enabled ? "checked" : ""%> /></td>
-                    <td style="padding-right : 10px;">Yes</td>
-                    <td><input type="radio" name="enabled" value="false" <%=!enabled ? "checked" : ""%> /></td>
-                    <td>No</td>
-                </tr>
-            </table>
-        </td>
-    </tr>
+    <table class="settingsTable" cellpadding="3" cellspacing="0" border="0" width="100%">
+        <thead>
+            <tr>
+                <th colspan="2">Configure Phone Manager</th>
+            </tr>
+        </thead>
+        <tbody>
 <% 
 
 	PhoneOption[] options = plugin.getOptions();
@@ -231,14 +266,12 @@
 			</label></nobr>
         </td>
         <td width="99%">
-            <table cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                    <td><input type="radio" name="<%= pn %>" id="<%= pn %>" value="true" <%= "true".equals(val) ? "checked" : "" %> /></td>
-                    <td style="padding-right : 10px;">Yes</td>
-                    <td><input type="radio" name="<%= pn %>" value="false" <%= !"true".equals(val) ? "checked" : ""%> /></td>
-                    <td>No</td>
-                </tr>
-            </table>
+            <span><input type="radio" name="<%= pn %>" id="<%= pn %>"
+                         value="true" <%= "true".equals(val) ? "checked" : "" %> />
+                Yes</span>
+            <span><input type="radio" name="<%= pn %>"
+                         value="false" <%= !"true".equals(val) ? "checked" : ""%> />
+                No</span>
         </td>
     </tr>
 <%
@@ -265,16 +298,14 @@
 
 	} 
 %>
+<tr>
+    <td colspan="2">
+        <span class="jive-description">* Required fields</span>
+    </td>
+</tr>
 </tbody>
 </table>
-
-<br>
-<span class="jive-description">
-        * Required fields
-        </span>
 </div>
-
-</fieldset>
 <br/>
 
 <input type="submit" name="save" value="Save"/>

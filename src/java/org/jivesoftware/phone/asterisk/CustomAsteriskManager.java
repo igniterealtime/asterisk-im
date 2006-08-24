@@ -35,10 +35,16 @@ import org.xmpp.packet.JID;
 public class CustomAsteriskManager extends DefaultAsteriskManager {
 
     private ManagerConnection connection;
+    private String hostname;
+    private int port;
+    private String username;
+    private String password;
 
-    public CustomAsteriskManager(ManagerConnection connection) {
-        super(connection);
-        this.connection = connection;
+    public CustomAsteriskManager(String hostname, int port, String username, String password) {
+        this.hostname = hostname;
+        this.port = port;
+        this.username = username;
+        this.password = password;
     }
 
     @Override
@@ -49,6 +55,16 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
 
     public ManagerConnection getManagerConnection() {
         return connection;
+    }
+
+    public void addEventHandler(ManagerEventHandler asteriskEventHandler) {
+        connection.addEventHandler(asteriskEventHandler);
+    }
+
+    public void logon() throws TimeoutException, IOException, AuthenticationFailedException {
+        connection = new DefaultManagerConnection(hostname, port, username, password);
+        super.setManagerConnection(connection);
+        super.initialize();
     }
 
     public void logoff() throws TimeoutException, IOException {
@@ -174,7 +190,7 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
         }
     }
 
-    
+
     public void forward(String callSessionID, String username, String extension, JID jid)
             throws PhoneException
     {

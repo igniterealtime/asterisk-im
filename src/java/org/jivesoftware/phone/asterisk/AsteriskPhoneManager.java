@@ -10,8 +10,6 @@
 package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.AuthenticationFailedException;
-import net.sf.asterisk.manager.DefaultManagerConnection;
-import net.sf.asterisk.manager.ManagerConnection;
 import net.sf.asterisk.manager.TimeoutException;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
@@ -43,21 +41,21 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         super(dao);
     }
 
-    public void init(AsteriskPlugin plugin) throws TimeoutException, IOException, AuthenticationFailedException {
+    public void init(AsteriskPlugin plugin) throws TimeoutException, IOException,
+            AuthenticationFailedException {
         Log.info("Initializing Asterisk Manager connection");
 
         Collection<PhoneServer> servers = getPhoneServers();
 
-        if(servers == null || servers.size() < 0) {
+        if (servers == null || servers.size() < 0) {
             servers = loadLegacyServerConfiguration();
         }
 
-        for(PhoneServer server : servers) {
+        for (PhoneServer server : servers) {
             CustomAsteriskManager manager = connectToServer(server);
 
-            if(manager != null) {
+            if (manager != null) {
                 asteriskManagers.put(server.getID(), manager);
-                manager.initialize();
             }
         }
 
@@ -77,23 +75,17 @@ public class AsteriskPhoneManager extends BasePhoneManager {
     }
 
 
-    private CustomAsteriskManager connectToServer(PhoneServer server)
-    {
-        ManagerConnection con;
+    private CustomAsteriskManager connectToServer(PhoneServer server) throws TimeoutException,
+            IOException, AuthenticationFailedException {
         CustomAsteriskManager manager = null;
         // Check to see if the configuration is valid then
         // Initialize the manager connection pool and create an eventhandler
         if (server != null && server.getHostname() != null && server.getUsername() != null
                 && server.getPassword() != null) {
-            try {
-                con = new DefaultManagerConnection(server.getHostname(), server.getPort(),
-                        server.getUsername(), server.getPassword());
-                con.addEventHandler(new AsteriskEventHandler(this, plugin));
-                manager = new CustomAsteriskManager(con);
-            }
-            catch (Throwable e) {
-                Log.error("Could not create manager connection for server " + server.getName(), e);
-            }
+            manager = new CustomAsteriskManager(server.getHostname(), server.getPort(),
+                    server.getUsername(), server.getPassword());
+            manager.logon();
+            manager.addEventHandler(new AsteriskEventHandler(this));
         }
         else {
             Log.warn("AsteriskPlugin configuration is invalid, please see admin tool!!");
@@ -119,13 +111,13 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {
         CustomAsteriskManager manager = asteriskManagers.get(serverID);
-        if(manager != null) {
+        if (manager != null) {
             manager.getMailboxStatus(mailbox);
         }
         return null;
     }
 
-    public Map<Long,Collection<String>> getDevices() throws PhoneException {
+    public Map<Long, Collection<String>> getDevices() throws PhoneException {
         Map<Long, Collection<String>> deviceMap = new HashMap<Long, Collection<String>>();
         for (Map.Entry<Long, CustomAsteriskManager> asteriskManager : asteriskManagers.entrySet()) {
             List<String> devices = asteriskManager.getValue().getSipDevices();
@@ -139,7 +131,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     public Collection<String> getDevices(long serverID) throws PhoneException {
         CustomAsteriskManager manager = asteriskManagers.get(serverID);
-        if(manager != null) {
+        if (manager != null) {
             return manager.getSipDevices();
         }
         return null;
@@ -147,7 +139,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     public Map getStatus(long serverID) throws PhoneException {
         CustomAsteriskManager manager = asteriskManagers.get(serverID);
-        if(manager != null) {
+        if (manager != null) {
             return manager.getChannels();
         }
         return null;
@@ -160,7 +152,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
         // aquire the originating server
         CustomAsteriskManager manager = asteriskManagers.get(primaryDevice.getServerID());
-        if(manager != null) {
+        if (manager != null) {
             manager.dial(primaryDevice, extension);
         }
     }
@@ -183,8 +175,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
     }
 
     public void forward(String callSessionID, String username, String extension, JID jid)
-            throws PhoneException
-    {
+            throws PhoneException {
         // Currently broken as we will need to individualize call sessions per server and track
         // them that way
     }

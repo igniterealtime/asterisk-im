@@ -11,7 +11,6 @@ package org.jivesoftware.phone.asterisk;
 
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.DbPhoneDAO;
-import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 
 /**
@@ -47,6 +46,7 @@ public class AsteriskPlugin extends PhonePlugin {
      * The description of this plugin
      */
     public static final String DESCRIPTION = "Asterisk integration component";
+    private AsteriskPhoneManager asteriskPhoneManager;
 
     /**
      * Returns the name of this component, "phone"
@@ -68,27 +68,28 @@ public class AsteriskPlugin extends PhonePlugin {
 
     /**
      * Initializes the manager connection with the asterisk server
+     * @param enabled
      */
-    public void initPhoneManager() {
+    public void initPhoneManager(boolean enabled) {
+        if (!enabled) {
+            asteriskPhoneManager = null;
+            return;
+        }
 
         // Only initialize things if the plugin is enabled
-        if (JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
 
-            try {
-                AsteriskPhoneManager asteriskPhoneManager;
-                phoneManager = asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
-                asteriskPhoneManager.init(this);
-            }
-            catch (Throwable e) {
-                Log.error("Error initializing asterisk phone manager", e);
-            }
-
+        try {
+            asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
+            asteriskPhoneManager.init(this);
+        }
+        catch (Throwable e) {
+            Log.error("Error initializing asterisk phone manager", e);
         }
     }
 
     @Override
     public PhoneManager getPhoneManager() {
-        return phoneManager;
+        return asteriskPhoneManager;
     }
 
     @Override

@@ -51,14 +51,14 @@ public class JtapiPlugin extends PhonePlugin {
 
     /**
      * Initializes the manager connection with the asterisk server
+     * @param enabled
      */
-    public void initPhoneManager() {
+    public void initPhoneManager(boolean enabled) {
         // Only initialize things if the plugin is enabled
         if (JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
             try {
-            	JtapiPhoneManager pm;
-                phoneManager = pm = new JtapiPhoneManager(new DbPhoneDAO());
-                pm.init(this);
+                jtpaiPhoneManager = new JtapiPhoneManager(new DbPhoneDAO());
+                jtpaiPhoneManager.init(this);
             }
             catch (Throwable e) {
                 Log.error(e);
@@ -97,7 +97,7 @@ public class JtapiPlugin extends PhonePlugin {
     }
 
     public PhoneManager getPhoneManager() {
-        return phoneManager;
+        return jtpaiPhoneManager;
     }
     
 }

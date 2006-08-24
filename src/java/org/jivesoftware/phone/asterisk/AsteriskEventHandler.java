@@ -15,7 +15,6 @@ import net.sf.asterisk.manager.event.NewStateEvent;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
-import org.jivesoftware.phone.PhonePlugin;
 import org.jivesoftware.phone.PhoneUser;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
@@ -33,11 +32,9 @@ import org.xmpp.packet.Presence;
 public class AsteriskEventHandler implements ManagerEventHandler {
 
     private AsteriskPhoneManager phoneManager;
-    private PhonePlugin plugin;
 
-    public AsteriskEventHandler(AsteriskPhoneManager asteriskPhoneManager, PhonePlugin ppb) {
+    public AsteriskEventHandler(AsteriskPhoneManager asteriskPhoneManager) {
         this.phoneManager = asteriskPhoneManager;
-        this.plugin = ppb;
     }
 
     public void handleEvent(ManagerEvent event) {
@@ -113,7 +110,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
             presence.getElement().add(phoneStatus);
 
-            plugin.setPresence(phoneUser.getUsername(), presence);
+            phoneManager.plugin.setPresence(phoneUser.getUsername(), presence);
 
         }
         catch (Throwable e) {
@@ -145,9 +142,10 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             // If the user does not have any more call sessions, set back
             // the presence to what it was before they received any calls
             synchronized (phoneUser.getUsername().intern()) {
-                int callSessionCount = callSessionFactory.getUserCallSessions(phoneUser.getUsername()).size();
+                int callSessionCount = callSessionFactory.getUserCallSessions(
+                        phoneUser.getUsername()).size();
                 if (callSessionCount <= 1) {
-                    plugin.restorePresence(phoneUser.getUsername());
+                    phoneManager.plugin.restorePresence(phoneUser.getUsername());
                 }
                 else {
                     if (Log.isDebugEnabled()) {
