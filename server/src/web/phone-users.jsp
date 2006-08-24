@@ -22,6 +22,14 @@
 %>
 
 <%
+    PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
+    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
+    if (plugin == null) {
+	    // Complain about not being able to get the plugin
+    	String msg = "Unable to acquire asterisk plugin instance!";
+	    Log.error(msg);
+        throw new IllegalStateException(msg);
+    }
 
     // For cancel we will just forward before doing anything
     if (request.getParameter("cancel") != null) {
@@ -29,18 +37,9 @@
         return;
     }
 
-    if (!JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
+    if (!plugin.isEnabled()) {
         response.sendRedirect("phone-settings.jsp?usersDisabled=true");
         return;
-    }
-    
-    PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
-    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
-    if (plugin==null) {
-	    // Complain about not being able to get the plugin
-    	String msg = "Unable to acquire asterisk plugin instance!";
-	    Log.error(msg);
-        throw new IllegalStateException(msg);
     }
 
     boolean delete = request.getParameter("delete") != null;

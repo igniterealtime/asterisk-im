@@ -81,6 +81,14 @@ public class AsteriskPlugin extends PhonePlugin {
         asteriskPhoneManager.init(this);
     }
 
+    protected void disablePhoneManager() {
+        if(asteriskPhoneManager == null) {
+            return;
+        }
+        asteriskPhoneManager.destroy();
+        asteriskPhoneManager = null;
+    }
+
     @Override
     public PhoneManager getPhoneManager() {
         return asteriskPhoneManager;
