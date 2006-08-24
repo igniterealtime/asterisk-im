@@ -23,7 +23,8 @@
 	    Log.error(msg);
         throw new IllegalStateException(msg);
     }
-    
+
+    String booleanParameter = request.getParameter("enabled");
     boolean enabled = ParamUtils.getBooleanParameter(request, "enabled", false);
     boolean isSave = request.getParameter("save") != null;
 	HttpServletRequest req = null;
@@ -50,7 +51,6 @@
 
         // If there are no errors initialize the manager
         if (errors.size() == 0) {
-            plugin.setEnabled(enabled);
 
             for (int i=0; i<options.length; i++) {
     			String prop = options[i].getPropertyName();
@@ -61,14 +61,18 @@
         	    }
    	            JiveGlobals.setProperty(prop, val);
 			}
-			// FIXME: maybe get some results of the restart here? ;jw
-			response.sendRedirect("phone-settings.jsp?success=true");
-            return;
-    	}
-    } else {
-        enabled = JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false);
-    }
 
+            if(booleanParameter != null) {
+                plugin.setEnabled(enabled);
+            }
+    	}
+    }
+    try {
+        enabled = plugin.isEnabled();
+    }
+    catch (Exception e) {
+        /** Here we will draw up that there was an error loading the plugin **/
+    }
 
 %>
 
@@ -189,16 +193,7 @@
                                 alt="Delete Bookmark"/></a>
             </td>
         </tr>
-        <%  } %>
-        <tr>
-                <td colspan="5" align="center">
-                    <a href="">
-                        <img src="/images/add-16x16.gif" border="0" align="texttop" alt="add"
-                             style="margin-right: 3px;"/>
-                        Add Server</a>
-                 </td>
-        </tr>
-       <%
+        <%  }
        } %>
         <% if(enabled && !hasServers) { %>
         <tr>
@@ -207,6 +202,15 @@
         <% } else if(!enabled) { %>
         <tr>
                 <td colspan="5" align="center">Asterisk IM Not Enabled</td>
+        </tr>
+        <% }%>
+        <% if(enabled) { %>
+        <tr>
+                <td colspan="5">
+                    <a href="">
+                        <img src="/images/add-16x16.gif" border="0" alt="add"
+                             style="margin-right: 3px;"/>Add Server</a>
+                 </td>
         </tr>
         <% }%>
     </table>

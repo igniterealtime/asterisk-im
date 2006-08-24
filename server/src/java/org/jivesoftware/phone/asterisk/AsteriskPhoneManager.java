@@ -69,6 +69,9 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         String password = JiveGlobals.getProperty(PhoneProperties.PASSWORD);
         int port = JiveGlobals.getIntProperty(PhoneProperties.PORT, 5038);
 
+        if (server == null || username == null || password == null || port <= 0) {
+            return Collections.emptyList();  
+        }
         // Loads the legacy server manager configuration into the database.
         return Arrays.asList(createPhoneServer("Default Server", server, port, username,
                 password));
