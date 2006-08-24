@@ -11,7 +11,6 @@ package org.jivesoftware.phone.asterisk;
 
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.DbPhoneDAO;
-import org.jivesoftware.util.Log;
 
 /**
  * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
@@ -68,23 +67,18 @@ public class AsteriskPlugin extends PhonePlugin {
 
     /**
      * Initializes the manager connection with the asterisk server
-     * @param enabled
+     *
+     * @param isPluginEnabled true if the plugin is currently enabled and false if it is not.
      */
-    public void initPhoneManager(boolean enabled) {
-        if (!enabled) {
+    public void initPhoneManager(boolean isPluginEnabled) throws Exception {
+        if (!isPluginEnabled) {
             asteriskPhoneManager = null;
             return;
         }
 
         // Only initialize things if the plugin is enabled
-
-        try {
-            asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
-            asteriskPhoneManager.init(this);
-        }
-        catch (Throwable e) {
-            Log.error("Error initializing asterisk phone manager", e);
-        }
+        asteriskPhoneManager = new AsteriskPhoneManager(new DbPhoneDAO());
+        asteriskPhoneManager.init(this);
     }
 
     @Override

@@ -69,25 +69,25 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         }
     }
 
-    public abstract void initPhoneManager(boolean enabled);
+    public abstract void initPhoneManager(boolean enabled) throws Exception;
 
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
-        PropertyEventDispatcher.addListener(propertyListener);
-        init(JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false));
-    }
-
-    public void init(boolean isEnabled) {
-        Log.info("Initializing phone plugin");
         try {
-            initPhoneManager(isEnabled);
+            PropertyEventDispatcher.addListener(propertyListener);
+            init(JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false));
         }
         catch (Throwable e) {
             // Make sure we catch all exceptions show we can Log anything that might be
             // going on
             Log.error(e.getMessage(), e);
             Log.error("Asterisk-IM not Initializing because of errors");
-            return;
         }
+    }
+
+    public void init(boolean isEnabled) throws Exception {
+        Log.info("Initializing phone plugin");
+        initPhoneManager(isEnabled);
+
 
         packetHandler = new PacketHandler(getPhoneManager(), this);
         interceptor = new PresenceLayerer();
@@ -100,7 +100,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
         componentManager = ComponentManagerFactory.getComponentManager();
         // only register the component if we are enabled
-        if (JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false)) {
+        if (isEnabled) {
             try {
                 Log.info("Registering phone plugin as a component");
                 componentManager.addComponent(getName(), this);
@@ -201,7 +201,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     /**
      * Initializes the component.
      *
-     * @param jid              the jid of the component
+     * @param jid the jid of the component
      * @param componentManager instance of the componentManager
      * @throws ComponentException thrown if there are issues initializing this component
      */
@@ -249,12 +249,19 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
     public synchronized boolean isEnabled() throws Exception {
         final Future<Boolean> enableTask = enableProcess;
-        if(enableTask != null) {
+        if (enableTask != null) {
+            boolean enabledStatus;
             try {
-                return enableTask.get();
-            } catch (Throwable t) {
-                Log.error("Error starting or stoping Asterisk-IM", t);
+                enabledStatus = enableTask.get();
             }
+            catch (Exception t) {
+                Log.error("Error starting or stoping Asterisk-IM", t);
+                throw t;
+            }
+            finally {
+                enableProcess = null;
+            }
+            return enabledStatus && getPhoneManager() != null;
         }
         return getPhoneManager() != null;
     }
@@ -267,7 +274,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     private void doEnable(final boolean shouldEnable) {
         enableProcess = PhoneExecutionService.getService().submit(new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                if(shouldEnable) {
+                if (shouldEnable) {
                     init(true);
                 }
                 else {
@@ -283,14 +290,14 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
      * servers.
      *
      * @return the configuration options for connecting to a phone server or multiple phone
-     * servers.
+     *         servers.
      */
     public abstract PhoneServerConfiguration getServerConfiguration();
 
-    private class PropertyListener implements PropertyEventListener  {
+    private class PropertyListener implements PropertyEventListener {
 
         public void propertySet(String property, Map params) {
-            if(PhoneProperties.ENABLED.equals(property)) {
+            if (PhoneProperties.ENABLED.equals(property)) {
                 Object value = params.get("value");
                 handleEnable((value != null && Boolean.valueOf(value.toString())));
             }
