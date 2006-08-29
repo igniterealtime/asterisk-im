@@ -120,11 +120,11 @@ public abstract class BasePhoneManager implements PhoneManager {
         return server;
     }
 
-    public PhoneServer getPhoneServerByID(int serverID) {
+    public PhoneServer getPhoneServerByID(long serverID) {
         return phoneDAO.getPhoneServerByID(serverID);
     }
 
-    public PhoneServer updatePhoneServer(int serverID, String serverName, String serverAddress,
+    public PhoneServer updatePhoneServer(long serverID, String serverName, String serverAddress,
                                          int serverPort, String username, String password) {
         if (serverName == null || serverAddress == null || serverPort <= 0 || username == null ||
                 password == null || serverID <= 0) {
@@ -140,6 +140,10 @@ public abstract class BasePhoneManager implements PhoneManager {
 
         phoneDAO.update(server);
         return server;
+    }
+
+    public void removePhoneServer(long serverID) {
+        phoneDAO.removePhoneServer(serverID);
     }
 
     /** FIXME: rename to originate ;jw */

@@ -238,8 +238,18 @@ public interface PhoneManager {
     PhoneServer createPhoneServer(String name, String serverAddress, int port, String username,
                                   String password);
 
-    PhoneServer getPhoneServerByID(int serverID);
+    PhoneServer getPhoneServerByID(long serverID);
 
-    PhoneServer updatePhoneServer(int serverID, String serverName, String serverAddress,
+    PhoneServer updatePhoneServer(long serverID, String serverName, String serverAddress,
                                   int serverPort, String username, String password);
+
+    PhoneServerStatus getPhoneServerStatus(long serverID);
+
+    void removePhoneServer(long serverID);
+
+    enum PhoneServerStatus {
+        connected,
+        error,
+        disconnected
+    }
 }

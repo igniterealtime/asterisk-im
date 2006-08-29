@@ -58,7 +58,7 @@ public interface PhoneDAO {
      *
      * @param server the phone server to be removed.
      */
-    void remove(PhoneServer server);
+    void removePhoneServer(long server);
 
     /**
      * Returns the primary device for a {@link PhoneUser}
