@@ -125,9 +125,13 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 		}
 	}
 
-	public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {
-    	// not possible
-    	return new MailboxStatus(mailbox, 0,0);
+    public PhoneServerStatus getPhoneServerStatus(long serverID) {
+        return PhoneServerStatus.connected;
+    }
+
+    public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {
+        // not possible
+        return new MailboxStatus(mailbox, 0,0);
     }
 
 	
@@ -157,7 +161,7 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 		String n = phoneDevice.getDevice();
 		super.remove(phoneDevice);
 		PhoneDevice d = getDevice(n);
-		// if we have this device still in the database, dont remove the listener
+		// if we have this device still in the database, dont removePhoneServer the listener
 		if (d!=null) {
 			return;
 		}

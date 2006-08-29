@@ -41,8 +41,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         super(dao);
     }
 
-    public void init(AsteriskPlugin plugin) throws TimeoutException, IOException,
-            AuthenticationFailedException {
+    public void init(AsteriskPlugin plugin) {
         Log.info("Initializing Asterisk Manager connection");
 
         Collection<PhoneServer> servers = getPhoneServers();
@@ -52,10 +51,15 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         }
 
         for (PhoneServer server : servers) {
-            CustomAsteriskManager manager = connectToServer(server);
+            try {
+                CustomAsteriskManager manager = connectToServer(server);
 
-            if (manager != null) {
-                asteriskManagers.put(server.getID(), manager);
+                if (manager != null) {
+                    asteriskManagers.put(server.getID(), manager);
+                }
+            }
+            catch (Throwable t) {
+                Log.error("Error connecting to asterisk server " + server.getName(), t);
             }
         }
 
@@ -110,6 +114,26 @@ public class AsteriskPhoneManager extends BasePhoneManager {
             }
         }
         asteriskManagers.clear();
+    }
+
+    public PhoneServerStatus getPhoneServerStatus(long serverID) {
+        return asteriskManagers.containsKey(serverID) ? PhoneServerStatus.connected
+                : PhoneServerStatus.disconnected;
+    }
+
+    @Override
+    public void removePhoneServer(long serverID) {
+        CustomAsteriskManager manager = asteriskManagers.remove(serverID);
+        if(manager != null) {
+            try {
+                manager.logoff();
+            }
+            catch (Throwable e) {
+                Log.error("Error disconnecting from asterisk manager", e);
+            }
+        }
+
+        super.removePhoneServer(serverID);
     }
 
     public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {

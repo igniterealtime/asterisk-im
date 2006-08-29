@@ -73,7 +73,7 @@ public class AsteriskPlugin extends PhonePlugin {
      */
     public void initPhoneManager(boolean isPluginEnabled) throws Exception {
         if (!isPluginEnabled) {
-            asteriskPhoneManager = null;
+            disablePhoneManager();
             return;
         }
 

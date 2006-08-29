@@ -471,7 +471,7 @@ public class DbPhoneDAO implements PhoneDAO {
         }
     }
 
-    public void remove(PhoneServer server) {
+    public void removePhoneServer(long serverID) {
         String sql = "DELETE FROM phoneServer WHERE serverID = ?";
 
         PreparedStatement psmt = null;
@@ -480,7 +480,7 @@ public class DbPhoneDAO implements PhoneDAO {
         try {
             con = DbConnectionManager.getConnection();
             psmt = con.prepareStatement(sql);
-            psmt.setLong(1, server.getID());
+            psmt.setLong(1, serverID);
             psmt.executeUpdate();
         }
         catch (SQLException e) {

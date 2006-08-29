@@ -74,13 +74,12 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         try {
             PropertyEventDispatcher.addListener(propertyListener);
-            init(JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false));
+            doEnable(JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false));
         }
         catch (Throwable e) {
             // Make sure we catch all exceptions show we can Log anything that might be
             // going on
-            Log.error(e.getMessage(), e);
-            Log.error("Asterisk-IM not Initializing because of errors");
+            Log.error("Asterisk-IM not Initializing because of errors", e);
         }
     }
 
@@ -290,7 +289,9 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         public void propertySet(String property, Map params) {
             if (PhoneProperties.ENABLED.equals(property)) {
                 Object value = params.get("value");
-                handleEnable((value != null && Boolean.valueOf(value.toString())));
+                if(value != null) {
+                    handleEnable(Boolean.valueOf(value.toString()));
+                }
             }
         }
 

@@ -169,6 +169,7 @@
 <br/>
 <div class="div-border" style="padding: 12px; width: 95%;">
     <table class="jive-table" cellspacing="0" width="100%">
+        <th width="16px">&nbsp;</th>
         <th>Name</th>
         <th>Address</th>
         <th>Port</th>
@@ -176,12 +177,22 @@
         <th>Options</th>
         <%  boolean hasServers = false;
             PhoneManager manager = plugin.getPhoneManager();
-            if(manager != null) {
+            if(enabled) {
             Collection<PhoneServer> servers = manager.getPhoneServers();
             for(PhoneServer phoneServer : servers) {
                 hasServers = true;
         %>
         <tr style="border-left: none;">
+            <td width="16px">
+                <% switch(manager.getPhoneServerStatus(phoneServer.getID())) {
+                case connected: %>
+                <img src="images/connected.gif" alt="connected"/>
+                <% break;
+                default: %>
+                <img src="images/disconnected.gif" alt="disconnected"/>
+                <% break;
+                } %>
+            </td>
             <td><%=phoneServer.getName()%></td>
             <td><%=phoneServer.getHostname()%></td>
             <td><%=phoneServer.getPort()%></td>
@@ -197,16 +208,16 @@
        } %>
         <% if(enabled && !hasServers) { %>
         <tr>
-                <td colspan="5" align="center">No Servers Configured</td>
+                <td colspan="6" align="center">No Servers Configured</td>
         </tr>
         <% } else if(!enabled) { %>
         <tr>
-                <td colspan="5" align="center">Asterisk IM Not Enabled</td>
+                <td colspan="6" align="center">Asterisk IM Not Enabled</td>
         </tr>
         <% }%>
         <% if(enabled) { %>
         <tr>
-                <td colspan="5">
+                <td colspan="6">
                     <a href="create-server.jsp">
                         <img src="/images/add-16x16.gif" border="0" alt="add server"
                              style="margin-right: 3px;"/>Add Server</a>
