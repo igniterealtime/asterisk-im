@@ -191,7 +191,7 @@ public class DbPhoneDAO implements PhoneDAO {
     }
 
     public PhoneDevice getPhoneDeviceByID(long id) {
-        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID " +
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID, serverID " +
                 "FROM phoneDevice WHERE deviceID = ?";
 
         PhoneDevice device = null;
@@ -392,7 +392,7 @@ public class DbPhoneDAO implements PhoneDAO {
     public void insert(PhoneDevice device) {
 
         String sql = "INSERT INTO phoneDevice " +
-                "(deviceID, serverID, extension, callerId, isPrimary, userID, device, serverID) " +
+                "(deviceID, extension, callerId, isPrimary, userID, device, serverID) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         long id = SequenceManager.nextID(device);
