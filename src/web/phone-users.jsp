@@ -42,6 +42,22 @@
         return;
     }
 
+    PhoneManager phoneManager = plugin.getPhoneManager();
+
+    boolean isMultiServer = plugin.getServerConfiguration().supportsMultipleServers();
+    Collection<PhoneServer> phoneServers = phoneManager.getPhoneServers();
+    PhoneServer defaultServer;
+    if(phoneServers.size() <= 0) {
+        response.sendRedirect("phone-settings.jsp?usersDisabled=true");
+        return;
+    }
+    else if(phoneServers.size() == 1) {
+        defaultServer = phoneServers.iterator().next();
+    }
+    else {
+        defaultServer = null;
+    }
+
     boolean delete = request.getParameter("delete") != null;
     boolean save = request.getParameter("save") != null;
     boolean success = request.getParameter("success") != null;
@@ -51,6 +67,7 @@
     int range = ParamUtils.getIntParameter(request, "range", DEFAULT_RANGE);
 
     long deviceID = ParamUtils.getLongParameter(request, "deviceID", -1);
+    long serverID = ParamUtils.getLongParameter(request, "serverID", -1);
     long userID = ParamUtils.getLongParameter(request, "userID", -1);
     String username = request.getParameter("username");
     String device = request.getParameter("devicetf");
@@ -63,13 +80,13 @@
 
     HashMap<String, String> errors = new HashMap<String, String>();
 
-    PhoneManager phoneManager;
+
     try {
-        phoneManager = plugin.getPhoneManager();
 
         PhoneUser phoneUser = null;
         List<PhoneDevice> devices = null;
         PhoneDevice phoneDevice = null;
+        PhoneServer phoneServer = null;
 
         // find the phoneUser if one was passed in
         if (userID > 0) {
@@ -92,28 +109,23 @@
             devices = phoneManager.getPhoneDevicesByUsername(username);
         }
 
-        if (delete) {
-            if (deviceID > -1) {
-                try {
-
-                    if (devices.size() > 1) {
-                        phoneManager.removePhoneServer(phoneDevice);
-
-
-                    }
-                    else {
-                        // only one removePhoneServer the whole mapping
-                        phoneManager.removePhoneServer(phoneUser);
-                    }
+        if (delete && deviceID > -1) {
+            try {
+                if (devices.size() > 1) {
+                    phoneManager.remove(phoneDevice);
                 }
-                catch (Exception e) {
-                    Log.error("error attempting to delete device id " + deviceID
-                            + " belonging to phoneUser id " + userID, e);
+                else {
+                    // only one removePhoneServer the whole mapping
+                    phoneManager.remove(phoneUser);
                 }
-                response.sendRedirect("phone-users.jsp?success=true&start=" + start
-                        + "&range=" + range);
-                return;
             }
+            catch (Exception e) {
+                Log.error("error attempting to delete device id " + deviceID
+                        + " belonging to phoneUser id " + userID, e);
+            }
+            response.sendRedirect("phone-users.jsp?success=true&start=" + start
+                    + "&range=" + range);
+            return;
         }
         else if (save) {
             // Save with no copy is add mode
@@ -133,6 +145,18 @@
                         errors.put("username", "User does not exist");
                     }
 
+                }
+            }
+
+            if(phoneServer == null) {
+                if (serverID > 0) {
+                    phoneServer = phoneManager.getPhoneServerByID(serverID);
+                }
+                else if(isMultiServer && phoneServers.size() > 1) {
+                    errors.put("server", "Server must be specified.");
+                }
+                else {
+                    phoneServer = defaultServer;
                 }
             }
 
@@ -192,6 +216,7 @@
                     }
                     phoneDevice.setCallerId(callerID);
                     phoneDevice.setExtension(extension);
+                    phoneDevice.setServerID(phoneServer.getID());
 
                     // Make all the other users not the primary
                     if (isPrimary && devices != null) {
@@ -239,13 +264,12 @@
 
         // Populate values for the form below
         if (phoneDevice != null) {
-
             callerID = phoneDevice.getCallerId();
             username = phoneUser.getUsername();
             device = phoneDevice.getDevice();
             extension = phoneDevice.getExtension();
             isPrimary = phoneDevice.isPrimary();
-
+            serverID = phoneDevice.getServerID();
         }
 
         // Get the list of users for the correct page
@@ -275,16 +299,14 @@
 
 
         Collection<String> sipDevices = null;
-        if (useSipDropDown) {
+        if (defaultServer != null && useSipDropDown) {
             try {
-                sipDevices = phoneManager.getDevices(1);
+                sipDevices = phoneManager.getDevices(defaultServer.getID());
             }
             catch (PhoneException e) {
                 Log.error(e);
             }
         }
-
-        Collection<PhoneServer> phoneServers = phoneManager.getPhoneServers();
 %>
 
 
@@ -420,11 +442,13 @@
         <thead>
             <tr>
                 <th nowrap>Username</th>
+                <% if(isMultiServer && phoneServers.size() > 1) { %>
+                <th nowrap="nowrap">Server</th>
+                <% } %>
                 <th nowrap>Device</th>
                 <th nowrap>Extension</th>
                 <th nowrap>Caller ID</th>
-                <th style="text-align:center;">Edit</th>
-                <th style="text-align:center;">Delete</th>
+                <th nowrap="nowrap">Options</th>
             </tr>
         </thead>
         <tbody>
@@ -465,10 +489,22 @@
                 for (PhoneDevice currentDevice : userDevices) {
                     j++;
                     isLast = (j == deviceListSize); // we are the last entry
+                    long deviceServerID = currentDevice.getServerID();
+                    PhoneServer deviceServer;
+                    if(deviceServerID <= 0) {
+                        deviceServer = phoneServers.iterator().next();
+                    }
+                    else {
+                        deviceServer = phoneManager.getPhoneServerByID(deviceServerID);
+                    }
+
             %>
 
             <tr valign="top" class="jive-<%= (((i%2)==0) ? "even" : "odd") %><%= isLast ? "-last" : ""%>">
                 <td><%=isFirst ? currentUser.getUsername() : "&nbsp;"%></td>
+                <% if(isMultiServer && phoneServers.size() > 1) { %>
+                <td><%= deviceServer.getName() %></td>
+                <% } %>
                 <td><%=currentDevice.getDevice() %>
                     <% if (deviceListSize > 1) { %>
                     <span class="phone-required"><%= (currentDevice.isPrimary() ? "(primary)" : "")%></span>
@@ -476,15 +512,11 @@
                 </td>
                 <td><%=currentDevice.getExtension()%></td>
                 <td><%=currentDevice.getCallerId() != null ? currentDevice.getCallerId() : "&nbsp;"%></td>
-                <td align="center">
+                <td>
                     <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= start %>&range=<%= range %>">
-                        <img src="images/edit-16x16.gif" width="16" height="16" alt="Edit" border="0">
-                    </a>
-                </td>
-                <td align="center" style="border-right:1px #ccc solid;">
-                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= start %>&range=<%= range %>">
-                        <img src="images/delete-16x16.gif" width="16" height="16" alt="Delete" border="0">
-                    </a>
+                        <img src="images/edit-16x16.gif" alt="Edit" border="0"></a>
+                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%=start %>&range=<%= range %>">
+                        <img src="images/delete-16x16.gif" alt="Delete" border="0"></a>
                 </td>
             </tr>
             <% isFirst = false; %>
@@ -577,18 +609,24 @@
             <% } %>
         </td>
     </tr>
-    <% if (phoneServers.size() > 1) { %>
+    <% if (isMultiServer && phoneServers.size() > 1) { %>
     <tr valign="top">
         <td width="1%" nowrap="nowrap">
             * Server:
         </td>
         <td width="99%">
-            <select name="phoneServer" id="phoneServer">
+            <select name="serverID" id="phoneServer">
                 <option value="">Select</option>
                 <% for(PhoneServer server : phoneServers) { %>
-                <option value="<%=server.getID()%>"><%=server.getName()%></option>
+                <option  value="<%=server.getID()%>"
+                        <% if (server.getID() == serverID) { %> selected="selected" <% } %>
+                        ><%=server.getName()%></option>
                 <% } %>
             </select>
+            <% if (errors.containsKey("server")) { %>
+            <br/>
+            <span class="jive-error-text"><%=errors.get("server")%></span>
+            <% } %>
         </td>
     </tr>
     <% } %>
