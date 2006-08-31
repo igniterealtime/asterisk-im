@@ -199,9 +199,9 @@
             <td><%=phoneServer.getUsername()%></td>
             <td>
                 <a href="create-server.jsp?serverID=<%=phoneServer.getID()%>">
-                    <img src="/images/edit-16x16.gif" border="0" alt="Edit Bookmark"/></a>
-                <a href=""><img src="/images/delete-16x16.gif" border="0"
-                                alt="Delete Bookmark"/></a>
+                    <img src="/images/edit-16x16.gif" border="0" alt="Edit Server"/></a>
+                <a href="delete-server.jsp?serverID=<%=phoneServer.getID()%>">
+                    <img src="/images/delete-16x16.gif" border="0" alt="Delete Server"/></a>
             </td>
         </tr>
         <%  }
