@@ -46,7 +46,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
         Collection<PhoneServer> servers = getPhoneServers();
 
-        if (servers == null || servers.size() < 0) {
+        if (servers == null || servers.size() <= 0) {
             servers = loadLegacyServerConfiguration();
         }
 
