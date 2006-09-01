@@ -7,10 +7,14 @@
  *
  * This software is the proprietary information of Jive Software. Use is subject to license terms.
  */
-package org.jivesoftware.phone;
+package org.jivesoftware.phone.xmpp;
 
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.element.PhoneAction;
+import org.jivesoftware.phone.PhoneManager;
+import org.jivesoftware.phone.PhonePlugin;
+import org.jivesoftware.phone.PhoneException;
+import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.util.Log;
 import org.dom4j.Element;
 import org.xmpp.packet.*;
@@ -220,7 +224,7 @@ public class PacketHandler implements PhoneConstants {
                     // if there is a user they have support
                     if (user != null) {
 
-                        // var http://jivesoftware.com/phone
+                        // var http://jivesoftware.com/xmlns/phone
                         feature = queryElement.addElement("feature");
                         feature.addAttribute("var", "http://jivesoftware.com/phone");
 

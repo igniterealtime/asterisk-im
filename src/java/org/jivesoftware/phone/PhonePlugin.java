@@ -11,6 +11,7 @@ package org.jivesoftware.phone;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.PhoneExecutionService;
 import org.jivesoftware.phone.xmpp.PresenceLayerer;
+import org.jivesoftware.phone.xmpp.PacketHandler;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.PropertyEventListener;
@@ -42,7 +43,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     // FIXME: a plugin should get the server reference throuh initialization ;jw
     protected XMPPServer server = XMPPServer.getInstance();
     protected PacketHandler packetHandler;
-    protected PresenceLayerer interceptor;
+    protected PresenceLayerer presenceHandler;
     private boolean isComponentReady;
     private JID componentJID;
     private ComponentManager componentManager;
@@ -92,13 +93,13 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         initPhoneManager(isEnabled);
 
         packetHandler = new PacketHandler(getPhoneManager(), this);
-        interceptor = new PresenceLayerer();
+        presenceHandler = new PresenceLayerer();
 
         // Register a packet interceptor for handling on phone presence changes
-        InterceptorManager.getInstance().addInterceptor(interceptor);
+        InterceptorManager.getInstance().addInterceptor(presenceHandler);
 
         // Register OnPhonePacketInterceptor as a session event listener
-        SessionEventDispatcher.addListener(interceptor);
+        SessionEventDispatcher.addListener(presenceHandler);
 
         componentManager = ComponentManagerFactory.getComponentManager();
         // only register the component if we are enabled
@@ -121,21 +122,19 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
             componentManager.removeComponent(getName());
         }
         catch (Throwable e) {
-            Log.error(e.getMessage(), e);
-            // Do nothing. Should never happen.
-            componentManager.getLog().error(e);
+            Log.error("Error unregistering component", e);
         }
 
-        interceptor.restoreCompletely();
+        presenceHandler.shutdown();
 
         // Disable the phone manager
         disablePhoneManager();
 
         // Remove the packet interceptor
-        InterceptorManager.getInstance().removeInterceptor(interceptor);
+        InterceptorManager.getInstance().removeInterceptor(presenceHandler);
 
         // Remove OnPhonePacketInterceptor as a session event listener
-        SessionEventDispatcher.removeListener(interceptor);
+        SessionEventDispatcher.removeListener(presenceHandler);
     }
 
     protected abstract void disablePhoneManager();
@@ -224,11 +223,11 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     }
 
     public void restorePresence(String user) {
-        interceptor.restorePresence(user);
+        presenceHandler.restorePresence(user);
     }
 
     public void setPresence(String user, Presence p) {
-        interceptor.setPresence(user, p);
+        presenceHandler.setPresence(user, p);
     }
 
     public abstract PhoneOption[] getOptions();
