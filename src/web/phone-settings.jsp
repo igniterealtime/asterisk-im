@@ -23,6 +23,9 @@
 	    Log.error(msg);
         throw new IllegalStateException(msg);
     }
+    String version = pluginManager.getVersion(plugin);
+    boolean updateAvailable = XMPPServer.getInstance().getUpdateManager().
+            getPluginUpdate(plugin.getName(), version) != null;
 
     String booleanParameter = request.getParameter("enabled");
     boolean enabled = ParamUtils.getBooleanParameter(request, "enabled", false);
@@ -169,6 +172,10 @@
         </span>
         <span><input type="radio" name="enabled" value="false" <%=!enabled ? "checked" : ""%> />OFF
         </span>
+</div>
+<div class="div-border" style="background-color : lightgray; width: 200px; padding: 4px; ">
+    <span style="font-weight:bold;">Version:</span>
+    <span><%=version%></span>
 </div>
 <br/>
 <br/>
