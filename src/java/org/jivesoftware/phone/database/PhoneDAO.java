@@ -79,4 +79,6 @@ public interface PhoneDAO {
     Collection<PhoneDevice> getPhoneDevicesByServerName(String serverName);
 
     Collection<PhoneDevice> getPhoneDevicesByServerID(long id);
+
+    Collection<PhoneDevice> getPhoneDevices();
 }

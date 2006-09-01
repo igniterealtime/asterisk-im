@@ -65,6 +65,8 @@ public interface PhoneManager {
      */
     void update(PhoneUser phoneUser);
 
+    Collection<PhoneDevice> getAllPhoneDevices();
+
     /**
      * Finds a PhoneUser object that has a specific id. If there is no {@link PhoneUser} matching a phoneUserID
      * null will be returned.

@@ -62,6 +62,10 @@ public abstract class BasePhoneManager implements PhoneManager {
         return phoneDAO.getPhoneUserByID(phoneUserID);
     }
 
+    public Collection<PhoneDevice> getAllPhoneDevices() {
+        return phoneDAO.getPhoneDevices();
+    }
+
     public List<PhoneDevice> getPhoneDevicesByUserID(long phoneUserID) {
         return phoneDAO.getPhoneDeviceByUserID(phoneUserID);
     }
@@ -207,7 +211,7 @@ public abstract class BasePhoneManager implements PhoneManager {
 		// If there is no jid for this device don't do anything else
 		PhoneUser phoneUser = getPhoneUserByDevice(device);
 		if (phoneUser == null) {
-			Log.info("OnPhoneTask: Could not find device/jid mapping for device " 
+			Log.info("OnPhoneTask: Could not find device/jid mapping for device "
                     + device + " returning");
 			return null;
 		}

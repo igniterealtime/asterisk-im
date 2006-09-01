@@ -68,17 +68,23 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     private Collection<PhoneServer> loadLegacyServerConfiguration() {
         // Populate the legacy manager configuration
-        String server = JiveGlobals.getProperty(PhoneProperties.SERVER);
+        String serverAddress = JiveGlobals.getProperty(PhoneProperties.SERVER);
         String username = JiveGlobals.getProperty(PhoneProperties.USERNAME);
         String password = JiveGlobals.getProperty(PhoneProperties.PASSWORD);
         int port = JiveGlobals.getIntProperty(PhoneProperties.PORT, 5038);
 
-        if (server == null || username == null || password == null || port <= 0) {
+        if (serverAddress == null || username == null || password == null || port <= 0) {
             return Collections.emptyList();  
         }
+
+        PhoneServer server = createPhoneServer("Default Server", serverAddress, port, username,
+                password);
+        for(PhoneDevice device : getAllPhoneDevices()) {
+            device.setServerID(server.getID());
+        }
+
         // Loads the legacy server manager configuration into the database.
-        return Arrays.asList(createPhoneServer("Default Server", server, port, username,
-                password));
+        return Arrays.asList(server);
     }
 
 

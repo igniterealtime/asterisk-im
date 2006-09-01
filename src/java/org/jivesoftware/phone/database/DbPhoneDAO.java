@@ -698,6 +698,33 @@ public class DbPhoneDAO implements PhoneDAO {
         return Collections.unmodifiableCollection(devices);
     }
 
+    public Collection<PhoneDevice> getPhoneDevices() {
+        String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID, serverID " +
+                "FROM phoneDevice";
+
+        Connection con = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+        List<PhoneDevice> devices = new ArrayList<PhoneDevice>();
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                devices.add(read(new PhoneDevice(), rs));
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return Collections.unmodifiableCollection(devices);
+    }
+
     private PhoneDevice read(PhoneDevice device, ResultSet rs) throws SQLException {
         device.setID(rs.getLong("deviceID"));
         device.setPhoneUserID(rs.getLong("userID"));
