@@ -217,4 +217,22 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         }
         phoneManager.forward(phoneSession, username, extension, jid);
     }
+
+    @Override
+    public PhoneServer createPhoneServer(String name, String serverAddress, int port,
+                                         String username, String password)
+    {
+        PhoneServer server = super.createPhoneServer(name, serverAddress, port, username, password);
+        try {
+            CustomAsteriskManager manager = connectToServer(server);
+
+            if (manager != null) {
+                asteriskManagers.put(server.getID(), manager);
+            }
+        }
+        catch (Throwable t) {
+            Log.error("Error connecting to " + name + " phone server", t);
+        }
+        return server;
+    }
 }
