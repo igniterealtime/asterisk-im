@@ -43,15 +43,16 @@
 
     PhoneManager manager = plugin.getPhoneManager();
     long serverID = Long.valueOf(serverIDString);
+    int devices = manager.getPhoneDevicesByServerID(serverID).size();
 
     // Load the user object
     PhoneServer server = manager.getPhoneServerByID(serverID);
 
-    // Handle a user delete:
+    // Handle a server delete:
     if (delete) {
         manager.removePhoneServer(server.getID());
         // Done, so redirect
-        response.sendRedirect("phone-settings.jsp?deletesuccess=true");
+        response.sendRedirect("phone-settings.jsp?deleteSuccess=true");
         return;
     }
 %>
@@ -64,7 +65,8 @@
     <body>
 
 <p>
-Are you sure you want to remove the server, <%=server.getName()%>?
+    Are you sure you want to remove the server, <%=server.getName()%>, deleting this server will
+    delete <%=devices%> phone(s)?
 </p>
 
 <form action="delete-server.jsp">

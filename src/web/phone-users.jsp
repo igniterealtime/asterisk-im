@@ -301,7 +301,7 @@
         Collection<String> sipDevices = null;
         if (defaultServer != null && useSipDropDown) {
             try {
-                sipDevices = phoneManager.getDevices(defaultServer.getID());
+                sipDevices = phoneManager.getConfiguredDevicesByServerID(defaultServer.getID());
             }
             catch (PhoneException e) {
                 Log.error(e);

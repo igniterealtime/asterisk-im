@@ -143,6 +143,10 @@ public abstract class BasePhoneManager implements PhoneManager {
     }
 
     public void removePhoneServer(long serverID) {
+        Collection<PhoneDevice> devices = getPhoneDevicesByServerID(serverID);
+        for (PhoneDevice device : devices) {
+            remove(device);
+        }
         phoneDAO.removePhoneServer(serverID);
     }
 
@@ -216,5 +220,9 @@ public abstract class BasePhoneManager implements PhoneManager {
         }
         return phoneUser;
 	}
+
+    public Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID) {
+        return phoneDAO.getPhoneDevicesByServerID(serverID);
+    }
 
 }

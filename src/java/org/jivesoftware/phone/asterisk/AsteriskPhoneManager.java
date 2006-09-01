@@ -144,7 +144,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         return null;
     }
 
-    public Map<Long, Collection<String>> getDevices() throws PhoneException {
+    public Map<Long, Collection<String>> getConfiguredDevices() throws PhoneException {
         Map<Long, Collection<String>> deviceMap = new HashMap<Long, Collection<String>>();
         for (Map.Entry<Long, CustomAsteriskManager> asteriskManager : asteriskManagers.entrySet()) {
             List<String> devices = asteriskManager.getValue().getSipDevices();
@@ -156,7 +156,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         return Collections.unmodifiableMap(deviceMap);
     }
 
-    public Collection<String> getDevices(long serverID) throws PhoneException {
+    public Collection<String> getConfiguredDevicesByServerID(long serverID) throws PhoneException {
         CustomAsteriskManager manager = asteriskManagers.get(serverID);
         if (manager != null) {
             return manager.getSipDevices();

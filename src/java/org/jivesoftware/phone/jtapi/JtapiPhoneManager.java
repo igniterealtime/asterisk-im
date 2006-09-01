@@ -175,7 +175,7 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 		t.removeCallListener(events);
 	}
 
-	public Map<Long, Collection<String>> getDevices() throws PhoneException {
+	public Map<Long, Collection<String>> getConfiguredDevices() throws PhoneException {
     	Terminal ta[];
     	try {
     		ta = provider.getTerminals();
@@ -195,8 +195,8 @@ public class JtapiPhoneManager extends BasePhoneManager  {
         return toReturn;
     }
 
-    public Collection<String> getDevices(long serverID) throws PhoneException {
-        return getDevices().get(0);
+    public Collection<String> getConfiguredDevicesByServerID(long serverID) throws PhoneException {
+        return getConfiguredDevices().get(0);
     }
 
     public void dial(String username, String extension, JID jid) throws PhoneException {
