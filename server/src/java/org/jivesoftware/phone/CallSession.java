@@ -26,10 +26,12 @@ public class CallSession {
     private JID dialedJID;
     private String username;
     private boolean isMonitored;
+    private long serverID;
 
-    CallSession(String id, String username) {
+    CallSession(long serverID, String id, String username) {
         this.id = id;
         this.username = username;
+        this.serverID = serverID;
     }
 
     public String getId() {
@@ -38,6 +40,10 @@ public class CallSession {
 
     public String getUsername() {
         return username;
+    }
+
+    public long getServerID() {
+        return serverID;
     }
 
     public String getChannel() {

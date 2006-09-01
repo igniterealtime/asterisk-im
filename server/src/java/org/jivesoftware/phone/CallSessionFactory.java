@@ -33,7 +33,8 @@ public class CallSessionFactory {
     /**
      * key => username, value => all call sessions for that user
      */
-    private Map<String, Collection<CallSession>> userSessionMap = new ConcurrentHashMap<String, Collection<CallSession>>();
+    private Map<String, Collection<CallSession>> userSessionMap
+            = new ConcurrentHashMap<String, Collection<CallSession>>();
 
     private static final CallSessionFactory INSTANCE = new CallSessionFactory();
 
@@ -47,12 +48,12 @@ public class CallSessionFactory {
      * @param username user who the session belongs too.
      * @return the call session object with a specific id, else null
      */
-    public synchronized CallSession getCallSession(String id, String username) {
+    public synchronized CallSession getCallSession(long serverID, String id, String username) {
 
         CallSession session = sessionMap.get(id);
 
         if (session == null) {
-            session = new CallSession(id, username);
+            session = new CallSession(serverID, id, username);
             sessionMap.put(id, session);
         }
 

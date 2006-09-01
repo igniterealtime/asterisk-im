@@ -153,7 +153,8 @@ public abstract class BasePhoneManager implements PhoneManager {
     /** FIXME: rename to originate ;jw */
     public abstract void dial(String username, String extension, JID jid) throws PhoneException;
     
-    public abstract void forward(String callSessionID, String username, String extension, JID jid) throws PhoneException;
+    public abstract void forward(String callSessionID, String username, String extension, JID jid)
+            throws PhoneException;
 
     
     public void originate(String username, String extension) throws PhoneException {
@@ -206,7 +207,8 @@ public abstract class BasePhoneManager implements PhoneManager {
 		// If there is no jid for this device don't do anything else
 		PhoneUser phoneUser = getPhoneUserByDevice(device);
 		if (phoneUser == null) {
-			Log.info("OnPhoneTask: Could not find device/jid mapping for device " + device + " returning");
+			Log.info("OnPhoneTask: Could not find device/jid mapping for device " 
+                    + device + " returning");
 			return null;
 		}
 		Log.info("OnPhoneTask called for user " + phoneUser);
@@ -223,6 +225,10 @@ public abstract class BasePhoneManager implements PhoneManager {
 
     public Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID) {
         return phoneDAO.getPhoneDevicesByServerID(serverID);
+    }
+
+    public PhoneServer getPhoneServerByDevice(String device) {
+        return phoneDAO.getPhoneServerByID(phoneDAO.getDevice(device).getServerID());
     }
 
 }

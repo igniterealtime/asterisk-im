@@ -40,7 +40,9 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
     private String username;
     private String password;
 
-    public CustomAsteriskManager(String hostname, int port, String username, String password) {
+    public CustomAsteriskManager(String hostname, int port, String username,
+                                 String password)
+    {
         this.hostname = hostname;
         this.port = port;
         this.username = username;
@@ -191,11 +193,10 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
     }
 
 
-    public void forward(String callSessionID, String username, String extension, JID jid)
+    public void forward(CallSession phoneSession, String username, String extension, JID jid)
             throws PhoneException
     {
-        CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
-                .getCallSession(callSessionID, username);
+
 
         phoneSession.setForwardedExtension(extension);
         phoneSession.setForwardedJID(jid);
