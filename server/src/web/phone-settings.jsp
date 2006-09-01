@@ -29,6 +29,9 @@
     boolean isSave = request.getParameter("save") != null;
 	HttpServletRequest req = null;
     boolean success = request.getParameter("success") != null;
+    boolean isDelete = ParamUtils.getBooleanParameter(request, "deleteSuccess", false);
+    boolean isCreate = request.getParameter("serverCreated") != null;
+    boolean isEdit = request.getParameter("serverEdited") != null;
 
     Map<String, String> errors = new HashMap<String, String>();
 
@@ -128,22 +131,25 @@
 
 
 <% if (success) { %>
-
-<div class="jive-success">
-    <table cellpadding="0" cellspacing="0" border="0">
-        <tbody>
-            <tr>
-                <td class="jive-icon"><img src="images/success-16x16.gif" width="16" height="16" border="0"></td>
-                <td class="jive-icon-label">Service settings updated successfully. It will take a couple seconds to
-                    reconnect to the telephony interface</td>
-            </tr>
-        </tbody>
-    </table>
-</div><br>
-
+<div class="success" style="width: 400;">
+    Service settings updated successfully. It will take a couple seconds to reconnect to the
+    telephony interface
+</div>
+<%  } else if (isDelete) { %>
+<div class="success" style="width: 400;">
+    Server deleted successfully
+</div>
+<%  } else if (isCreate) { %>
+<div class="success" style="width: 400;">
+    Server created successfully
+</div>
+<%  } else if (isEdit) { %>
+<div class="success" style="width: 400;">
+    Server edited successfully
+</div>
 <%  } else if (errors.size() > 0) { %>
 
-<div class="jive-error">
+<div class="jive-error" style="width: 400;">
     <table cellpadding="0" cellspacing="0" border="0">
         <tbody>
             <tr>
@@ -154,7 +160,6 @@
         </tbody>
     </table>
 </div>
-<br/>
 <% } %>
 
 <form action="phone-settings.jsp" method="get">

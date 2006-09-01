@@ -155,7 +155,7 @@ public interface PhoneManager {
      * @return
      * @throws PhoneException
      */
-    Map<Long,Collection<String>> getDevices() throws PhoneException;
+    Map<Long,Collection<String>> getConfiguredDevices() throws PhoneException;
 
     /**
      * Returns a collection of all devices on a given server.
@@ -164,7 +164,7 @@ public interface PhoneManager {
      * @return
      * @throws PhoneException
      */
-    Collection<String> getDevices(long serverID) throws PhoneException;
+    Collection<String> getConfiguredDevicesByServerID(long serverID) throws PhoneException;
 
     /**
      * Acquire a phone device by its name
@@ -245,7 +245,14 @@ public interface PhoneManager {
 
     PhoneServerStatus getPhoneServerStatus(long serverID);
 
+    /**
+     * Removes a phone server and all of its associated devices.
+     *
+     * @param serverID the serverID of the server to be removed.
+     */
     void removePhoneServer(long serverID);
+
+    Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID);
 
     enum PhoneServerStatus {
         connected,
