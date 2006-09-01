@@ -16,6 +16,7 @@ import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 import org.jivesoftware.phone.PhoneUser;
+import org.jivesoftware.phone.PhoneServer;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
 import org.jivesoftware.phone.element.PhoneEvent;
 import org.jivesoftware.phone.element.PhoneStatus;
@@ -77,6 +78,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
         try {
             PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
+            PhoneServer phoneServer = phoneManager.getPhoneServerByDevice(device);
 
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
@@ -87,7 +89,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
             Log.debug("Asterisk-IM OnPhoneTask called for user " + phoneUser);
 
-            CallSession callSession = getCallSessionFactory().getCallSession(event.getUniqueId(), phoneUser.getUsername());
+            CallSession callSession = getCallSessionFactory().getCallSession(phoneServer.getID(),
+                    event.getUniqueId(), phoneUser.getUsername());
 
             // Notify the client that they have answered the phone
             Message message = new Message();
@@ -144,6 +147,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             synchronized (phoneUser.getUsername().intern()) {
                 int callSessionCount = callSessionFactory.getUserCallSessions(
                         phoneUser.getUsername()).size();
+                // This is less than or equal to one as we have yet to destroy the session handled
+                // in the hangup event.
                 if (callSessionCount <= 1) {
                     phoneManager.plugin.restorePresence(phoneUser.getUsername());
                 }
@@ -222,9 +227,10 @@ public class AsteriskEventHandler implements ManagerEventHandler {
     private void handleDialDestination(PhoneUser destPhoneUser, String destDevice, DialEvent event) {
         try {
             Log.debug("Asterisk-IM RingTask called for user " + destPhoneUser);
-
+            PhoneServer server = phoneManager.getPhoneServerByDevice(destDevice);
             CallSession destCallSession = getCallSessionFactory()
-                .getCallSession(event.getDestUniqueId(), destPhoneUser.getUsername());
+                .getCallSession(server.getID(), event.getDestUniqueId(),
+                        destPhoneUser.getUsername());
 
 
             destCallSession.setChannel(destDevice);
@@ -254,9 +260,9 @@ public class AsteriskEventHandler implements ManagerEventHandler {
     protected void handleDialSource(PhoneUser srcUser, String srcDevice, DialEvent event) {
 
         try {
-
+            PhoneServer server = phoneManager.getPhoneServerByDevice(srcDevice);
             CallSession callSession = getCallSessionFactory()
-                .getCallSession(event.getSrcUniqueId(), srcUser.getUsername());
+                .getCallSession(server.getID(), event.getSrcUniqueId(), srcUser.getUsername());
             callSession.setChannel(srcDevice);
 
 

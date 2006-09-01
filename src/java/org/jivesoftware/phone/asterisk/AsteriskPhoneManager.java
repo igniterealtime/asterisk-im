@@ -182,6 +182,9 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         if (manager != null) {
             manager.dial(primaryDevice, extension);
         }
+        else {
+            throw new PhoneException("Not connected to originate phone server.");
+        }
     }
 
     public boolean isReady() {
@@ -203,7 +206,15 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     public void forward(String callSessionID, String username, String extension, JID jid)
             throws PhoneException {
-        // Currently broken as we will need to individualize call sessions per server and track
-        // them that way
+        CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
+                .getCallSession(callSessionID);
+        if (phoneSession == null) {
+            throw new PhoneException("Call session not currently stored in Asterisk-IM");
+        }
+        CustomAsteriskManager phoneManager = asteriskManagers.get(phoneSession.getServerID());
+        if(phoneManager == null) {
+            throw new PhoneException("Not connected to asterisk server to forward call");
+        }
+        phoneManager.forward(phoneSession, username, extension, jid);
     }
 }
