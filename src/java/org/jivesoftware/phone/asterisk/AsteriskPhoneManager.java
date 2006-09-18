@@ -13,7 +13,7 @@ import net.sf.asterisk.manager.AuthenticationFailedException;
 import net.sf.asterisk.manager.TimeoutException;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
-import org.jivesoftware.phone.element.PhoneEvent;
+import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
@@ -95,10 +95,10 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         // Initialize the manager connection pool and create an eventhandler
         if (server != null && server.getHostname() != null && server.getUsername() != null
                 && server.getPassword() != null) {
-            manager = new CustomAsteriskManager(server.getHostname(), server.getPort(),
-                    server.getUsername(), server.getPassword());
+            manager = new CustomAsteriskManager(server.getHostname(),
+                    server.getPort(), server.getUsername(), server.getPassword());
             manager.logon();
-            manager.addEventHandler(new AsteriskEventHandler(this));
+            manager.addEventHandler(new AsteriskEventHandler(server.getID(), this));
         }
         else {
             Log.warn("AsteriskPlugin configuration is invalid, please see admin tool!!");

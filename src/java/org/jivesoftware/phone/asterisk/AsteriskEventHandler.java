@@ -16,14 +16,11 @@ import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
 import org.jivesoftware.phone.PhoneUser;
-import org.jivesoftware.phone.PhoneServer;
 import static org.jivesoftware.phone.asterisk.AsteriskUtil.getDevice;
-import org.jivesoftware.phone.element.PhoneEvent;
-import org.jivesoftware.phone.element.PhoneStatus;
+import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
 import org.xmpp.packet.Message;
-import org.xmpp.packet.Presence;
 
 /**
  * Handles events that are delivered from an asterisk connection
@@ -31,10 +28,11 @@ import org.xmpp.packet.Presence;
  * @author Andrew Wright
  */
 public class AsteriskEventHandler implements ManagerEventHandler {
-
     private AsteriskPhoneManager phoneManager;
+    private long serverID;
 
-    public AsteriskEventHandler(AsteriskPhoneManager asteriskPhoneManager) {
+    public AsteriskEventHandler(long serverID, AsteriskPhoneManager asteriskPhoneManager) {
+        this.serverID = serverID;
         this.phoneManager = asteriskPhoneManager;
     }
 
@@ -78,7 +76,6 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
         try {
             PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
-            PhoneServer phoneServer = phoneManager.getPhoneServerByDevice(device);
 
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
@@ -89,7 +86,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
 
             Log.debug("Asterisk-IM OnPhoneTask called for user " + phoneUser);
 
-            CallSession callSession = getCallSessionFactory().getCallSession(phoneServer.getID(),
+            CallSession callSession = getCallSessionFactory().getCallSession(serverID,
                     event.getUniqueId(), phoneUser.getUsername());
 
             // Notify the client that they have answered the phone
@@ -105,16 +102,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             message.getElement().add(phoneEvent);
             phoneManager.plugin.sendPacket2User(phoneUser.getUsername(), message);
 
-            // Iterate through all of the sessions sending out new presences for each
-            Presence presence = new Presence();
-            presence.setShow(Presence.Show.away);
-            presence.setStatus("On the phone");
-
-            PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
-            presence.getElement().add(phoneStatus);
-
-            phoneManager.plugin.setPresence(phoneUser.getUsername(), presence);
-
+            phoneManager.plugin.setPresence(phoneUser.getUsername(), "On the phone");
         }
         catch (Throwable e) {
             Log.error(e.getMessage(), e);
@@ -227,9 +215,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
     private void handleDialDestination(PhoneUser destPhoneUser, String destDevice, DialEvent event) {
         try {
             Log.debug("Asterisk-IM RingTask called for user " + destPhoneUser);
-            PhoneServer server = phoneManager.getPhoneServerByDevice(destDevice);
             CallSession destCallSession = getCallSessionFactory()
-                .getCallSession(server.getID(), event.getDestUniqueId(),
+                .getCallSession(serverID, event.getDestUniqueId(),
                         destPhoneUser.getUsername());
 
 
@@ -260,9 +247,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
     protected void handleDialSource(PhoneUser srcUser, String srcDevice, DialEvent event) {
 
         try {
-            PhoneServer server = phoneManager.getPhoneServerByDevice(srcDevice);
             CallSession callSession = getCallSessionFactory()
-                .getCallSession(server.getID(), event.getSrcUniqueId(), srcUser.getUsername());
+                .getCallSession(serverID, event.getSrcUniqueId(), srcUser.getUsername());
             callSession.setChannel(srcDevice);
 
 
@@ -290,6 +276,4 @@ public class AsteriskEventHandler implements ManagerEventHandler {
             Log.error(e.getMessage(), e);
         }
     }
-
-
 }

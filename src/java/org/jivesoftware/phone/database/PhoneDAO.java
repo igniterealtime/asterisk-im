@@ -23,7 +23,7 @@ public interface PhoneDAO {
 
     List<PhoneUser> getPhoneUsers();
 
-    PhoneDevice getDevice(String deviceName);
+    Collection<PhoneDevice> getDevices(String deviceName);
 
     PhoneDevice getPhoneDeviceByID(long id);
 

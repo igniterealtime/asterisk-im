@@ -54,11 +54,9 @@ public class JtapiPhoneManager extends BasePhoneManager  {
     		return;
     	}
         String _peerName = 
-    		JiveGlobals.getProperty(JtapiProperties.JTAPI_PEER, null); 
-    	String _provider = 
-    		JiveGlobals.getProperty(JtapiProperties.JTAPI_PROVIDER,
-    			"com.headissue.asterisk.jtapi.AsteriskJtapiProvider");
-        String _providerString = _provider;
+    		JiveGlobals.getProperty(JtapiProperties.JTAPI_PEER, null);
+        String _providerString = JiveGlobals.getProperty(JtapiProperties.JTAPI_PROVIDER,
+            "com.headissue.asterisk.jtapi.AsteriskJtapiProvider");
         PhoneOption[] options = plugin.getJtapiOptions();
         boolean ouch = false;
         for (int i=0; options!=null && i<options.length; i++) {
@@ -99,7 +97,11 @@ public class JtapiPhoneManager extends BasePhoneManager  {
         }
     	if (ta!=null) {
     		for (Terminal t : ta) {
-    			PhoneDevice d = getDevice(t.getName());
+                Collection<PhoneDevice> devices = getDevices(t.getName());
+                if(devices == null || devices.size() <= 0) {
+                    break;
+                }
+                PhoneDevice d = devices.iterator().next();
     			if (d!=null) {
     				Log.info("jtapi: Listening for events on terminal "+t.getName());
     				x = true;
@@ -139,7 +141,7 @@ public class JtapiPhoneManager extends BasePhoneManager  {
     @Override
 	public void insert(PhoneDevice phoneDevice) {
 		super.insert(phoneDevice);
-		Terminal t = null;
+		Terminal t;
 		try {
 			 t = provider.getTerminal(phoneDevice.getDevice());
 		} catch (InvalidArgumentException e) {
@@ -158,14 +160,8 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 
 	@Override
 	public void remove(PhoneDevice phoneDevice) {
-		String n = phoneDevice.getDevice();
 		super.remove(phoneDevice);
-		PhoneDevice d = getDevice(n);
-		// if we have this device still in the database, dont removePhoneServer the listener
-		if (d!=null) {
-			return;
-		}
-		Terminal t = null;
+		Terminal t;
 		try {
 			 t = provider.getTerminal(phoneDevice.getDevice());
 		} catch (InvalidArgumentException e) {

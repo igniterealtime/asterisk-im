@@ -97,15 +97,6 @@ public interface PhoneManager {
     List<PhoneDevice> getPhoneDevicesByUsername(String username);
 
     /**
-     * Returns a {@link PhoneDevice} by the device name. If no {@link PhoneDevice}
-     * is found matching the device name then null will be returned.
-     *
-     * @param device the device name
-     * @return PhoneDevice object matching the device name
-     */
-    PhoneDevice getPhoneDeviceByDevice(String device);
-
-    /**
      * Returns a {@link PhoneDevice} with a matching phoneDeviceID. If there is no phone device matching the
      * id then null will be returned.
      *
@@ -174,7 +165,7 @@ public interface PhoneManager {
      * @param device name of the phone device
      * @return the phone device object
      */
-    PhoneDevice getDevice(String device);
+    Collection<PhoneDevice> getDevices(String device);
 
     /**
      * Used to see how many messages are in a mailbox
@@ -255,6 +246,8 @@ public interface PhoneManager {
     void removePhoneServer(long serverID);
 
     Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID);
+
+    PhoneServer getPhoneServerByDevice(String device);
 
     enum PhoneServerStatus {
         connected,

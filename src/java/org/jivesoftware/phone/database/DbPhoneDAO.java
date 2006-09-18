@@ -67,12 +67,12 @@ public class DbPhoneDAO implements PhoneDAO {
         return phoneUser;
     }
 
-    public PhoneDevice getDevice(String deviceName) {
+    public Collection<PhoneDevice> getDevices(String deviceName) {
 
         String sql = "SELECT deviceID, device, extension, callerId, isPrimary, userID, serverID " +
                 "from phoneDevice WHERE device = ?";
 
-        PhoneDevice device = null;
+        Collection<PhoneDevice> deviceList = new ArrayList<PhoneDevice>();
         Connection con = null;
         PreparedStatement psmt = null;
         ResultSet rs = null;
@@ -83,8 +83,8 @@ public class DbPhoneDAO implements PhoneDAO {
             psmt.setString(1, deviceName);
             rs = psmt.executeQuery();
 
-            if (rs.next()) {
-                device = read(new PhoneDevice(), rs);
+            while (rs.next()) {
+                deviceList.add(read(new PhoneDevice(), rs));
             }
 
         }
@@ -95,7 +95,7 @@ public class DbPhoneDAO implements PhoneDAO {
             DbConnectionManager.closeConnection(rs, psmt, con);
         }
 
-        return device;
+        return deviceList;
     }
 
     public PhoneUser getByUsername(String username) {
