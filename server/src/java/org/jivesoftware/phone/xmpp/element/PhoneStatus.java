@@ -7,7 +7,7 @@
  *
  * This software is the proprietary information of Jive Software. Use is subject to license terms.
  */
-package org.jivesoftware.phone.element;
+package org.jivesoftware.phone.xmpp.element;
 
 import org.dom4j.Namespace;
 import org.dom4j.tree.BaseElement;

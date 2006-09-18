@@ -82,8 +82,8 @@ public abstract class BasePhoneManager implements PhoneManager {
         return phoneDAO.getPrimaryDevice(phoneUserID);
     }
 
-    public PhoneDevice getDevice(String device) {
-        return phoneDAO.getDevice(device);
+    public Collection<PhoneDevice> getDevices(String device) {
+        return phoneDAO.getDevices(device);
     }
 
     public void insert(PhoneUser phoneUser) {
@@ -96,10 +96,6 @@ public abstract class BasePhoneManager implements PhoneManager {
 
     protected PhoneDAO getPhoneDAO() {
         return phoneDAO;
-    }
-
-    public PhoneDevice getPhoneDeviceByDevice(String device) {
-        return phoneDAO.getDevice(device);
     }
 
     public Collection<PhoneServer> getPhoneServers() {
@@ -152,6 +148,16 @@ public abstract class BasePhoneManager implements PhoneManager {
             remove(device);
         }
         phoneDAO.removePhoneServer(serverID);
+    }
+
+    public PhoneServer getPhoneServerByDevice(String deviceName) {
+        Collection<PhoneDevice> device = phoneDAO.getDevices(deviceName);
+        if(device != null && device.size() > 0) {
+            return phoneDAO.getPhoneServerByID(device.iterator().next().getServerID());
+        }
+        else {
+            throw new IllegalArgumentException("Could not load device to retrieve server.");
+        }
     }
 
     /** FIXME: rename to originate ;jw */
@@ -230,9 +236,4 @@ public abstract class BasePhoneManager implements PhoneManager {
     public Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID) {
         return phoneDAO.getPhoneDevicesByServerID(serverID);
     }
-
-    public PhoneServer getPhoneServerByDevice(String device) {
-        return phoneDAO.getPhoneServerByID(phoneDAO.getDevice(device).getServerID());
-    }
-
 }

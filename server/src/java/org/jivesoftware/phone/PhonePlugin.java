@@ -12,6 +12,7 @@ import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.PhoneExecutionService;
 import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.PacketHandler;
+import org.jivesoftware.phone.xmpp.element.PhoneStatus;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.PropertyEventListener;
@@ -226,8 +227,18 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         presenceHandler.restorePresence(user);
     }
 
-    public void setPresence(String user, Presence p) {
-        presenceHandler.setPresence(user, p);
+    public void setPresence(String user, String status) {
+        presenceHandler.setPresence(user, createOnPhonePresence(status));
+    }
+
+    private Presence createOnPhonePresence(String status) {
+        Presence presence = new Presence();
+        presence.setShow(Presence.Show.away);
+        presence.setStatus(status);
+
+        PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
+        presence.getElement().add(phoneStatus);
+        return presence;
     }
 
     public abstract PhoneOption[] getOptions();

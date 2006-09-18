@@ -10,7 +10,7 @@
 package org.jivesoftware.phone.xmpp;
 
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.phone.element.PhoneAction;
+import org.jivesoftware.phone.xmpp.element.PhoneAction;
 import org.jivesoftware.phone.PhoneManager;
 import org.jivesoftware.phone.PhonePlugin;
 import org.jivesoftware.phone.PhoneException;

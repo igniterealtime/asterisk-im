@@ -32,9 +32,9 @@ import java.util.*;
  */
 public class PresenceLayerer implements PacketInterceptor, SessionEventListener {
 
-    XMPPServer server = XMPPServer.getInstance();
-    Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
-    Map<String, UserState> name2state = new HashMap<String, UserState>();
+    private XMPPServer server = XMPPServer.getInstance();
+    private Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
+    private Map<String, UserState> name2state = new HashMap<String, UserState>();
     private boolean isShutdown = false;
 
     /**
@@ -66,7 +66,7 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
         final String username = from.getNode();
 
         // If the user is anonymous, or is a service
-        return username != null;
+        return username == null || "".equals(username);
     }
 
     public void interceptPacket(Packet packet,

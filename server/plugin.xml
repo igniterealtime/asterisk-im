@@ -5,7 +5,7 @@
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Wildfire.</description>
     <author>Jive Software</author>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <minServerVersion>3.0.0</minServerVersion>
     <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>2</databaseVersion>

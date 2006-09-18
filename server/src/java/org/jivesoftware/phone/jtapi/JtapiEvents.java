@@ -22,12 +22,9 @@ import javax.telephony.callcontrol.CallControlCall;
 import org.jivesoftware.util.Log;
 
 import org.jivesoftware.phone.*;
-import org.jivesoftware.phone.element.PhoneEvent;
-import org.jivesoftware.phone.element.PhoneStatus;
-import org.jivesoftware.phone.element.PhoneStatus.Status;
+import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 
 import org.xmpp.packet.Message;
-import org.xmpp.packet.Presence;
 
 /**
  * 
@@ -55,11 +52,11 @@ public class JtapiEvents implements TerminalConnectionListener {
 	
 	/** Get a call id used in our XMPP comunication for a jtapi call object. */
 	public String getCallId(Terminal t, Call c) {
-		String s = (String) call2id.get(c);
+		String s = call2id.get(c);
 		if (s==null) {
 			synchronized(this) {
 				// race condition!
-				s = (String) call2id.get(c);
+				s = call2id.get(c);
 				if (s==null) {
 					s = constructCallId(t,c);
 					call2id.put(c,s);
@@ -169,16 +166,9 @@ public class JtapiEvents implements TerminalConnectionListener {
 		message.setBody("Active?: "+callerId);
 		plugin.sendPacket2User(phoneUser.getUsername(), message);
 		-*/
-
-		// construct new on the phone presence
-        Presence presence = new Presence();
-        presence.setShow(Presence.Show.away);
-        presence.setStatus("On Phone");
-        PhoneStatus phoneStatus = new PhoneStatus(Status.ON_PHONE);
-        presence.getElement().add(phoneStatus);
 		
         // sent the presence and intercept other presences from the client
-        plugin.setPresence(phoneUser.getUsername(), presence);
+        plugin.setPresence(phoneUser.getUsername(), "On Phone");
 	}
 
 	public void ring(TerminalConnection tc) {
@@ -205,15 +195,8 @@ public class JtapiEvents implements TerminalConnectionListener {
 		message.setBody("Calling: "+callerId);
 		plugin.sendPacket2User(phoneUser.getUsername(), message);
 		
-		// construct new on the phone presence
-        Presence presence = new Presence();
-        presence.setShow(Presence.Show.away);
-        presence.setStatus("Phone Ringing");
-        PhoneStatus phoneStatus = new PhoneStatus(Status.ON_PHONE);
-        presence.getElement().add(phoneStatus);
-		
         // sent the presence and intercept other presences from the client
-        plugin.setPresence(phoneUser.getUsername(), presence);
+        plugin.setPresence(phoneUser.getUsername(), "Ringing");
 	}
 
 	public void terminalConnectionCreated(TerminalConnectionEvent arg0) {
