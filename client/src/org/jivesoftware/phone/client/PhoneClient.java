@@ -59,7 +59,7 @@ public class PhoneClient {
                         PhoneEventPacketExtension.NAMESPACE));
 
         serviceDiscoveryManager = ServiceDiscoveryManager.getInstanceFor(conn);
-        DiscoverItems items = serviceDiscoveryManager.discoverItems(conn.getHost());
+        DiscoverItems items = serviceDiscoveryManager.discoverItems(conn.getServiceName());
 
         // Attempt to discover the component jid and see if this user can use the phone service
         for (Iterator i = items.getItems(); i.hasNext();) {
