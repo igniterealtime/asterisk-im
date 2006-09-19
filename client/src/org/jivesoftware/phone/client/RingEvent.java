@@ -64,20 +64,15 @@ public class RingEvent extends PhoneEventPacketExtension {
     }
 
     protected String getEventChildXML() {
-        return new StringBuffer("<")
-                .append(CALLER_ID_ELEMENT)
-                .append(">")
+        StringBuilder xml = new StringBuilder("<").append(CALLER_ID_ELEMENT).append(">")
                 .append(callerID)
-                .append("</")
-                .append(CALLER_ID_ELEMENT)
-                .append(">")
-                .append("<")
-                .append(CALLER_ID_NAME_ELEMENT)
-                .append(callerIDName != null ? callerIDName : "")
-                .append("</")
-                .append(CALLER_ID_NAME_ELEMENT)
-                .append(">")
-                .toString();
+                .append("</").append(CALLER_ID_ELEMENT).append(">");
+        if (callerIDName != null && !"".equals(callerIDName)) {
+            xml.append("<").append(CALLER_ID_NAME_ELEMENT).append(">")
+                    .append(callerIDName != null ? callerIDName : "")
+                    .append("</").append(CALLER_ID_NAME_ELEMENT).append(">");
+        }
+        return xml.toString();
     }
 
     public Call getCall() {

@@ -70,20 +70,12 @@ public class OnPhoneEvent extends PhoneEventPacketExtension {
      * @return a callerID element
      */
     protected String getEventChildXML() {
-        return new StringBuffer("<")
-                .append(CALLER_ID_ELEMENT)
-                .append(">")
+        return new StringBuilder("<").append(CALLER_ID_ELEMENT).append(">")
                 .append(callerID)
-                .append("</")
-                .append(CALLER_ID_ELEMENT)
-                .append(">")
-                .append("<")
-                .append(CALLER_ID_NAME_ELEMENT)
-                .append(">")
+                .append("</").append(CALLER_ID_ELEMENT).append(">")
+                .append("<").append(CALLER_ID_NAME_ELEMENT).append(">")
                 .append(callerIDName)
-                .append("</")
-                .append(CALLER_ID_NAME_ELEMENT)
-                .append(">")
+                .append("</").append(CALLER_ID_NAME_ELEMENT).append(">")
                 .toString();
     }
 
