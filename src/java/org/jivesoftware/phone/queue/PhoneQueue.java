@@ -21,6 +21,10 @@ public class PhoneQueue {
     private List<String> devices = new ArrayList<String>();
     private long serverID;
 
+    public PhoneQueue(String name) {
+        this.name = name;
+    }
+
     public long getServerID() {
         return serverID;
     }

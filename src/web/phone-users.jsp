@@ -84,7 +84,7 @@
     try {
 
         PhoneUser phoneUser = null;
-        List<PhoneDevice> devices = null;
+        Collection<PhoneDevice> devices = null;
         PhoneDevice phoneDevice = null;
         PhoneServer phoneServer = null;
 
@@ -414,7 +414,7 @@
 
     <%
         }
-        int i = 0;
+        int i;
         for (i = s; i < numPages && i < num; i++) {
             String sep = ((i + 1) < numPages) ? " " : "";
             boolean isCurrent = (i + 1) == curPage;
@@ -470,7 +470,6 @@
                 for (PhoneUser currentUser : users) {
                     i++;
                     isFirst = true;
-                    isLast = false;
             %>
 
 
@@ -547,7 +546,6 @@
 
         <%
             }
-            i = 0;
             for (i = s; i < numPages && i < num; i++) {
                 String sep = ((i + 1) < numPages) ? " " : "";
                 boolean isCurrent = (i + 1) == curPage;

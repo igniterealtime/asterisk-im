@@ -143,26 +143,43 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         super.removePhoneServer(serverID);
     }
 
-    public void pauseMemberInQueue(String deviceName) throws PhoneException {
-        Collection<Long> servers = getPhoneServerIdsByDevice(deviceName);
-        for(Long id : servers) {
-            CustomAsteriskManager manager = asteriskManagers.get(id);
-            if(manager == null) {
-                continue;
-            }
-            manager.pauseMemberInQueue(deviceName);
+    @Override
+    public void pauseMemberInQueue(long serverID, String deviceName) throws PhoneException {
+        CustomAsteriskManager manager = asteriskManagers.get(serverID);
+        if (manager == null) {
+            return;
         }
+        manager.pauseMemberInQueue(deviceName);
     }
 
-    public void unpauseMemberInQueue(String deviceName) throws PhoneException {
-        Collection<Long> servers = getPhoneServerIdsByDevice(deviceName);
-        for (Long id : servers) {
-            CustomAsteriskManager manager = asteriskManagers.get(id);
-            if (manager == null) {
-                continue;
-            }
-            manager.unpauseMemberInQueue(deviceName);
+    @Override
+    public void unpauseMemberInQueue(long serverID, String deviceName) throws PhoneException {
+        CustomAsteriskManager manager = asteriskManagers.get(serverID);
+        if (manager == null) {
+            return;
         }
+        manager.unpauseMemberInQueue(deviceName);
+    }
+
+    @Override
+    public Collection<PhoneQueue> getAllPhoneQueues() {
+        List<PhoneQueue> queues = new ArrayList<PhoneQueue>();
+
+        for(Map.Entry<Long, CustomAsteriskManager> manager : asteriskManagers.entrySet()) {
+            //noinspection unchecked
+            try {
+                Collection<PhoneQueue> queueList = manager.getValue().getQueueMembers();
+                for(PhoneQueue queue : queueList) {
+                    queue.setServerID(manager.getKey());
+                }
+                queues.addAll(queueList);
+            }
+            catch (PhoneException e) {
+                Log.error("Error populating queues from server", e);
+            }
+        }
+
+        return Collections.unmodifiableCollection(queues);
     }
 
     public boolean isQueueSupported() {
