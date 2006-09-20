@@ -15,6 +15,7 @@ import org.xmpp.packet.JID;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Base class for PhoneManagers that handles non pbx dependent code
@@ -150,23 +151,31 @@ public abstract class BasePhoneManager implements PhoneManager {
         phoneDAO.removePhoneServer(serverID);
     }
 
-    public PhoneServer getPhoneServerByDevice(String deviceName) {
-        Collection<PhoneDevice> device = phoneDAO.getDevices(deviceName);
-        if(device != null && device.size() > 0) {
-            return phoneDAO.getPhoneServerByID(device.iterator().next().getServerID());
+    public Collection<PhoneServer> getPhoneServersByDevice(String deviceName) {
+        Collection<PhoneDevice> devices = phoneDAO.getDevices(deviceName);
+        Collection<PhoneServer> servers = new ArrayList<PhoneServer>();
+        for(PhoneDevice device : devices) {
+            servers.add(getPhoneServerByID(device.getServerID()));
         }
-        else {
-            throw new IllegalArgumentException("Could not load device to retrieve server.");
+        return servers;
+    }
+
+    public Collection<Long> getPhoneServerIdsByDevice(String deviceName) {
+        Collection<PhoneDevice> devices = phoneDAO.getDevices(deviceName);
+        Collection<Long> servers = new ArrayList<Long>();
+        for(PhoneDevice device : devices) {
+            servers.add(device.getServerID());
         }
+        return servers;
     }
 
     /** FIXME: rename to originate ;jw */
     public abstract void dial(String username, String extension, JID jid) throws PhoneException;
-    
+
     public abstract void forward(String callSessionID, String username, String extension, JID jid)
             throws PhoneException;
 
-    
+
     public void originate(String username, String extension) throws PhoneException {
         dial(username, extension, null);
     }
@@ -212,7 +221,7 @@ public abstract class BasePhoneManager implements PhoneManager {
         forward(callSessionID, username, extension, target);
 
     }
-    
+
 	public PhoneUser getActivePhoneUserByDevice(String device) {
 		// If there is no jid for this device don't do anything else
 		PhoneUser phoneUser = getPhoneUserByDevice(device);

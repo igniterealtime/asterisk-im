@@ -12,6 +12,7 @@ package org.jivesoftware.phone.asterisk;
 import net.sf.asterisk.manager.AuthenticationFailedException;
 import net.sf.asterisk.manager.TimeoutException;
 import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.util.JiveGlobals;
@@ -140,6 +141,32 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         }
 
         super.removePhoneServer(serverID);
+    }
+
+    public void pauseMemberInQueue(String deviceName) throws PhoneException {
+        Collection<Long> servers = getPhoneServerIdsByDevice(deviceName);
+        for(Long id : servers) {
+            CustomAsteriskManager manager = asteriskManagers.get(id);
+            if(manager == null) {
+                continue;
+            }
+            manager.pauseMemberInQueue(deviceName);
+        }
+    }
+
+    public void unpauseMemberInQueue(String deviceName) throws PhoneException {
+        Collection<Long> servers = getPhoneServerIdsByDevice(deviceName);
+        for (Long id : servers) {
+            CustomAsteriskManager manager = asteriskManagers.get(id);
+            if (manager == null) {
+                continue;
+            }
+            manager.unpauseMemberInQueue(deviceName);
+        }
+    }
+
+    public boolean isQueueSupported() {
+        return true;
     }
 
     public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {

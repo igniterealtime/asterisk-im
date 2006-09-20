@@ -94,7 +94,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         initPhoneManager(isEnabled);
 
         packetHandler = new PacketHandler(getPhoneManager(), this);
-        presenceHandler = new PresenceLayerer();
+        presenceHandler = new PresenceLayerer(getPhoneManager());
 
         // Register a packet interceptor for handling on phone presence changes
         InterceptorManager.getInstance().addInterceptor(presenceHandler);
