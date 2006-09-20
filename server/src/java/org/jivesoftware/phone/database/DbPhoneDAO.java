@@ -35,10 +35,11 @@ import java.util.Collections;
 @DAOInfo(DAOInfo.daoType.JDBC)
 public class DbPhoneDAO implements PhoneDAO {
 
-    public PhoneUser getPhoneUserByDevice(String device) {
+    public PhoneUser getPhoneUserByDevice(long serverID, String device) {
 
         String sql = "SELECT phoneUser.userID, phoneUser.username from phoneUser, phoneDevice " +
-                "WHERE phoneUser.userID = phoneDevice.userID AND phoneDevice.device = ? ";
+                "WHERE phoneUser.userID = phoneDevice.userID AND phoneDevice.device = ? " +
+                "AND phoneDevice.serverID = ? ";
 
         PhoneUser phoneUser = null;
         Connection con = null;
@@ -50,6 +51,7 @@ public class DbPhoneDAO implements PhoneDAO {
             con = DbConnectionManager.getConnection();
             psmt = con.prepareStatement(sql);
             psmt.setString(1, device);
+            psmt.setLong(2, serverID);
             rs = psmt.executeQuery();
 
             if (rs.next()) {
@@ -713,6 +715,33 @@ public class DbPhoneDAO implements PhoneDAO {
 
             while (rs.next()) {
                 devices.add(read(new PhoneDevice(), rs));
+            }
+        }
+        catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+        finally {
+            DbConnectionManager.closeConnection(rs, psmt, con);
+        }
+
+        return Collections.unmodifiableCollection(devices);
+    }
+
+    public Collection<String> getPhoneDeviceNamesByServerID(long serverID) {
+        String sql = "SELECT device FROM phoneDevice WHERE serverID = ?";
+
+        Connection con = null;
+        PreparedStatement psmt = null;
+        ResultSet rs = null;
+        List<String> devices = new ArrayList<String>();
+        try {
+            con = DbConnectionManager.getConnection();
+            psmt = con.prepareStatement(sql);
+            psmt.setLong(1, serverID);
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                devices.add(rs.getString("device"));
             }
         }
         catch (SQLException e) {

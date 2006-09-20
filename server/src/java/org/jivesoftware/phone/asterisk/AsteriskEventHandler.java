@@ -75,7 +75,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         String device = getDevice(event.getChannel());
 
         try {
-            PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
+            PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(serverID, device);
 
             //If there is no jid for this device don't do anything else
             if (phoneUser == null) {
@@ -114,7 +114,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         String device = getDevice(event.getChannel());
 
         try {
-            PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(device);
+            PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(serverID, device);
 
             CallSessionFactory callSessionFactory = getCallSessionFactory();
 
@@ -192,8 +192,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         String sourceDevice = getDevice(event.getSrc());
 
         try {
-            PhoneUser destPhoneUser = phoneManager.getPhoneUserByDevice(destDevice);
-            PhoneUser srcPhoneUser = phoneManager.getPhoneUserByDevice(sourceDevice);
+            PhoneUser destPhoneUser = phoneManager.getPhoneUserByDevice(serverID, destDevice);
+            PhoneUser srcPhoneUser = phoneManager.getPhoneUserByDevice(serverID, sourceDevice);
 
 
             if (destPhoneUser != null) {

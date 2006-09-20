@@ -33,8 +33,8 @@ public abstract class BasePhoneManager implements PhoneManager {
         this.phoneDAO = phoneDAO;
     }
 
-    public PhoneUser getPhoneUserByDevice(String device) {
-        return phoneDAO.getPhoneUserByDevice(device);
+    public PhoneUser getPhoneUserByDevice(long serverID, String device) {
+        return phoneDAO.getPhoneUserByDevice(serverID, device);
     }
 
     public PhoneUser getPhoneUserByUsername(String username) {
@@ -103,6 +103,10 @@ public abstract class BasePhoneManager implements PhoneManager {
 
     public Collection<PhoneServer> getPhoneServers() {
         return phoneDAO.getPhoneServers();
+    }
+
+    public Collection<String> getPhoneDeviceNamesByServerID(long serverID) {
+        return phoneDAO.getPhoneDeviceNamesByServerID(serverID);
     }
 
     public PhoneServer createPhoneServer(String name, String serverAddress, int port,
@@ -224,9 +228,9 @@ public abstract class BasePhoneManager implements PhoneManager {
 
     }
 
-    public PhoneUser getActivePhoneUserByDevice(String device) {
+    public PhoneUser getActivePhoneUserByDevice(long serverID, String device) {
         // If there is no jid for this device don't do anything else
-        PhoneUser phoneUser = getPhoneUserByDevice(device);
+        PhoneUser phoneUser = getPhoneUserByDevice(serverID, device);
         if (phoneUser == null) {
             Log.info("OnPhoneTask: Could not find device/jid mapping for device "
                     + device + " returning");
