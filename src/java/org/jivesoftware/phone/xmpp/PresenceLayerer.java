@@ -17,6 +17,8 @@ import org.jivesoftware.wildfire.XMPPServer;
 import org.jivesoftware.wildfire.event.SessionEventListener;
 import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
 import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
+import org.jivesoftware.phone.queue.QueueManager;
+import org.jivesoftware.phone.PhoneManager;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
@@ -36,6 +38,11 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
     private Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
     private Map<String, UserState> name2state = new HashMap<String, UserState>();
     private boolean isShutdown = false;
+    private QueueManager queueManager;
+
+    public PresenceLayerer(PhoneManager phoneManager) {
+        this.queueManager = new QueueManager(phoneManager);
+    }
 
     /**
      * True if we don't need to do an interception. True for

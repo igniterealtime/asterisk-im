@@ -13,9 +13,7 @@ import net.sf.asterisk.manager.response.ManagerResponse;
 import net.sf.asterisk.manager.response.ManagerError;
 import net.sf.asterisk.manager.response.CommandResponse;
 import net.sf.asterisk.manager.response.MailboxCountResponse;
-import net.sf.asterisk.manager.action.CommandAction;
-import net.sf.asterisk.manager.action.MailboxCountAction;
-import net.sf.asterisk.manager.action.RedirectAction;
+import net.sf.asterisk.manager.action.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -74,19 +72,13 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
     }
 
     public MailboxStatus getMailboxStatus(String mailbox) throws PhoneException {
-
         MailboxCountAction action = new MailboxCountAction();
         action.setMailbox(mailbox);
 
         try {
+            ManagerResponse managerResponse = handleAction(action);
 
-            ManagerResponse managerResponse = connection.sendAction(action);
-
-            if (managerResponse instanceof ManagerError) {
-                Log.warn(managerResponse.getMessage());
-                throw new PhoneException(managerResponse.getMessage());
-            }
-            else if (managerResponse instanceof MailboxCountResponse) {
+            if (managerResponse instanceof MailboxCountResponse) {
                 MailboxCountResponse mailboxStatus = (MailboxCountResponse) managerResponse;
                 int oldMessages = mailboxStatus.getOldMessages();
                 int newMessages = mailboxStatus.getNewMessages();
@@ -98,12 +90,8 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
             }
 
         }
-        catch (PhoneException pe) {
-            throw pe;
-        }
         catch (Exception e) {
-            Log.error(e.getMessage(), e);
-            throw new PhoneException(e.getMessage());
+            throw new PhoneException(e);
         }
     }
 
@@ -196,8 +184,6 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
     public void forward(CallSession phoneSession, String username, String extension, JID jid)
             throws PhoneException
     {
-
-
         phoneSession.setForwardedExtension(extension);
         phoneSession.setForwardedJID(jid);
 
@@ -217,23 +203,32 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
         }
 
         action.setContext(context);
+        handleAction(action);
+    }
 
+    public void pauseMemberInQueue(String deviceName) throws PhoneException {
+        QueuePauseAction pauseAction = new QueuePauseAction(deviceName, true);
+        handleAction(pauseAction);
+    }
+
+    public void unpauseMemberInQueue(String deviceName) throws PhoneException {
+        QueuePauseAction pauseAction = new QueuePauseAction(deviceName, false);
+        handleAction(pauseAction);
+    }
+
+    private ManagerResponse handleAction(ManagerAction managerAction) throws PhoneException {
+        ManagerResponse managerResponse;
         try {
-            ManagerResponse managerResponse = connection.sendAction(action);
-
-
-            if (managerResponse instanceof ManagerError) {
-                Log.warn(managerResponse.getMessage());
-                throw new PhoneException(managerResponse.getMessage());
-            }
-
-        }
-        catch (PhoneException pe) {
-            throw pe;
+            managerResponse = connection.sendAction(managerAction);
         }
         catch (Exception e) {
-            Log.error(e.getMessage(), e);
-            throw new PhoneException(e.getMessage());
+            throw new PhoneException("Error executing manager action", e);
         }
+
+        if (managerResponse instanceof ManagerError) {
+            throw new PhoneException(managerResponse.getMessage());
+        }
+
+        return managerResponse;
     }
 }

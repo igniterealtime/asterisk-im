@@ -247,7 +247,14 @@ public interface PhoneManager {
 
     Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID);
 
-    PhoneServer getPhoneServerByDevice(String device);
+    Collection<PhoneServer> getPhoneServersByDevice(String device);
+
+    /**
+     * Returns true if queueing is supported by this phone mamanger and false if it is not.
+     *
+     * @return true if queueing is supported by this phone manager and false if it is not.
+     */
+    boolean isQueueSupported();
 
     enum PhoneServerStatus {
         connected,
