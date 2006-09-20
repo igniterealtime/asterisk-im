@@ -11,18 +11,24 @@ package org.jivesoftware.phone.queue;
 import org.jivesoftware.phone.PhoneManager;
 import org.jivesoftware.phone.PhoneDevice;
 import org.jivesoftware.phone.PhoneException;
+import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.util.Log;
+import org.jivesoftware.wildfire.SessionManager;
+import org.jivesoftware.wildfire.ClientSession;
+import org.xmpp.packet.Presence;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  *
  */
 public class QueueManager {
     private PhoneManager phoneManager;
+    private SessionManager sessionManager;
 
-    public QueueManager(PhoneManager phoneManager) {
+    public QueueManager(SessionManager sessionManager, PhoneManager phoneManager) {
         this.phoneManager = phoneManager;
+        this.sessionManager = sessionManager;
     }
 
     /**
@@ -30,7 +36,7 @@ public class QueueManager {
      *
      * @param username the username of the user to unpause in the queue.
      */
-    public void enqueueUser(String username) {
+    public synchronized void enqueueUser(String username) {
         if(!phoneManager.isQueueSupported()) {
             return;
         }
@@ -53,7 +59,7 @@ public class QueueManager {
      *
      * @param username the username of the user to pause in the queue.
      */
-    public void dequeueUser(String username) {
+    public synchronized void dequeueUser(String username) {
         if(!phoneManager.isQueueSupported()) {
             return;
         }
@@ -78,15 +84,69 @@ public class QueueManager {
         initQueues();
     }
 
-    private void initQueues() {
-        populateQueues();
+    private synchronized void initQueues() {
+        List<String> users = populateQueues();
+        checkUsers(users);
     }
 
     /**
      * Loads all queue members from the asterisk servers.
      */
-    private void populateQueues() {
-        Collection<PhoneQueue> phoneQueue = phoneManager.getAllPhoneQueues();
+    private List<String> populateQueues() {
+        List<PhoneQueue> phoneQueues = new ArrayList<PhoneQueue>(phoneManager
+                .getAllPhoneQueues());
+
+        List<String> userQueues = new ArrayList<String>();
+        for(PhoneQueue phoneQueue : phoneQueues) {
+            long serverID = phoneQueue.getServerID();
+            for (String device : phoneQueue.getDevices()) {
+                PhoneUser user = phoneManager.getPhoneUserByDevice(serverID, device);
+                if(!userQueues.contains(user.getUsername())) {
+                    userQueues.add(user.getUsername());
+                }
+            }
+        }
+
+        return userQueues;
+    }
+
+    /**
+     * Take all users who are a part of a queue and sync there queue status, paused or unpaused,
+     * to their current IM status.
+     *
+     * @param users the list of usernames for users who are part of a queue.
+     */
+    private void checkUsers(List<String> users) {
+        List<String> unpausedUsers = new ArrayList<String>();
+        List<String> pausedUsers = new ArrayList<String>();
+        for(String user : users) {
+            boolean isAvailable = false;
+            Collection<ClientSession> sessions = sessionManager.getSessions(user);
+            for(ClientSession session : sessions) {
+                Presence.Show show = session.getPresence().getShow();
+                if(show == null || Presence.Show.chat.equals(show)) {
+                    isAvailable = true;
+                    break;
+                }
+            }
+            if(isAvailable) {
+                unpausedUsers.add(user);
+            }
+            else {
+                pausedUsers.add(user);
+            }
+        }
+        syncQueues(unpausedUsers, pausedUsers);
+    }
+
+    private void syncQueues(List<String> unpausedUsers, List<String> pausedUsers) {
+        for(String user : unpausedUsers) {
+            enqueueUser(user);
+        }
+
+        for(String user : pausedUsers) {
+            dequeueUser(user);
+        }
     }
 
     public void shutdown() {

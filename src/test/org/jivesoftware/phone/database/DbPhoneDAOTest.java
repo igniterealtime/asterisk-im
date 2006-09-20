@@ -54,10 +54,6 @@ public class DbPhoneDAOTest extends TestCase {
         PhoneDevice primary = phoneDAO.getPrimaryDevice(phoneJID.getID());
         assertNotNull(primary);
 
-        phoneJID2 = phoneDAO.getPhoneUserByDevice(device.getDevice());
-        assertNotNull(phoneJID);
-        assertEquals(phoneJID, phoneJID2);
-
 
         Collection<PhoneUser> phones = phoneDAO.getPhoneUsers();
         for (PhoneUser pjid : phones) {
@@ -74,19 +70,6 @@ public class DbPhoneDAOTest extends TestCase {
         phoneJID = phoneDAO.getPhoneUserByID(phoneJID.getID());
 
         assertNull(phoneJID);
-
-
-    }
-
-    public void testGetByDevice() {
-        // assumes the device is in the database
-
-
-        PhoneDAO phoneDAO = new DbPhoneDAO();
-
-        PhoneUser phoneJID = phoneDAO.getPhoneUserByDevice("SIP/6131");
-
-        assertNotNull(phoneJID);
 
 
     }

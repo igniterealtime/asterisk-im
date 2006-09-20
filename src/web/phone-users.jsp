@@ -167,7 +167,7 @@
             // if we are adding a new device make sure this name is unique
             else if (phoneDevice == null) {
 
-                if (phoneManager.getPhoneUserByDevice(device) != null) {
+                if (phoneManager.getPhoneUserByDevice(serverID, device) != null) {
                     Log.debug("Phone must be unique!");
                     errors.put("device", "Phone must be unique");
                 }
@@ -176,7 +176,7 @@
             // Make sure it is unique if we are updating, ignore our own username
             else if (phoneDevice != null) {
 
-                if (phoneManager.getPhoneUserByDevice(device) != null
+                if (phoneManager.getPhoneUserByDevice(serverID, device) != null
                         && !phoneDevice.getDevice().equals(device)) {
                     Log.debug("Phone must be unique!");
                     errors.put("device", "Phone must be unique");

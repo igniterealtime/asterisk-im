@@ -103,7 +103,7 @@ public class JtapiEvents implements TerminalConnectionListener {
 	private void drop(TerminalConnection tc) {
 		Terminal t = tc.getTerminal();
 		String device = t.getName();
-		PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
+		PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(1, device);
 		plugin.restorePresence(phoneUser.getUsername());
 		Message message = new Message();
 		
@@ -120,7 +120,7 @@ public class JtapiEvents implements TerminalConnectionListener {
 		Call _call = tc.getConnection().getCall();
 		Terminal t = tc.getTerminal();
 		String device = t.getName();
-		PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(device);
+		PhoneUser phoneUser = phoneManager.getPhoneUserByDevice(1, device);
 		Log.info("jtapi: Missed call on terminal "+t.getName());
 		if (phoneUser==null) {			
 			Log.info("OnPhoneTask: Could not find device/jid mapping for device " + device + " returning");
@@ -144,7 +144,7 @@ public class JtapiEvents implements TerminalConnectionListener {
 	public void onphone(TerminalConnection tc) {
 		Call _call = tc.getConnection().getCall();
 		Terminal t = tc.getTerminal();
-		PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(t.getName());
+		PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(1, t.getName());
 		if (phoneUser==null) {
 			return;
 		}
@@ -174,7 +174,7 @@ public class JtapiEvents implements TerminalConnectionListener {
 	public void ring(TerminalConnection tc) {
 		Call _call = tc.getConnection().getCall();
 		Terminal t = tc.getTerminal();
-		PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(t.getName());
+		PhoneUser phoneUser = phoneManager.getActivePhoneUserByDevice(1, t.getName());
 		Log.info("jtapi: Ring on terminal "+t.getName());
 		if (phoneUser==null) {
 			return;

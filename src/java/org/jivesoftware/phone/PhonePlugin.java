@@ -96,7 +96,8 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         initPhoneManager(isEnabled);
 
         this.packetHandler = new PacketHandler(getPhoneManager(), this);
-        this.queueManager = new QueueManager(getPhoneManager());
+        this.queueManager = new QueueManager(XMPPServer.getInstance().getSessionManager(),
+                getPhoneManager());
         this.presenceHandler = new PresenceLayerer(queueManager);
 
         this.queueManager.startup();

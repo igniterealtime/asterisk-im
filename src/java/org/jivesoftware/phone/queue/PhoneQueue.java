@@ -25,6 +25,11 @@ public class PhoneQueue {
         this.name = name;
     }
 
+    public PhoneQueue(long serverID, String name) {
+        this.serverID = serverID;
+        this.name = name;
+    }
+
     public long getServerID() {
         return serverID;
     }

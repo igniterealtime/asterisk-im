@@ -17,10 +17,11 @@ public interface PhoneManager {
     /**
      * Returns the JID that associated with a specific device
      *
+     * @param serverID the server the device resides on.
      * @param device pbx device to find a jid for
      * @return the JID that associated with a specific device
      */
-    PhoneUser getPhoneUserByDevice(String device);
+    PhoneUser getPhoneUserByDevice(long serverID, String device);
 
 
     /**
@@ -210,7 +211,7 @@ public interface PhoneManager {
     /**
      * Returns the user of the device if active session exist, null otherwise
      */
-    public PhoneUser getActivePhoneUserByDevice(String device);
+    public PhoneUser getActivePhoneUserByDevice(long serverID, String device);
 
     /**
      * Returns a list of all PhoneServers currently being managed.
@@ -247,6 +248,8 @@ public interface PhoneManager {
     void removePhoneServer(long serverID);
 
     Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID);
+
+    Collection<String> getPhoneDeviceNamesByServerID(long serverID);
 
     Collection<PhoneServer> getPhoneServersByDevice(String device);
 

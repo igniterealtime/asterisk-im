@@ -13,7 +13,7 @@ import java.util.Collection;
  */
 public interface PhoneDAO {
 
-    PhoneUser getPhoneUserByDevice(String device);
+    PhoneUser getPhoneUserByDevice(long serverID, String device);
 
     PhoneUser getByUsername(String username);
 
@@ -81,4 +81,6 @@ public interface PhoneDAO {
     Collection<PhoneDevice> getPhoneDevicesByServerID(long id);
 
     Collection<PhoneDevice> getPhoneDevices();
+
+    Collection<String> getPhoneDeviceNamesByServerID(long serverID);
 }
