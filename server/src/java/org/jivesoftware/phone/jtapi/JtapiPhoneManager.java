@@ -131,10 +131,6 @@ public class JtapiPhoneManager extends BasePhoneManager  {
         return PhoneServerStatus.connected;
     }
 
-    public boolean isQueueSupported() {
-        return false;
-    }
-
     public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {
         // not possible
         return new MailboxStatus(mailbox, 0,0);
@@ -234,6 +230,4 @@ public class JtapiPhoneManager extends BasePhoneManager  {
 		return 
 			provider!=null && provider.getState() == Provider.IN_SERVICE;
 	}
-
-
 }

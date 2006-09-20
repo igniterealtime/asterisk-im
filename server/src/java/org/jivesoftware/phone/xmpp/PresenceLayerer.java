@@ -18,7 +18,6 @@ import org.jivesoftware.wildfire.event.SessionEventListener;
 import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
 import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
 import org.jivesoftware.phone.queue.QueueManager;
-import org.jivesoftware.phone.PhoneManager;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
@@ -40,8 +39,8 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
     private boolean isShutdown = false;
     private QueueManager queueManager;
 
-    public PresenceLayerer(PhoneManager phoneManager) {
-        this.queueManager = new QueueManager(phoneManager);
+    public PresenceLayerer(QueueManager queueManager) {
+        this.queueManager = queueManager;
     }
 
     /**

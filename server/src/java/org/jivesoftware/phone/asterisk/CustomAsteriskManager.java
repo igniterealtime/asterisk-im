@@ -9,6 +9,8 @@
 package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.*;
+import net.sf.asterisk.manager.event.ResponseEvent;
+import net.sf.asterisk.manager.event.QueueMemberEvent;
 import net.sf.asterisk.manager.response.ManagerResponse;
 import net.sf.asterisk.manager.response.ManagerError;
 import net.sf.asterisk.manager.response.CommandResponse;
@@ -16,12 +18,10 @@ import net.sf.asterisk.manager.response.MailboxCountResponse;
 import net.sf.asterisk.manager.action.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.util.Log;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
@@ -230,5 +230,43 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
         }
 
         return managerResponse;
+    }
+
+    public Collection<PhoneQueue> getQueueMembers() throws PhoneException {
+        QueueStatusAction queueAction = new QueueStatusAction();
+        ResponseEvents events;
+        try {
+            events = connection.sendEventGeneratingAction(queueAction, 2000);
+        }
+        catch (IOException e) {
+            throw new PhoneException(e);
+        }
+        catch (EventTimeoutException e) {
+            throw new PhoneException(e);
+        }
+
+        if(events.getResponse() instanceof ManagerError) {
+            throw new PhoneException(events.getResponse().getMessage());
+        }
+
+        //noinspection unchecked
+        Collection<ResponseEvent> response = events.getEvents();
+        Map<String, PhoneQueue> queueMap = new HashMap<String, PhoneQueue>();
+        for(ResponseEvent event : response) {
+            if(!(event instanceof QueueMemberEvent)) {
+                continue;
+            }
+            QueueMemberEvent member = (QueueMemberEvent)event;
+            String queueName = member.getQueue();
+            PhoneQueue queue = queueMap.get(queueName);
+            if(queue == null) {
+                queue = new PhoneQueue(queueName);
+                queueMap.put(queueName, queue);
+            }
+
+            queue.addDevice(member.getLocation());
+        }
+
+        return queueMap.values();
     }
 }

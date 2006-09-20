@@ -1,6 +1,7 @@
 package org.jivesoftware.phone;
 
 import org.xmpp.packet.JID;
+import org.jivesoftware.phone.queue.PhoneQueue;
 
 import java.util.List;
 import java.util.Collection;
@@ -94,7 +95,7 @@ public interface PhoneManager {
      * @param username phone username
      * @return devices athat are associated to the give phone user
      */
-    List<PhoneDevice> getPhoneDevicesByUsername(String username);
+    Collection<PhoneDevice> getPhoneDevicesByUsername(String username);
 
     /**
      * Returns a {@link PhoneDevice} with a matching phoneDeviceID. If there is no phone device matching the
@@ -255,6 +256,12 @@ public interface PhoneManager {
      * @return true if queueing is supported by this phone manager and false if it is not.
      */
     boolean isQueueSupported();
+
+    void pauseMemberInQueue(long serverID, String deviceName) throws PhoneException;
+
+    void unpauseMemberInQueue(long serverID, String deviceName) throws PhoneException;
+
+    Collection<PhoneQueue> getAllPhoneQueues();
 
     enum PhoneServerStatus {
         connected,

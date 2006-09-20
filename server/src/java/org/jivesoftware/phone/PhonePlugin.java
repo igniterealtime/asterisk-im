@@ -13,6 +13,7 @@ import org.jivesoftware.phone.util.PhoneExecutionService;
 import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.PacketHandler;
 import org.jivesoftware.phone.xmpp.element.PhoneStatus;
+import org.jivesoftware.phone.queue.QueueManager;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.PropertyEventListener;
@@ -50,6 +51,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     private ComponentManager componentManager;
     private Future<Boolean> enableProcess;
     private PropertyListener propertyListener;
+    private QueueManager queueManager;
 
     public PhonePlugin() {
         this.propertyListener = new PropertyListener();
@@ -93,8 +95,11 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
         initPhoneManager(isEnabled);
 
-        packetHandler = new PacketHandler(getPhoneManager(), this);
-        presenceHandler = new PresenceLayerer(getPhoneManager());
+        this.packetHandler = new PacketHandler(getPhoneManager(), this);
+        this.queueManager = new QueueManager(getPhoneManager());
+        this.presenceHandler = new PresenceLayerer(queueManager);
+
+        this.queueManager.startup();
 
         // Register a packet interceptor for handling on phone presence changes
         InterceptorManager.getInstance().addInterceptor(presenceHandler);
@@ -127,6 +132,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         }
 
         presenceHandler.shutdown();
+        this.queueManager.shutdown();
 
         // Disable the phone manager
         disablePhoneManager();

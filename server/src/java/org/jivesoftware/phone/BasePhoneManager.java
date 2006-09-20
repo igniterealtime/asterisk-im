@@ -7,6 +7,7 @@
 package org.jivesoftware.phone;
 
 import org.jivesoftware.phone.database.PhoneDAO;
+import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.SessionManager;
@@ -16,6 +17,7 @@ import org.xmpp.packet.JID;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Base class for PhoneManagers that handles non pbx dependent code
@@ -25,7 +27,7 @@ import java.util.ArrayList;
 public abstract class BasePhoneManager implements PhoneManager {
 
     private PhoneDAO phoneDAO;
-	protected XMPPServer server = XMPPServer.getInstance();
+    protected XMPPServer server = XMPPServer.getInstance();
 
     protected BasePhoneManager(PhoneDAO phoneDAO) {
         this.phoneDAO = phoneDAO;
@@ -71,8 +73,8 @@ public abstract class BasePhoneManager implements PhoneManager {
         return phoneDAO.getPhoneDeviceByUserID(phoneUserID);
     }
 
-    public List<PhoneDevice> getPhoneDevicesByUsername(String username) {
-        return phoneDAO.getPhoneDevicesByUsername(username);
+    public Collection<PhoneDevice> getPhoneDevicesByUsername(String username) {
+        return Collections.unmodifiableCollection(phoneDAO.getPhoneDevicesByUsername(username));
     }
 
     public PhoneDevice getPhoneDeviceByID(long phoneDeviceID) {
@@ -222,27 +224,43 @@ public abstract class BasePhoneManager implements PhoneManager {
 
     }
 
-	public PhoneUser getActivePhoneUserByDevice(String device) {
-		// If there is no jid for this device don't do anything else
-		PhoneUser phoneUser = getPhoneUserByDevice(device);
-		if (phoneUser == null) {
-			Log.info("OnPhoneTask: Could not find device/jid mapping for device "
+    public PhoneUser getActivePhoneUserByDevice(String device) {
+        // If there is no jid for this device don't do anything else
+        PhoneUser phoneUser = getPhoneUserByDevice(device);
+        if (phoneUser == null) {
+            Log.info("OnPhoneTask: Could not find device/jid mapping for device "
                     + device + " returning");
-			return null;
-		}
-		Log.info("OnPhoneTask called for user " + phoneUser);
+            return null;
+        }
+        Log.info("OnPhoneTask called for user " + phoneUser);
         // Acquire the xmpp sessions for the user
         SessionManager sessionManager = server.getSessionManager();
         Collection<ClientSession> sessions = sessionManager.getSessions(phoneUser.getUsername());
         // We don't care about people without a session
         if (sessions.size() == 0) {
-        	Log.info("no sessions");
+            Log.info("no sessions");
             return null;
         }
         return phoneUser;
-	}
+    }
 
     public Collection<PhoneDevice> getPhoneDevicesByServerID(long serverID) {
         return phoneDAO.getPhoneDevicesByServerID(serverID);
+    }
+
+    public boolean isQueueSupported() {
+        return false;
+    }
+
+    public void pauseMemberInQueue(long serverID, String deviceName) throws PhoneException {
+        throw new UnsupportedOperationException("Queues not supported by this manager");
+    }
+
+    public void unpauseMemberInQueue(long serverID, String deviceName) throws PhoneException {
+        throw new UnsupportedOperationException("Queues not supported by this manager");
+    }
+
+    public Collection<PhoneQueue> getAllPhoneQueues() {
+        throw new UnsupportedOperationException("Queues not supported by this manager.");
     }
 }
