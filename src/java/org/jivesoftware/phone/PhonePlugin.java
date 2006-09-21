@@ -14,10 +14,7 @@ import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.PacketHandler;
 import org.jivesoftware.phone.xmpp.element.PhoneStatus;
 import org.jivesoftware.phone.queue.QueueManager;
-import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.Log;
-import org.jivesoftware.util.PropertyEventListener;
-import org.jivesoftware.util.PropertyEventDispatcher;
+import org.jivesoftware.util.*;
 import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.XMPPServer;
@@ -96,11 +93,15 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         initPhoneManager(isEnabled);
 
         this.packetHandler = new PacketHandler(getPhoneManager(), this);
-        this.queueManager = new QueueManager(XMPPServer.getInstance().getSessionManager(),
+        XMPPServer server = XMPPServer.getInstance();
+        this.queueManager = new QueueManager(server.getSessionManager(),
                 getPhoneManager());
-        this.presenceHandler = new PresenceLayerer(queueManager);
+        this.presenceHandler = new PresenceLayerer(server.getServerInfo().getName(),
+                server.getSessionManager(), queueManager, server.getPresenceRouter());
 
-        this.queueManager.startup();
+        if(JiveGlobals.getBooleanProperty(PhoneProperties.QUEUE_MANAGER_ENABLED, false)) {
+            this.queueManager.startup();
+        }
 
         // Register a packet interceptor for handling on phone presence changes
         InterceptorManager.getInstance().addInterceptor(presenceHandler);

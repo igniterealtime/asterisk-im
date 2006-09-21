@@ -13,7 +13,6 @@ import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.PresenceRouter;
 import org.jivesoftware.wildfire.Session;
 import org.jivesoftware.wildfire.SessionManager;
-import org.jivesoftware.wildfire.XMPPServer;
 import org.jivesoftware.wildfire.event.SessionEventListener;
 import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
 import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
@@ -33,14 +32,20 @@ import java.util.*;
  */
 public class PresenceLayerer implements PacketInterceptor, SessionEventListener {
 
-    private XMPPServer server = XMPPServer.getInstance();
     private Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
     private Map<String, UserState> name2state = new HashMap<String, UserState>();
     private boolean isShutdown = false;
     private QueueManager queueManager;
+    private SessionManager sessionManager;
+    private PresenceRouter presenceRouter;
+    private String serverName;
 
-    public PresenceLayerer(QueueManager queueManager) {
+    public PresenceLayerer(String serverName, SessionManager sessionManager,
+                           QueueManager queueManager, PresenceRouter presenceRouter) {
         this.queueManager = queueManager;
+        this.sessionManager = sessionManager;
+        this.presenceRouter = presenceRouter;
+        this.serverName = serverName;
     }
 
     /**
@@ -50,7 +55,7 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
     public boolean isNoInterceptionNeeded(Presence presence) {
         final JID from = presence.getFrom();
         // Only process packets sent by users on our server
-        if (!server.getServerInfo().getName().equals(from.getDomain())) {
+        if (!serverName.equals(from.getDomain())) {
             return true;
         }
         // Ignore unavailable presences. That case is covered by #sessionDestroyed(Session)
@@ -95,19 +100,31 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
             // Log.debug("passed presence: "+presence);
             return;
         }
-        // we need to sync so that the user's presence won't get out of sync
-        synchronized (this) {
-            SessionProxy sessionProxy = session2proxy.get(session);
-            // interception on this session?
-            if (sessionProxy != null) {
-                // Log.debug("intercepted: "+presence);
-                sessionProxy.latestPresence = presence;
-                throw new PacketRejectedException("Status will change after user is " +
-                        "off the phone!");
+        try {
+            if (session instanceof ClientSession) {
+                queueManager.updateQueueStatus((ClientSession) session, presence);
             }
         }
+        catch (Exception ex) {
+            Log.error("error checking users queue presence", ex);
+        }
+        // we need to sync so that the user's presence won't get out of sync
+        updateSessionProxy(session, presence);
+
         // Log.debug("passed presence, no session: "+presence);
 
+    }
+
+    private synchronized void updateSessionProxy(Session session, Presence presence)
+            throws PacketRejectedException {
+        SessionProxy sessionProxy = session2proxy.get(session);
+        // interception on this session?
+        if (sessionProxy != null) {
+            // Log.debug("intercepted: "+presence);
+            sessionProxy.latestPresence = presence;
+            throw new PacketRejectedException("Status will change after user is " +
+                    "off the phone!");
+        }
     }
 
     private synchronized void createInterceptSession(UserState userState,
@@ -128,7 +145,6 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
     }
 
     private void routePresence(ClientSession clientSession, Presence presence) {
-        PresenceRouter presenceRouter = server.getPresenceRouter();
         // send updated presence packet
         JID fullJID = clientSession.getAddress();
         presence.setFrom(fullJID);
@@ -142,7 +158,6 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
      */
     public void setPresence(String username, Presence presence) {
         Log.debug("Set special presence for " + username + ": " + presence.toString());
-        SessionManager sessionManager = server.getSessionManager();
         UserState userState;
         synchronized (this) {
             if(isShutdown) {
@@ -168,7 +183,6 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
         if (userState == null) {
             return;
         }
-        PresenceRouter presenceRouter = server.getPresenceRouter();
         List<SessionProxy> userStateSessionsCopy = new ArrayList<SessionProxy>(userState.sessions);
         for (SessionProxy sessionProxy : userStateSessionsCopy) {
             userState.removeSession(sessionProxy);
