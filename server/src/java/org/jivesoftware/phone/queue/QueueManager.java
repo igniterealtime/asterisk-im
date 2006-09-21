@@ -15,6 +15,7 @@ import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.ClientSession;
+import org.jivesoftware.wildfire.user.UserNotFoundException;
 import org.xmpp.packet.Presence;
 
 import java.util.*;
@@ -25,10 +26,37 @@ import java.util.*;
 public class QueueManager {
     private PhoneManager phoneManager;
     private SessionManager sessionManager;
+    private List<String> queueUsers;
+    private List<String> unpausedUsers;
+    private List<String> pausedUsers;
+    private boolean isEnabled = false;
 
     public QueueManager(SessionManager sessionManager, PhoneManager phoneManager) {
         this.phoneManager = phoneManager;
         this.sessionManager = sessionManager;
+    }
+
+    public synchronized void updateQueueStatus(ClientSession session, Presence presence) {
+        if(!isEnabled || !phoneManager.isQueueSupported()) {
+            return;
+        }
+        String username;
+        try {
+            username = session.getUsername();
+        }
+        catch (UserNotFoundException e) {
+            // session has not yet authenticated.
+            return;
+        }
+        if (username != null && !queueUsers.contains(username)) {
+            return;
+        }
+        if (checkPresence(presence) || checkQueueStatus(sessionManager.getSessions(username))) {
+            enqueueUser(username);
+        }
+        else {
+            dequeueUser(username);
+        }
     }
 
     /**
@@ -37,7 +65,7 @@ public class QueueManager {
      * @param username the username of the user to unpause in the queue.
      */
     public synchronized void enqueueUser(String username) {
-        if(!phoneManager.isQueueSupported()) {
+        if(!isEnabled || !phoneManager.isQueueSupported() || !pausedUsers.contains(username)) {
             return;
         }
 
@@ -47,6 +75,8 @@ public class QueueManager {
             long serverID = device.getServerID();
             try {
                 phoneManager.unpauseMemberInQueue(serverID, deviceName);
+                pausedUsers.remove(username);
+                unpausedUsers.add(username);
             }
             catch (PhoneException e) {
                 Log.error("Error unpausing device " + deviceName + " on server " + serverID, e);
@@ -60,7 +90,7 @@ public class QueueManager {
      * @param username the username of the user to pause in the queue.
      */
     public synchronized void dequeueUser(String username) {
-        if(!phoneManager.isQueueSupported()) {
+        if(!phoneManager.isQueueSupported() || !unpausedUsers.contains(username)) {
             return;
         }
 
@@ -70,6 +100,8 @@ public class QueueManager {
             long serverID = device.getServerID();
             try {
                 phoneManager.pauseMemberInQueue(serverID, deviceName);
+                unpausedUsers.remove(username);
+                pausedUsers.add(username);
             }
             catch (PhoneException e) {
                 Log.error("Error pausing device " + deviceName + " on server " + serverID, e);
@@ -77,16 +109,17 @@ public class QueueManager {
         }
     }
 
-    public void startup() {
-        if(!phoneManager.isQueueSupported()) {
+    public synchronized void startup() {
+        if(isEnabled || !phoneManager.isQueueSupported()) {
             return;
         }
         initQueues();
+        this.isEnabled = true;
     }
 
-    private synchronized void initQueues() {
-        List<String> users = populateQueues();
-        checkUsers(users);
+    private void initQueues() {
+        queueUsers = populateQueues();
+        checkUsers(queueUsers);
     }
 
     /**
@@ -101,7 +134,7 @@ public class QueueManager {
             long serverID = phoneQueue.getServerID();
             for (String device : phoneQueue.getDevices()) {
                 PhoneUser user = phoneManager.getPhoneUserByDevice(serverID, device);
-                if(!userQueues.contains(user.getUsername())) {
+                if(user != null && !userQueues.contains(user.getUsername())) {
                     userQueues.add(user.getUsername());
                 }
             }
@@ -117,26 +150,32 @@ public class QueueManager {
      * @param users the list of usernames for users who are part of a queue.
      */
     private void checkUsers(List<String> users) {
-        List<String> unpausedUsers = new ArrayList<String>();
-        List<String> pausedUsers = new ArrayList<String>();
+        unpausedUsers = new ArrayList<String>();
+        pausedUsers = new ArrayList<String>();
         for(String user : users) {
-            boolean isAvailable = false;
-            Collection<ClientSession> sessions = sessionManager.getSessions(user);
-            for(ClientSession session : sessions) {
-                Presence.Show show = session.getPresence().getShow();
-                if(show == null || Presence.Show.chat.equals(show)) {
-                    isAvailable = true;
-                    break;
-                }
-            }
-            if(isAvailable) {
+            if(checkQueueStatus(sessionManager.getSessions(user))) {
                 unpausedUsers.add(user);
             }
-            else {
-                pausedUsers.add(user);
+        }
+        pausedUsers.addAll(users);
+        pausedUsers.removeAll(unpausedUsers);
+        syncQueues(unpausedUsers, pausedUsers);
+    }
+
+    private static boolean checkQueueStatus(Collection<ClientSession> sessions) {
+        boolean isAvailable = false;
+        for (ClientSession session : sessions) {
+            if (checkPresence(session.getPresence())) {
+                isAvailable = true;
+                break;
             }
         }
-        syncQueues(unpausedUsers, pausedUsers);
+        return isAvailable;
+    }
+
+    private static boolean checkPresence(Presence presence) {
+        Presence.Show show = presence.getShow();
+        return show == null || Presence.Show.chat.equals(show);
     }
 
     private void syncQueues(List<String> unpausedUsers, List<String> pausedUsers) {
@@ -149,7 +188,7 @@ public class QueueManager {
         }
     }
 
-    public void shutdown() {
-
+    public synchronized void shutdown() {
+        isEnabled = false;
     }
 }

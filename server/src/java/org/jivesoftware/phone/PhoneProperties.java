@@ -54,5 +54,10 @@ public class PhoneProperties {
      * Variables that are used when executing the dial command (orginate)
      */
     public static final String DIAL_VARIABLES = "asterisk.manager.dialVariables";
+
+    /**
+     * Whether or not users status in the queues is based on their presence
+     */
+    public static final String QUEUE_MANAGER_ENABLED = "asterisk.queues.enabled";
 	
 }
