@@ -11,11 +11,14 @@ package org.jivesoftware.phone.asterisk;
 
 import net.sf.asterisk.manager.AuthenticationFailedException;
 import net.sf.asterisk.manager.TimeoutException;
+import net.sf.asterisk.manager.Channel;
+import net.sf.asterisk.manager.ChannelStateEnum;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
+import org.jivesoftware.util.JiveConstants;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
@@ -36,9 +39,11 @@ public class AsteriskPhoneManager extends BasePhoneManager {
     private final Map<Long, CustomAsteriskManager> asteriskManagers
             = new HashMap<Long, CustomAsteriskManager>();
     AsteriskPlugin plugin;
+    private Timer timer;
 
     public AsteriskPhoneManager(PhoneDAO dao) {
         super(dao);
+        this.timer = new Timer("Channel Update Timer");
     }
 
     public void init(AsteriskPlugin plugin) {
@@ -64,6 +69,8 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         }
 
         this.plugin = plugin;
+        timer.scheduleAtFixedRate(new ChannelStatusTask(), ChannelStatusTask.PERIOD,
+                ChannelStatusTask.PERIOD);
     }
 
     private Collection<PhoneServer> loadLegacyServerConfiguration() {
@@ -109,6 +116,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
     public void destroy() {
         Log.debug("Shutting down Manager connections");
+        timer.cancel();
         for (CustomAsteriskManager manager : asteriskManagers.values()) {
             try {
                 manager.logoff();
@@ -240,5 +248,36 @@ public class AsteriskPhoneManager extends BasePhoneManager {
             Log.error("Error connecting to " + name + " phone server", t);
         }
         return server;
+    }
+
+    private class ChannelStatusTask extends TimerTask {
+        private static final long PERIOD = JiveConstants.MINUTE * 2;
+
+        public void run() {
+            for (CustomAsteriskManager asteriskManager : asteriskManagers.values()) {
+                //noinspection unchecked
+                Map<String, Channel> channels = asteriskManager.getChannels();
+                updateChannels(channels);
+            }
+        }
+
+        private void updateChannels(Map<String, Channel> channels) {
+            for (Map.Entry<String, Channel> entry : channels.entrySet()) {
+                String uniqueID = entry.getKey();
+                Channel channel = entry.getValue();
+
+                CallSession callSession = CallSessionFactory.getCallSessionFactory()
+                        .getCallSession(uniqueID);
+                if (callSession == null || ChannelStateEnum.UP.equals(channel.getState())) {
+                    continue;
+                }
+                // The channel is not up
+                Log.debug("AsteriskPhoneManger.ChannelStatusRunnable: User " +
+                        callSession.getUsername() + " has no more call sessions, but his " +
+                        "presence is still ON_PHONE. Changing to AVAILABLE");
+                CallSessionFactory.getCallSessionFactory().destroyPhoneSession(uniqueID);
+                plugin.restorePresence(callSession.getUsername());
+            }
+        }
     }
 }
