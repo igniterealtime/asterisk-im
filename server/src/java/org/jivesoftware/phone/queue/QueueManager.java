@@ -26,9 +26,9 @@ import java.util.*;
 public class QueueManager {
     private PhoneManager phoneManager;
     private SessionManager sessionManager;
-    private List<String> queueUsers;
-    private List<String> unpausedUsers;
-    private List<String> pausedUsers;
+    private Map<String, Object> queueUsers;
+    private Map<String, Object> unpausedUsers;
+    private Map<String, Object> pausedUsers;
     private boolean isEnabled = false;
 
     public QueueManager(SessionManager sessionManager, PhoneManager phoneManager) {
@@ -37,7 +37,7 @@ public class QueueManager {
     }
 
     public synchronized void updateQueueStatus(ClientSession session, Presence presence) {
-        if(!isEnabled || !phoneManager.isQueueSupported()) {
+        if (!isEnabled || !phoneManager.isQueueSupported()) {
             return;
         }
         String username;
@@ -48,10 +48,13 @@ public class QueueManager {
             // session has not yet authenticated.
             return;
         }
-        if (username != null && !queueUsers.contains(username)) {
+        if (username != null && !queueUsers.containsKey(username)) {
             return;
         }
-        if (checkPresence(presence) || checkQueueStatus(sessionManager.getSessions(username))) {
+        // The current session is already being checked by the checkPresence method.
+        Collection<ClientSession> sessions = sessionManager.getSessions(username);
+        sessions.remove(session);
+        if (checkPresence(presence) || checkQueueStatus(sessions)) {
             enqueueUser(username);
         }
         else {
@@ -65,18 +68,21 @@ public class QueueManager {
      * @param username the username of the user to unpause in the queue.
      */
     public synchronized void enqueueUser(String username) {
-        if(!isEnabled || !phoneManager.isQueueSupported() || !pausedUsers.contains(username)) {
+        if (!isEnabled || !phoneManager.isQueueSupported() || !pausedUsers.containsKey(username)) {
             return;
         }
+        unpauseUser(username);
+    }
 
+    private void unpauseUser(String username) {
         Collection<PhoneDevice> devices = phoneManager.getPhoneDevicesByUsername(username);
-        for(PhoneDevice device : devices) {
+        for (PhoneDevice device : devices) {
             String deviceName = device.getDevice();
             long serverID = device.getServerID();
             try {
                 phoneManager.unpauseMemberInQueue(serverID, deviceName);
                 pausedUsers.remove(username);
-                unpausedUsers.add(username);
+                unpausedUsers.put(username, "");
             }
             catch (PhoneException e) {
                 Log.error("Error unpausing device " + deviceName + " on server " + serverID, e);
@@ -90,10 +96,13 @@ public class QueueManager {
      * @param username the username of the user to pause in the queue.
      */
     public synchronized void dequeueUser(String username) {
-        if(!phoneManager.isQueueSupported() || !unpausedUsers.contains(username)) {
+        if (!phoneManager.isQueueSupported() || !unpausedUsers.containsKey(username)) {
             return;
         }
+        pauseUser(username);
+    }
 
+    private void pauseUser(String username) {
         Collection<PhoneDevice> devices = phoneManager.getPhoneDevicesByUsername(username);
         for (PhoneDevice device : devices) {
             String deviceName = device.getDevice();
@@ -101,7 +110,7 @@ public class QueueManager {
             try {
                 phoneManager.pauseMemberInQueue(serverID, deviceName);
                 unpausedUsers.remove(username);
-                pausedUsers.add(username);
+                pausedUsers.put(username, "");
             }
             catch (PhoneException e) {
                 Log.error("Error pausing device " + deviceName + " on server " + serverID, e);
@@ -110,7 +119,7 @@ public class QueueManager {
     }
 
     public synchronized void startup() {
-        if(isEnabled || !phoneManager.isQueueSupported()) {
+        if (isEnabled || !phoneManager.isQueueSupported()) {
             return;
         }
         initQueues();
@@ -125,17 +134,17 @@ public class QueueManager {
     /**
      * Loads all queue members from the asterisk servers.
      */
-    private List<String> populateQueues() {
+    private Map<String, Object> populateQueues() {
         List<PhoneQueue> phoneQueues = new ArrayList<PhoneQueue>(phoneManager
                 .getAllPhoneQueues());
 
-        List<String> userQueues = new ArrayList<String>();
-        for(PhoneQueue phoneQueue : phoneQueues) {
+        Map<String, Object> userQueues = new HashMap<String, Object>();
+        for (PhoneQueue phoneQueue : phoneQueues) {
             long serverID = phoneQueue.getServerID();
             for (String device : phoneQueue.getDevices()) {
                 PhoneUser user = phoneManager.getPhoneUserByDevice(serverID, device);
-                if(user != null && !userQueues.contains(user.getUsername())) {
-                    userQueues.add(user.getUsername());
+                if (user != null) {
+                    userQueues.put(user.getUsername(), "");
                 }
             }
         }
@@ -149,17 +158,20 @@ public class QueueManager {
      *
      * @param users the list of usernames for users who are part of a queue.
      */
-    private void checkUsers(List<String> users) {
-        unpausedUsers = new ArrayList<String>();
-        pausedUsers = new ArrayList<String>();
-        for(String user : users) {
-            if(checkQueueStatus(sessionManager.getSessions(user))) {
-                unpausedUsers.add(user);
+    private void checkUsers(Map<String, Object> users) {
+        unpausedUsers = new HashMap<String, Object>();
+        pausedUsers = new HashMap<String, Object>();
+        for (String user : users.keySet()) {
+            if (checkQueueStatus(sessionManager.getSessions(user))) {
+                unpausedUsers.put(user, "");
             }
         }
-        pausedUsers.addAll(users);
-        pausedUsers.removeAll(unpausedUsers);
-        syncQueues(unpausedUsers, pausedUsers);
+        pausedUsers.putAll(users);
+        for(String unpausedUser : unpausedUsers.keySet()) {
+            pausedUsers.remove(unpausedUser);
+        }
+        syncQueues(new ArrayList<String>(unpausedUsers.keySet()),
+                new ArrayList<String>(pausedUsers.keySet()));
     }
 
     private static boolean checkQueueStatus(Collection<ClientSession> sessions) {
@@ -175,16 +187,20 @@ public class QueueManager {
 
     private static boolean checkPresence(Presence presence) {
         Presence.Show show = presence.getShow();
+        Presence.Type type = presence.getType();
+        if(type == Presence.Type.unavailable) {
+            return false;
+        }
         return show == null || Presence.Show.chat.equals(show);
     }
 
     private void syncQueues(List<String> unpausedUsers, List<String> pausedUsers) {
-        for(String user : unpausedUsers) {
-            enqueueUser(user);
+        for (String user : unpausedUsers) {
+            unpauseUser(user);
         }
 
-        for(String user : pausedUsers) {
-            dequeueUser(user);
+        for (String user : pausedUsers) {
+            pauseUser(user);
         }
     }
 

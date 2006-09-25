@@ -96,10 +96,6 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
             return;
         }
         Presence presence = (Presence)packet;
-        if (isNoInterceptionNeeded(presence)) {
-            // Log.debug("passed presence: "+presence);
-            return;
-        }
         try {
             if (session instanceof ClientSession) {
                 queueManager.updateQueueStatus((ClientSession) session, presence);
@@ -107,6 +103,10 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
         }
         catch (Exception ex) {
             Log.error("error checking users queue presence", ex);
+        }
+        if (isNoInterceptionNeeded(presence)) {
+            // Log.debug("passed presence: "+presence);
+            return;
         }
         // we need to sync so that the user's presence won't get out of sync
         updateSessionProxy(session, presence);
