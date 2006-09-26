@@ -14,7 +14,7 @@ public class RequiredOption extends PhoneOption {
 	
 	public String check(String value) {
 		if (value==null || "".equals(value)) {
-			return description+" is required";
+			return title +" is required";
 		}
 		return null;
 	}

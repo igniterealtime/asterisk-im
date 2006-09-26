@@ -13,14 +13,17 @@ import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 
+import java.util.Collection;
+import java.util.Arrays;
+
 /**
  *
  */
 @PluginVersion("1.0.0")
 @PBXInfo(make = "JTAPI", version = "0.2")
 public class JtapiPlugin extends PhonePlugin {
-	
-	JtapiPhoneManager jtpaiPhoneManager;
+
+    JtapiPhoneManager jtpaiPhoneManager;
 
     /**
      * The name of the jabber server component
@@ -31,7 +34,7 @@ public class JtapiPlugin extends PhonePlugin {
      * The description of this plugin
      */
     public static final String DESCRIPTION = "JTAPI integration component";
-    
+
     /**
      * Returns the name of this component, "phone"
      *
@@ -76,25 +79,25 @@ public class JtapiPlugin extends PhonePlugin {
         jtpaiPhoneManager = null;
     }
 
-    public PhoneOption[] getJtapiOptions() {
+    public Collection<? extends PhoneOption> getJtapiOptions() {
         return null;
     }
-    
-    public PhoneOption[] getOptions() {
-    	return new PhoneOption[]{
- 				new PhoneOption("Peer",
-    	    			JtapiProperties.JTAPI_PEER,
-    	    			"Peer"),
-    	 		new RequiredOption("Provider",
-    	    			JtapiProperties.JTAPI_PROVIDER,
-    	    			"Provider"),
-    	    	new RequiredOption("Parameters",
-						JtapiProperties.JTAPI_PARAMS,
-						"Params"),
-				new PhoneOption("Drop-down device selection",
-						PhoneProperties.DEVICE_DROP_DOWN,
-						"DropDown",
-						PhoneOption.FLAG)};
+
+    public Collection<PhoneOption> getOptions() {
+        return Arrays.asList(
+                 new PhoneOption("Peer",
+                        JtapiProperties.JTAPI_PEER,
+                        "Peer"),
+                 new RequiredOption("Provider",
+                        JtapiProperties.JTAPI_PROVIDER,
+                        "Provider"),
+                new RequiredOption("Parameters",
+                        JtapiProperties.JTAPI_PARAMS,
+                        "Params"),
+                new PhoneOption("Drop-down device selection",
+                        PhoneProperties.DEVICE_DROP_DOWN,
+                        "DropDown",
+                        PhoneOption.Type.flag));
     }
 
     public PhoneServerConfiguration getServerConfiguration() {
@@ -112,6 +115,6 @@ public class JtapiPlugin extends PhonePlugin {
     public PhoneManager getPhoneManager() {
         return jtpaiPhoneManager;
     }
-    
+
 }
 
