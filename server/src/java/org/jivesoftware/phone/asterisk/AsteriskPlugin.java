@@ -13,6 +13,9 @@ import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 
+import java.util.Collection;
+import java.util.Arrays;
+
 /**
  * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
  * to the asterisk manager server and assign a handler to handle events received from the server.
@@ -96,12 +99,15 @@ public class AsteriskPlugin extends PhonePlugin {
     }
 
     @Override
-    public PhoneOption[] getOptions() {
-        return new PhoneOption[]{
+    public Collection<PhoneOption> getOptions() {
+        return Arrays.asList(
+                new PhoneOption("Asterisk Queue Presence",
+                        PhoneProperties.QUEUE_MANAGER_ENABLED, "QueueManager",
+                        PhoneOption.Type.flag),
                 new PhoneOption("Drop-down device selection",
                         PhoneProperties.DEVICE_DROP_DOWN,
-                        "DropDown",
-                        PhoneOption.FLAG),
+                        "DropDown", PhoneOption.Type.flag, "true", "Queries the server for " +
+                        "connected devices and presents them in a drop down on the device page."),
                 new PhoneOption("Asterisk Context",
                         PhoneProperties.CONTEXT,
                         "Context"),
@@ -110,7 +116,7 @@ public class AsteriskPlugin extends PhonePlugin {
                         "DefaultCallerId"),
                 new PhoneOption("Dial Command Variables",
                         PhoneProperties.DIAL_VARIABLES,
-                        "DialVariables")};
+                        "DialVariables"));
     }
 
     public PhoneServerConfiguration getServerConfiguration() {

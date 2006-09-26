@@ -7,36 +7,45 @@
 package org.jivesoftware.phone;
 
 public class PhoneOption {
-
-	public static int TEXTBOX = 1;
-	public static int FLAG = 2;
-	public static int TEXT = 3;
-	
-	String description;
+	String title;
 	String propertyName;
 	String paramName;
-	int type = TEXT;
+	Type type = Type.text;
+    private String defaultValue = "";
+    private String description;
+
+    public PhoneOption(String title, String propertyName, String ifName) {
+        this.title = title;
+        this.propertyName = propertyName;
+        this.paramName = ifName;
+    }
 	
-	public PhoneOption(String description, String propertyName, String ifName) {
-		this.description = description;
-		this.propertyName = propertyName;
-		this.paramName = ifName;
-	}
-	
-	public PhoneOption(String description, String propertyName, String ifName, int type) {
-		this.description = description;
+	public PhoneOption(String title, String propertyName, String ifName, Type type) {
+        this(title, propertyName, ifName, type, "", null);
+    }
+
+	public PhoneOption(String title, String propertyName, String ifName, Type type,
+                       String defaultValue, String description) {
+		this.title = title;
 		this.propertyName = propertyName;
 		this.paramName = ifName;
 		this.type = type;
-	}
-	
-	public int getType() {
+        this.defaultValue = defaultValue;
+        this.description = description;
+    }
+
+    public Type getType() {
 		return type;
 	}
-	public String getDescription() {
-		return description;
+	public String getTitle() {
+		return title;
 	}
-	public String getParamName() {
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getParamName() {
 		return paramName;
 	}
 	public String getPropertyName() {
@@ -51,5 +60,12 @@ public class PhoneOption {
 	public boolean isRequired() {
 		return false;
 	}
-	
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public enum Type {
+        textbox, flag, text
+    }
 }

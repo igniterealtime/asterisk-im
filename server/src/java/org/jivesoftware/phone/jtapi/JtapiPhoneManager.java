@@ -57,10 +57,9 @@ public class JtapiPhoneManager extends BasePhoneManager  {
     		JiveGlobals.getProperty(JtapiProperties.JTAPI_PEER, null);
         String _providerString = JiveGlobals.getProperty(JtapiProperties.JTAPI_PROVIDER,
             "com.headissue.asterisk.jtapi.AsteriskJtapiProvider");
-        PhoneOption[] options = plugin.getJtapiOptions();
+        Collection<? extends PhoneOption> options = plugin.getJtapiOptions();
         boolean ouch = false;
-        for (int i=0; options!=null && i<options.length; i++) {
-        	PhoneOption o = options[i];
+        for (PhoneOption o : options) {
         	String p = o.getPropertyName();
         	String v = JiveGlobals.getProperty(p);
         	String err = o.check(v);

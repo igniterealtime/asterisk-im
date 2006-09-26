@@ -249,7 +249,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         return presence;
     }
 
-    public abstract PhoneOption[] getOptions();
+    public abstract Collection<PhoneOption> getOptions();
 
     public void setEnabled(boolean enabled) {
         JiveGlobals.setProperty(PhoneProperties.ENABLED, String.valueOf(enabled));
