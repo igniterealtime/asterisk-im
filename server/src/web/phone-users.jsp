@@ -37,7 +37,13 @@
         return;
     }
 
-    if (!plugin.isEnabled()) {
+    try {
+        if (!plugin.isEnabled()) {
+            response.sendRedirect("phone-settings.jsp?usersDisabled=true");
+            return;
+        }
+    }
+    catch (Exception e) {
         response.sendRedirect("phone-settings.jsp?usersDisabled=true");
         return;
     }
@@ -321,10 +327,6 @@
 
 <style type="text/css">
 
-    .phone-required {
-        font-size: 7pt;
-    }
-
     #phone-users .jive-table .jive-odd TD {
         border-bottom: 0px;
     }
@@ -353,7 +355,8 @@
         <table cellpadding="0" cellspacing="0" border="0">
             <tbody>
                 <tr>
-                    <td class="jive-icon"><img src="images/success-16x16.gif" width="16" height="16" border="0"></td>
+                    <td class="jive-icon"><img src="images/success-16x16.gif" width="16" height="16"
+                                               border="0"></td>
                     <td class="jive-icon-label">Operation completed successfully.</td>
                 </tr>
             </tbody>
@@ -474,20 +477,11 @@
 
 
             <%
-                List<PhoneDevice> userDevices = phoneManager.getPhoneDevicesByUserID(currentUser.getID());
-                int deviceListSize = userDevices.size();
-
-
-                if (deviceListSize < 1 && start > 0) {
-
-
-                }
-
-
+                List<PhoneDevice> userDevices = phoneManager.
+                        getPhoneDevicesByUserID(currentUser.getID());
                 int j = 0;
                 for (PhoneDevice currentDevice : userDevices) {
-                    j++;
-                    isLast = (j == deviceListSize); // we are the last entry
+                    isLast = (++j == userDevices.size()); // we are the last entry
                     long deviceServerID = currentDevice.getServerID();
                     PhoneServer deviceServer;
                     if(deviceServerID <= 0) {
@@ -496,31 +490,35 @@
                     else {
                         deviceServer = phoneManager.getPhoneServerByID(deviceServerID);
                     }
-
             %>
 
-            <tr valign="top" class="jive-<%= (((i%2)==0) ? "even" : "odd") %><%= isLast ? "-last" : ""%>">
+            <tr valign="top" class="jive-<%= (((i%2)==0) ? "even" : "odd") %><%= isLast ? "-last"
+            : ""%>">
                 <td><%=isFirst ? currentUser.getUsername() : "&nbsp;"%></td>
                 <% if(isMultiServer && phoneServers.size() > 1) { %>
                 <td><%= deviceServer.getName() %></td>
                 <% } %>
                 <td><%=currentDevice.getDevice() %>
-                    <% if (deviceListSize > 1) { %>
-                    <span class="phone-required"><%= (currentDevice.isPrimary() ? "(primary)" : "")%></span>
+                    <% if (userDevices.size() > 1) { %>
+                    <span class="phone-required"><%= (currentDevice.isPrimary() ? "(primary)"
+                            : "")%></span>
                     <% } %>
                 </td>
                 <td><%=currentDevice.getExtension()%></td>
-                <td><%=currentDevice.getCallerId() != null ? currentDevice.getCallerId() : "&nbsp;"%></td>
+                <td><%=currentDevice.getCallerId() != null ? currentDevice.getCallerId()
+                        : "&nbsp;"%></td>
                 <td>
-                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%= start %>&range=<%= range %>">
+                    <a href="phone-users.jsp?deviceID=<%=currentDevice.getID()%>&userID=<%=
+                    currentUser.getID()%>&start=<%= start %>&range=<%= range %>">
                         <img src="images/edit-16x16.gif" alt="Edit" border="0"></a>
-                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice.getID()%>&userID=<%=currentUser.getID()%>&start=<%=start %>&range=<%= range %>">
+                    <a href="phone-users.jsp?delete=true&deviceID=<%=currentDevice
+                    .getID()%>&userID=<%=currentUser.getID()%>&start=<%=start%>&range=<%=range%>">
                         <img src="images/delete-16x16.gif" alt="Delete" border="0"></a>
                 </td>
             </tr>
             <% isFirst = false; %>
-            <% } %>
-            <% } %>
+            <% }
+            } %>
         </tbody>
     </table>
 </div>
@@ -558,7 +556,8 @@
 
         <% if (i < numPages) { %>
 
-        ... <a href="phone-users.jsp?start=<%= ((numPages-1)*range) %>&range=<%= range %>"><%= numPages %></a>
+        ... <a href="phone-users.jsp?start=<%= ((numPages-1)*range) %>&range=<%= range %>"><%=
+    numPages%></a>
 
         <% } %>
 
@@ -591,7 +590,7 @@
 <tbody>
     <tr valign="top">
         <td width="1%">
-            <nobr><label for="usernametf">* Username:</label></nobr>
+            <nobr><label>* Username:</label></nobr>
         </td>
         <td width="99%">
             <% if (phoneDevice == null) { %>
@@ -630,12 +629,12 @@
     <% } %>
     <tr valign="top">
         <td width="1%">
-            <nobr><label for="devicetf">* Phone:</label></nobr>
+            <nobr><label>* Device:</label></nobr>
         </td>
         <td width="99%">
 
             <% if (useSipDropDown && sipDevices != null) { %>
-            <select name="device" id="devicetf">
+            <select name="device" id="device">
                 <option value="">Select</option>
 
                 <% for (String current : sipDevices) { %>
@@ -643,12 +642,11 @@
                         : ""%>><%=current%></option>
                 <% } %>
             </select>
-
             or
             <% } %>
 
             <input type="text" name="devicetf" size="35"
-                   value="<%=device != null && (sipDevices != null && !sipDevices.contains(device))
+                   value="<%=device != null && (sipDevices == null || !sipDevices.contains(device))
                    ? device : "" %>" id="devicetf"/>
             <% if (errors.containsKey("device")) { %>
             <br/>
@@ -658,7 +656,7 @@
     </tr>
     <tr valign="top">
         <td width="1%">
-            <nobr><label for="extensiontf">* Extension:</label></nobr>
+            <nobr><label>* Extension:</label></nobr>
         </td>
         <td width="99%">
             <input type="text" id="extensiontf" name="extension" size="35"
@@ -671,7 +669,7 @@
     </tr>
     <tr valign="top">
         <td width="1%">
-            <nobr><label for="callerIDtf">Caller ID:</label></nobr>
+            <nobr><label>Caller ID:</label></nobr>
         </td>
         <td width="99%">
             <input type="text" name="callerID" size="35"
