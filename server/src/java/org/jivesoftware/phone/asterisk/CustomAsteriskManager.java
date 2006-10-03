@@ -8,31 +8,30 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.*;
-import net.sf.asterisk.manager.response.ManagerResponse;
-import net.sf.asterisk.manager.response.ManagerError;
-import net.sf.asterisk.manager.response.CommandResponse;
-import net.sf.asterisk.manager.response.MailboxCountResponse;
-import net.sf.asterisk.manager.action.CommandAction;
-import net.sf.asterisk.manager.action.MailboxCountAction;
-import net.sf.asterisk.manager.action.RedirectAction;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
+import org.asteriskjava.live.CallerId;
+import org.asteriskjava.live.DefaultAsteriskServer;
+import org.asteriskjava.live.ManagerCommunicationException;
+import org.asteriskjava.manager.*;
+import org.asteriskjava.manager.action.CommandAction;
+import org.asteriskjava.manager.action.MailboxCountAction;
+import org.asteriskjava.manager.action.RedirectAction;
+import org.asteriskjava.manager.response.CommandResponse;
+import org.asteriskjava.manager.response.MailboxCountResponse;
+import org.asteriskjava.manager.response.ManagerError;
+import org.asteriskjava.manager.response.ManagerResponse;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.util.PhoneConstants;
-import org.jivesoftware.util.Log;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
+import org.jivesoftware.util.Log;
 import org.xmpp.packet.JID;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
  */
-public class CustomAsteriskManager extends DefaultAsteriskManager {
+public class CustomAsteriskManager extends DefaultAsteriskServer {
 
     private ManagerConnection connection;
     private String hostname;
@@ -59,11 +58,13 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
         return connection;
     }
 
-    public void addEventHandler(ManagerEventHandler asteriskEventHandler) {
-        connection.addEventHandler(asteriskEventHandler);
+    public void addEventHandler(ManagerEventListener asteriskEventHandler) {
+        connection.addEventListener(asteriskEventHandler);
     }
 
-    public void logon() throws TimeoutException, IOException, AuthenticationFailedException {
+    public void logon() throws TimeoutException, IOException, AuthenticationFailedException,
+            ManagerCommunicationException
+    {
         connection = new DefaultManagerConnection(hostname, port, username, password);
         super.setManagerConnection(connection);
         super.initialize();
@@ -79,7 +80,6 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
         action.setMailbox(mailbox);
 
         try {
-
             ManagerResponse managerResponse = connection.sendAction(action);
 
             if (managerResponse instanceof ManagerError) {
@@ -146,17 +146,15 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
 
     public void dial(PhoneDevice originatingDevice, String targetExtension) throws PhoneException {
         try {
-            Originate action = new Originate();
-            action.setChannel(originatingDevice.getDevice());
-            action.setCallerId(originatingDevice.getCallerId() != null ?
+            CallerId callerID = new CallerId(originatingDevice.getCallerId() != null ?
                     originatingDevice.getCallerId() :
-                    getProperty(PhoneProperties.DEFAULT_CALLER_ID, ""));
+                    getProperty(PhoneProperties.DEFAULT_CALLER_ID, ""),
+                    originatingDevice.getExtension());
 
             // fix leading spaces and + signs
             targetExtension = targetExtension.replaceAll("\\s+", "");
             targetExtension = targetExtension.replaceAll("^\\+", "00");
 
-            action.setExten(targetExtension);
             String context = getProperty(
                     PhoneProperties.CONTEXT,
                     PhoneConstants.DEFAULT_CONTEXT);
@@ -164,28 +162,24 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
                 context = PhoneConstants.DEFAULT_CONTEXT;
             }
 
-            action.setContext(context);
-            action.setPriority(1);
-
             String variables = getProperty(PhoneProperties.DIAL_VARIABLES, "").trim();
 
+            //noinspection unchecked
+            Map<String, String> varMap = Collections.EMPTY_MAP;
             if (variables != null && !"".equals(variables)) {
 
                 String[] varArray = variables.split(",");
 
-                Map<String, String> varMap = new HashMap<String, String>();
+                varMap = new HashMap<String, String>();
                 for (String aVarArray : varArray) {
                     String[] s = aVarArray.split("=");
                     String key = s[0].trim();
                     String value = s[1].trim();
                     varMap.put(key, value);
                 }
-
-                action.setVariables(varMap);
             }
-
-            originateCall(action);
-
+            originateToExtension(originatingDevice.getDevice(),
+                    context, targetExtension, 1, 5000, callerID, varMap);
         }
         catch (Exception e) {
             throw new PhoneException("Unabled to dial extention " + targetExtension, e);
@@ -196,8 +190,6 @@ public class CustomAsteriskManager extends DefaultAsteriskManager {
     public void forward(CallSession phoneSession, String username, String extension, JID jid)
             throws PhoneException
     {
-
-
         phoneSession.setForwardedExtension(extension);
         phoneSession.setForwardedJID(jid);
 
