@@ -1,1 +1,1 @@
-asterisk-java.jar - .2
+asterisk-java.jar - .3-m1
