@@ -9,20 +9,20 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.AuthenticationFailedException;
-import net.sf.asterisk.manager.Channel;
-import net.sf.asterisk.manager.ChannelStateEnum;
-import net.sf.asterisk.manager.TimeoutException;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
-import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.xmpp.element.PhoneEvent;
-import org.jivesoftware.util.JiveConstants;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
+import org.jivesoftware.util.JiveConstants;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
+import org.asteriskjava.manager.TimeoutException;
+import org.asteriskjava.manager.AuthenticationFailedException;
+import org.asteriskjava.live.ManagerCommunicationException;
+import org.asteriskjava.live.AsteriskChannel;
+import org.asteriskjava.live.ChannelState;
 
 import java.io.IOException;
 import java.util.*;
@@ -97,7 +97,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
 
 
     private CustomAsteriskManager connectToServer(PhoneServer server) throws TimeoutException,
-            IOException, AuthenticationFailedException {
+            IOException, AuthenticationFailedException, ManagerCommunicationException {
         CustomAsteriskManager manager = null;
         // Check to see if the configuration is valid then
         // Initialize the manager connection pool and create an eventhandler
@@ -151,49 +151,6 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         super.removePhoneServer(serverID);
     }
 
-    @Override
-    public void pauseMemberInQueue(long serverID, String deviceName) throws PhoneException {
-        CustomAsteriskManager manager = asteriskManagers.get(serverID);
-        if (manager == null) {
-            return;
-        }
-        manager.pauseMemberInQueue(deviceName);
-    }
-
-    @Override
-    public void unpauseMemberInQueue(long serverID, String deviceName) throws PhoneException {
-        CustomAsteriskManager manager = asteriskManagers.get(serverID);
-        if (manager == null) {
-            return;
-        }
-        manager.unpauseMemberInQueue(deviceName);
-    }
-
-    @Override
-    public Collection<PhoneQueue> getAllPhoneQueues() {
-        List<PhoneQueue> queues = new ArrayList<PhoneQueue>();
-
-        for (Map.Entry<Long, CustomAsteriskManager> manager : asteriskManagers.entrySet()) {
-            //noinspection unchecked
-            try {
-                Collection<PhoneQueue> queueList = manager.getValue().getQueueMembers();
-                for (PhoneQueue queue : queueList) {
-                    queue.setServerID(manager.getKey());
-                }
-                queues.addAll(queueList);
-            }
-            catch (PhoneException e) {
-                Log.error("Error populating queues from server", e);
-            }
-        }
-
-        return Collections.unmodifiableCollection(queues);
-    }
-
-    public boolean isQueueSupported() {
-        return true;
-    }
-
     public MailboxStatus mailboxStatus(long serverID, String mailbox) throws PhoneException {
         CustomAsteriskManager manager = asteriskManagers.get(serverID);
         if (manager != null) {
@@ -222,10 +179,15 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         return null;
     }
 
-    public Map getStatus(long serverID) throws PhoneException {
+    public Collection<AsteriskChannel> getStatus(long serverID) throws PhoneException {
         CustomAsteriskManager manager = asteriskManagers.get(serverID);
         if (manager != null) {
-            return manager.getChannels();
+            try {
+                return manager.getChannels();
+            }
+            catch (ManagerCommunicationException e) {
+                throw new PhoneException(e);
+            }
         }
         return null;
     }
@@ -300,19 +262,25 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         public void run() {
             for (CustomAsteriskManager asteriskManager : asteriskManagers.values()) {
                 //noinspection unchecked
-                Map<String, Channel> channels = asteriskManager.getChannels();
+                Collection<AsteriskChannel> channels;
+                try {
+                    channels = asteriskManager.getChannels();
+                }
+                catch (ManagerCommunicationException e) {
+                    Log.error("Error communicating with asterisk server", e);
+                    continue;
+                }
                 updateChannels(channels);
             }
         }
 
-        private void updateChannels(Map<String, Channel> channels) {
-            for (Map.Entry<String, Channel> entry : channels.entrySet()) {
-                String uniqueID = entry.getKey();
-                Channel channel = entry.getValue();
+        private void updateChannels(Collection<AsteriskChannel> channels) {
+            for (AsteriskChannel channel : channels) {
+                String uniqueID = channel.getId();
 
                 CallSession callSession = CallSessionFactory.getCallSessionFactory()
                         .getCallSession(uniqueID);
-                if (callSession == null || ChannelStateEnum.UP.equals(channel.getState())) {
+                if (callSession == null || ChannelState.UP.equals(channel.getState())) {
                     continue;
                 }
                 // The channel is not up

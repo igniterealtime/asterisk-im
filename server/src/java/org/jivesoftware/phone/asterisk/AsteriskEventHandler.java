@@ -7,11 +7,6 @@
  */
 package org.jivesoftware.phone.asterisk;
 
-import net.sf.asterisk.manager.ManagerEventHandler;
-import net.sf.asterisk.manager.event.DialEvent;
-import net.sf.asterisk.manager.event.HangupEvent;
-import net.sf.asterisk.manager.event.ManagerEvent;
-import net.sf.asterisk.manager.event.NewStateEvent;
 import org.jivesoftware.phone.CallSession;
 import org.jivesoftware.phone.CallSessionFactory;
 import static org.jivesoftware.phone.CallSessionFactory.getCallSessionFactory;
@@ -21,13 +16,18 @@ import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.StringUtils;
 import org.xmpp.packet.Message;
+import org.asteriskjava.manager.event.NewStateEvent;
+import org.asteriskjava.manager.event.DialEvent;
+import org.asteriskjava.manager.event.HangupEvent;
+import org.asteriskjava.manager.event.ManagerEvent;
+import org.asteriskjava.manager.ManagerEventListener;
 
 /**
  * Handles events that are delivered from an asterisk connection
  *
  * @author Andrew Wright
  */
-public class AsteriskEventHandler implements ManagerEventHandler {
+public class AsteriskEventHandler implements ManagerEventListener {
     private AsteriskPhoneManager phoneManager;
     private long serverID;
 
@@ -36,7 +36,7 @@ public class AsteriskEventHandler implements ManagerEventHandler {
         this.phoneManager = asteriskPhoneManager;
     }
 
-    public void handleEvent(ManagerEvent event) {
+    public void onManagerEvent(ManagerEvent event) {
 
         if (event instanceof HangupEvent) {
             handleHangupEvent((HangupEvent)event);
@@ -162,7 +162,8 @@ public class AsteriskEventHandler implements ManagerEventHandler {
                                 "trying to destroy CallSession based on channel " +
                                 "instead of id. User: " + phoneUser.getUsername() +
                                 " channel to destroy" + event.getChannel() +
-                                " . Destruction status: " + destroyedSession == null ? "FAILED" : "SUCCEEDED");
+                                " . Destruction status: " + destroyedSession == null ?
+                                    "FAILED" : "SUCCEEDED");
                         }
                     }
                 }
