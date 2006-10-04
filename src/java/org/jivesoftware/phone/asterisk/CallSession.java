@@ -7,7 +7,7 @@
  *
  * This software is the proprietary information of Jive Software. Use is subject to license terms.
  */
-package org.jivesoftware.phone;
+package org.jivesoftware.phone.asterisk;
 
 import org.xmpp.packet.JID;
 
@@ -27,11 +27,17 @@ public class CallSession {
     private String username;
     private boolean isMonitored;
     private long serverID;
+    private Status status;
 
-    CallSession(long serverID, String id, String username) {
+    CallSession(long serverID, String id, String username, Status status) {
         this.id = id;
         this.username = username;
         this.serverID = serverID;
+        this.status = status;
+    }
+
+    public CallSession(long serverID, String id, String username) {
+        this(serverID, id, username, null);
     }
 
     public String getId() {
@@ -133,17 +139,22 @@ public class CallSession {
         if (dialedJID != null ? !dialedJID.equals(that.dialedJID) : that.dialedJID != null) {
             return false;
         }
-        if (forwardedExtension != null ? !forwardedExtension.equals(that.forwardedExtension) : that.forwardedExtension != null)
+        if (forwardedExtension != null ? !forwardedExtension.equals(that.forwardedExtension)
+                : that.forwardedExtension != null)
         {
             return false;
         }
-        if (forwardedJID != null ? !forwardedJID.equals(that.forwardedJID) : that.forwardedJID != null) {
+        if (forwardedJID != null ? !forwardedJID.equals(that.forwardedJID)
+                : that.forwardedJID != null)
+        {
             return false;
         }
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
-        if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel) : that.linkedChannel != null) {
+        if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel)
+                : that.linkedChannel != null)
+        {
             return false;
         }
         return !(username != null ? !username.equals(that.username) : that.username != null);
@@ -180,5 +191,17 @@ public class CallSession {
         sb.append(", isMonitored=").append(isMonitored);
         sb.append('}');
         return sb.toString();
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    protected void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public enum Status {
+        dialed, ringing, onphone
     }
 }
