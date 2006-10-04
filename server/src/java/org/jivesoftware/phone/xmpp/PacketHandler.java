@@ -11,10 +11,10 @@ package org.jivesoftware.phone.xmpp;
 
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.xmpp.element.PhoneAction;
-import org.jivesoftware.phone.PhoneManager;
-import org.jivesoftware.phone.PhonePlugin;
-import org.jivesoftware.phone.PhoneException;
-import org.jivesoftware.phone.PhoneUser;
+import org.jivesoftware.phone.xmpp.element.PhoneEvent;
+import org.jivesoftware.phone.*;
+import org.jivesoftware.phone.asterisk.CallSession;
+import org.jivesoftware.phone.asterisk.CallSessionListener;
 import org.jivesoftware.util.Log;
 import org.dom4j.Element;
 import org.xmpp.packet.*;
@@ -27,7 +27,7 @@ import java.util.logging.Level;
  * 
  * @author Andrew Wright
  */
-public class PacketHandler implements PhoneConstants {
+public class PacketHandler implements PhoneConstants, CallSessionListener {
 
     private static final Logger log = Logger.getLogger(PacketHandler.class.getName());
 
@@ -249,4 +249,80 @@ public class PacketHandler implements PhoneConstants {
     }
 
 
+    public void callSessionCreated(CallSession session) {
+    }
+
+    private void handleOnPhone(CallSession session) {
+        // Notify the client that they have answered the phone
+        Message message = new Message();
+        message.setID(session.getId());
+
+        PhoneEvent phoneEvent =
+                new PhoneEvent(session.getId(), PhoneEvent.Type.ON_PHONE, session.getLinkedChannel());
+        // Get the callerID to add to the phone-event. If no callerID info is available
+        // then just set an empty string and let clients do the proper rendering
+        phoneEvent.addElement("callerID").setText(session.getCallerID() == null ? ""
+                : session.getCallerID());
+        message.getElement().add(phoneEvent);
+        plugin.sendPacket2User(session.getUsername(), message);
+    }
+
+    public void callSessionDestroyed(CallSession session) {
+        sendHangupMessage(session.getId(), session.getLinkedChannel(), session.getUsername());
+    }
+
+    public void sendHangupMessage(String callSessionID, String device, String username) {
+        Message message = new Message();
+        message.setID(callSessionID);
+
+        PhoneEvent phoneEvent = new PhoneEvent(callSessionID, PhoneEvent.Type.HANG_UP, device);
+        message.getElement().add(phoneEvent);
+        plugin.sendPacket2User(username, message);
+    }
+
+    public void callSessionModified(CallSession session, CallSession.Status oldStatus) {
+        switch(session.getStatus()) {
+            case onphone:
+                handleOnPhone(session);
+                break;
+            case ringing:
+                handleRinging(session);
+                break;
+            case dialed:
+                handleDialing(session);
+                break;
+        }
+    }
+
+    private void handleDialing(CallSession session) {
+                    Message message = new Message();
+            message.setID(session.getId());
+
+            PhoneEvent phoneEvent =
+                new PhoneEvent(session.getId(), PhoneEvent.Type.DIALED, session.getChannel());
+            message.getElement().add(phoneEvent);
+
+            phoneEvent.addElement("callerID").setText(session.getCallerID() != null
+                    ? session.getCallerID() : "");
+            phoneEvent.addElement("callerIDName").setText(session.getCallerIDName() != null
+                    ? session.getCallerIDName() : "");
+
+            plugin.sendPacket2User(session.getUsername(), message);
+    }
+
+    private void handleRinging(CallSession session) {
+        Message message = new Message();
+        message.setID(session.getId()); //just put something in here
+        String callerIDName = session.getCallerIDName();
+        String callerID = session.getCallerID();
+
+        PhoneEvent phoneEvent =
+                new PhoneEvent(session.getId(), PhoneEvent.Type.RING, session.getChannel());
+
+        phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
+        phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
+        message.getElement().add(phoneEvent);
+
+        plugin.sendPacket2User(session.getUsername(), message);
+    }
 }

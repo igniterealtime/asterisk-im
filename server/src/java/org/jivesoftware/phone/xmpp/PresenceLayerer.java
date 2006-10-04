@@ -17,6 +17,10 @@ import org.jivesoftware.wildfire.event.SessionEventListener;
 import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
 import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
 import org.jivesoftware.phone.queue.QueueManager;
+import org.jivesoftware.phone.asterisk.CallSessionListener;
+import org.jivesoftware.phone.asterisk.CallSession;
+import org.jivesoftware.phone.asterisk.CallSessionFactory;
+import org.jivesoftware.phone.xmpp.element.PhoneStatus;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
@@ -30,7 +34,9 @@ import java.util.*;
  *
  * @author Jens Wilke
  */
-public class PresenceLayerer implements PacketInterceptor, SessionEventListener {
+public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
+        CallSessionListener
+{
 
     private Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
     private Map<String, UserState> name2state = new HashMap<String, UserState>();
@@ -39,13 +45,16 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
     private SessionManager sessionManager;
     private PresenceRouter presenceRouter;
     private String serverName;
+    private CallSessionFactory callSessionFactory;
 
     public PresenceLayerer(String serverName, SessionManager sessionManager,
-                           QueueManager queueManager, PresenceRouter presenceRouter) {
+                           QueueManager queueManager, PresenceRouter presenceRouter,
+                           CallSessionFactory callSessionFactory) {
         this.queueManager = queueManager;
         this.sessionManager = sessionManager;
         this.presenceRouter = presenceRouter;
         this.serverName = serverName;
+        this.callSessionFactory = callSessionFactory;
     }
 
     /**
@@ -230,6 +239,38 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener 
 
     public void anonymousSessionDestroyed(Session session) {
         // we are only interested in user sessions
+    }
+
+    public synchronized void callSessionCreated(CallSession session) {
+        if(session.getStatus() == CallSession.Status.onphone) {
+            setPresence(session.getUsername(), createOnPhonePresence("On the phone"));
+        }
+    }
+
+    public synchronized void callSessionDestroyed(CallSession session) {
+        String username = session.getUsername();
+        if (callSessionFactory.getUserCallSessionsCount(session.getUsername()) <= 0) {
+            restorePresence(username);
+        }
+    }
+
+    public synchronized void callSessionModified(CallSession session,
+                                                 CallSession.Status oldStatus)
+    {
+        if(session.getStatus() == CallSession.Status.onphone) {
+            setPresence(session.getUsername(), createOnPhonePresence("On the phone"));
+        }
+    }
+    
+
+    private Presence createOnPhonePresence(String status) {
+        Presence presence = new Presence();
+        presence.setShow(Presence.Show.away);
+        presence.setStatus(status);
+
+        PhoneStatus phoneStatus = new PhoneStatus(PhoneStatus.Status.ON_PHONE);
+        presence.getElement().add(phoneStatus);
+        return presence;
     }
 
     private class UserState {

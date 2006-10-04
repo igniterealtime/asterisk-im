@@ -8,13 +8,17 @@
  */
 package org.jivesoftware.phone;
 
+import org.jivesoftware.phone.queue.QueueManager;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.PhoneExecutionService;
-import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.PacketHandler;
+import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.element.PhoneStatus;
-import org.jivesoftware.phone.queue.QueueManager;
-import org.jivesoftware.util.*;
+import org.jivesoftware.phone.asterisk.CallSessionFactory;
+import org.jivesoftware.util.JiveGlobals;
+import org.jivesoftware.util.Log;
+import org.jivesoftware.util.PropertyEventDispatcher;
+import org.jivesoftware.util.PropertyEventListener;
 import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.XMPPServer;
@@ -92,12 +96,16 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
 
         initPhoneManager(isEnabled);
 
+        CallSessionFactory callSessionFactory = CallSessionFactory.getInstance();
         this.packetHandler = new PacketHandler(getPhoneManager(), this);
+        callSessionFactory.addCallSessionListener(this.packetHandler);
         XMPPServer server = XMPPServer.getInstance();
         this.queueManager = new QueueManager(server.getSessionManager(),
                 getPhoneManager());
         this.presenceHandler = new PresenceLayerer(server.getServerInfo().getName(),
-                server.getSessionManager(), queueManager, server.getPresenceRouter());
+                server.getSessionManager(), queueManager, server.getPresenceRouter(),
+                CallSessionFactory.getInstance());
+        CallSessionFactory.getInstance().addCallSessionListener(presenceHandler);
 
         if(JiveGlobals.getBooleanProperty(PhoneProperties.QUEUE_MANAGER_ENABLED, false)) {
             this.queueManager.startup();

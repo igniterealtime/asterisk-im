@@ -11,12 +11,10 @@ package org.jivesoftware.phone.asterisk;
 
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
-import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.JiveConstants;
 import org.xmpp.packet.JID;
-import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.AuthenticationFailedException;
@@ -106,7 +104,8 @@ public class AsteriskPhoneManager extends BasePhoneManager {
             manager = new CustomAsteriskManager(server.getHostname(),
                     server.getPort(), server.getUsername(), server.getPassword());
             manager.logon();
-            manager.addEventHandler(new AsteriskEventHandler(server.getID(), this));
+            manager.addEventHandler(new AsteriskEventHandler(server.getID(), this,
+                    CallSessionFactory.getInstance()));
         }
         else {
             Log.warn("AsteriskPlugin configuration is invalid, please see admin tool!!");
@@ -211,22 +210,13 @@ public class AsteriskPhoneManager extends BasePhoneManager {
         return plugin.isComponentReady();
     }
 
-    public void sendHangupMessage(String callSessionID, String device, String username) {
-        Message message = new Message();
-        message.setID(callSessionID);
-
-        PhoneEvent phoneEvent = new PhoneEvent(callSessionID, PhoneEvent.Type.HANG_UP, device);
-        message.getElement().add(phoneEvent);
-        plugin.sendPacket2User(username, message);
-    }
-
     public void sendPacket(Packet packet) {
         plugin.sendPacket(packet);
     }
 
     public void forward(String callSessionID, String username, String extension, JID jid)
             throws PhoneException {
-        CallSession phoneSession = CallSessionFactory.getCallSessionFactory()
+        CallSession phoneSession = CallSessionFactory.getInstance()
                 .getCallSession(callSessionID);
         if (phoneSession == null) {
             throw new PhoneException("Call session not currently stored in Asterisk-IM");
@@ -278,7 +268,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
             for (AsteriskChannel channel : channels) {
                 String uniqueID = channel.getId();
 
-                CallSession callSession = CallSessionFactory.getCallSessionFactory()
+                CallSession callSession = CallSessionFactory.getInstance()
                         .getCallSession(uniqueID);
                 if (callSession == null || ChannelState.UP.equals(channel.getState())) {
                     continue;
@@ -287,8 +277,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
                 Log.debug("AsteriskPhoneManger.ChannelStatusRunnable: User " +
                         callSession.getUsername() + " has no more call sessions, but his " +
                         "presence is still ON_PHONE. Changing to AVAILABLE");
-                CallSessionFactory.getCallSessionFactory().destroyPhoneSession(uniqueID);
-                plugin.restorePresence(callSession.getUsername());
+                CallSessionFactory.getInstance().destroyPhoneSession(uniqueID);
             }
         }
     }

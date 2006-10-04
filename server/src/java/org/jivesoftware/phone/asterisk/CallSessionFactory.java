@@ -7,15 +7,13 @@
  *
  * This software is the proprietary information of Jive Software. Use is subject to license terms.
  */
-package org.jivesoftware.phone;
+package org.jivesoftware.phone.asterisk;
 
 
 import org.jivesoftware.util.Log;
+import org.jivesoftware.util.ConcurrentHashSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Andrew Wright
  */
 public class CallSessionFactory {
+
+    private Set<CallSessionListener> callSessionListeners
+            = new ConcurrentHashSet<CallSessionListener>();
 
     /**
      * key => asterisk unique id, value => CallSession for that id
@@ -48,13 +49,16 @@ public class CallSessionFactory {
      * @param username user who the session belongs too.
      * @return the call session object with a specific id, else null
      */
-    public synchronized CallSession getCallSession(long serverID, String id, String username) {
-
+    public synchronized CallSession createCallSession(long serverID, String id, String username)
+    {
         CallSession session = sessionMap.get(id);
 
         if (session == null) {
             session = new CallSession(serverID, id, username);
             sessionMap.put(id, session);
+        }
+        else {
+            throw new IllegalArgumentException("Call session already exists");
         }
 
         Collection<CallSession> sessions = userSessionMap.get(username);
@@ -67,7 +71,28 @@ public class CallSessionFactory {
             sessions.add(session);
         }
 
+        fireCallSessionCreated(session);
         return session;
+    }
+
+    public synchronized void modifyCallSession(CallSession session,
+                                                      CallSession.Status currentStatus) {
+        CallSession.Status oldStatus;
+        oldStatus = session.getStatus();
+        session.setStatus(currentStatus);
+        fireCallSessionModified(session, oldStatus);
+    }
+
+    private void fireCallSessionModified(CallSession session, CallSession.Status oldStatus) {
+        for (CallSessionListener listener : callSessionListeners) {
+            listener.callSessionModified(session, oldStatus);
+        }
+    }
+
+    private void fireCallSessionCreated(CallSession session) {
+        for(CallSessionListener listener : callSessionListeners) {
+            listener.callSessionCreated(session);
+        }
     }
 
     public CallSession getCallSession(String id) {
@@ -81,30 +106,29 @@ public class CallSessionFactory {
      */
     public synchronized CallSession destroyPhoneSession(String id) {
         CallSession session = sessionMap.remove(id);
-
-        if (session != null) {
-            try {
-                Collection<CallSession> sessions = userSessionMap.get(session.getUsername());
-                // should never be null
-                sessions.remove(session);
-
-                // Remove the map if there are nolonger any session for this user
-                if (sessions.size() == 0) {
-                    userSessionMap.remove(session.getUsername());
-                }
+        if(session == null) {
+            if (Log.isDebugEnabled() && !id.startsWith("SIP/")) {
+                Log.debug("Cannot destroy non-existent CallSession with id: " + id);
             }
-            catch (RuntimeException e) {
-                Log.error("CallSessionFactory: Unexpected RuntimeException occurred ", e);
-            }
+            return null;
         }
-        else {
-            if (Log.isDebugEnabled()) {
-                if (!id.startsWith("SIP/")) {
-                    Log.debug("Cannot destroy non-existent CallSession with id: " + id);
-                }
-            }
+
+        Collection<CallSession> sessions = userSessionMap.get(session.getUsername());
+        // should never be null
+        sessions.remove(session);
+
+        // Remove the map if there are nolonger any session for this user
+        if (sessions.size() == 0) {
+            userSessionMap.remove(session.getUsername());
         }
+        fireCallSessionDestroyed(session);
         return session;
+    }
+
+    private void fireCallSessionDestroyed(CallSession session) {
+        for(CallSessionListener listener : callSessionListeners) {
+            listener.callSessionDestroyed(session);
+        }
     }
 
     /**
@@ -134,14 +158,16 @@ public class CallSessionFactory {
      * @return collection of call sessions that belong to a specific user
      */
     public Collection<CallSession> getUserCallSessions(String username) {
-
         Collection<CallSession> sessions = userSessionMap.get(username);
-
         if (sessions == null) {
             sessions = Collections.emptyList();
         }
 
-        return sessions;
+        return Collections.unmodifiableCollection(sessions);
+    }
+
+    public int getUserCallSessionsCount(String username) {
+        return getUserCallSessions(username).size();
     }
 
     /**
@@ -149,8 +175,22 @@ public class CallSessionFactory {
      *
      * @return instance of the call session factory
      */
-    public static CallSessionFactory getCallSessionFactory() {
+    public static CallSessionFactory getInstance() {
         return INSTANCE;
+    }
+
+    public void addCallSessionListener(CallSessionListener listener) {
+        if(listener == null) {
+            return;
+        }
+        callSessionListeners.add(listener);
+    }
+
+    public void removeCallSessionListener(CallSessionListener listener) {
+        if(listener == null) {
+            return;
+        }
+        callSessionListeners.remove(listener);
     }
 
 }
