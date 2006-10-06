@@ -80,7 +80,7 @@ public class AsteriskEventHandler implements ManagerEventListener {
 
             CallSession session = callSessionFactory.getCallSession(event.getUniqueId());
             if (session == null) {
-                callSessionFactory.createCallSession(serverID,
+                session = callSessionFactory.createCallSession(serverID,
                         event.getUniqueId(), phoneUser.getUsername());
             }
 
