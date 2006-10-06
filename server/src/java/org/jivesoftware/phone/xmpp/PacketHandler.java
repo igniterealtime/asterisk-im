@@ -295,19 +295,19 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
     }
 
     private void handleDialing(CallSession session) {
-                    Message message = new Message();
-            message.setID(session.getId());
+        Message message = new Message();
+        message.setID(session.getId());
 
-            PhoneEvent phoneEvent =
+        PhoneEvent phoneEvent =
                 new PhoneEvent(session.getId(), PhoneEvent.Type.DIALED, session.getChannel());
-            message.getElement().add(phoneEvent);
+        message.getElement().add(phoneEvent);
 
-            phoneEvent.addElement("callerID").setText(session.getCallerID() != null
-                    ? session.getCallerID() : "");
-            phoneEvent.addElement("callerIDName").setText(session.getCallerIDName() != null
-                    ? session.getCallerIDName() : "");
+        phoneEvent.addElement("callerID").setText(session.getCallerID() != null
+                ? session.getCallerID() : "");
+        phoneEvent.addElement("callerIDName").setText(session.getCallerIDName() != null
+                ? session.getCallerIDName() : "");
 
-            plugin.sendPacket2User(session.getUsername(), message);
+        plugin.sendPacket2User(session.getUsername(), message);
     }
 
     private void handleRinging(CallSession session) {
