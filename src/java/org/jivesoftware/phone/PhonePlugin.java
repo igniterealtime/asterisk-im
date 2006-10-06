@@ -290,13 +290,19 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     private void doEnable(final boolean shouldEnable) {
         enableProcess = PhoneExecutionService.getService().submit(new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                if (shouldEnable) {
-                    init(true);
+                try {
+                    if (shouldEnable) {
+                        init(true);
+                    }
+                    else {
+                        destroy();
+                    }
+                    return shouldEnable;
                 }
-                else {
-                    destroy();
+                catch (Exception e) {
+                    Log.error("Error enabling or disabling plugin.", e);
+                    throw e;
                 }
-                return shouldEnable;
             }
         });
     }
