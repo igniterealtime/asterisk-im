@@ -71,11 +71,13 @@
             }
         }
     }
+    Exception exception = null;
     try {
         enabled = plugin.isEnabled();
     }
     catch (Exception e) {
         /** Here we will draw up that there was an error loading the plugin **/
+        exception = e;
     }
 
 %>
@@ -129,8 +131,22 @@
     Changing settings will cause the plugin to be reloaded.<br>
 </p>
 
-
-<% if (success) { %>
+<% if (exception != null) { %>
+<div class="jive-error" style="width: 400;">
+    <table cellpadding="0" cellspacing="0" border="0">
+        <tbody>
+            <tr>
+                <td class="jive-icon"><img src="images/error-16x16.gif" width="16" height="16"
+                                           border="0"></td>
+                <td class="jive-icon-label">Error loading plugin, see error log for details.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+<% return;
+} else if (success) { %>
 <div class="success" style="width: 400;">
     Service settings updated successfully. It will take a couple seconds to reconnect to the
     telephony interface
