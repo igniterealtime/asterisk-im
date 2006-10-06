@@ -16,7 +16,6 @@ public interface PhoneEvent {
          */
         public static final EventStatus ON_PHONE = new EventStatus("ON_PHONE");
 
-
         /**
          * The user has hung up their phone
          */
@@ -43,18 +42,25 @@ public interface PhoneEvent {
         }
 
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             final EventStatus that = (EventStatus) o;
 
-            if (name != null ? !name.equals(that.name) : that.name != null) return false;
+            return !(name != null ? !name.equals(that.name) : that.name != null);
 
-            return true;
         }
 
         public int hashCode() {
             return (name != null ? name.hashCode() : 0);
+        }
+
+        public String toString() {
+            return name;
         }
 
     }
