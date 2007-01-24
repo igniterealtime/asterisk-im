@@ -73,6 +73,7 @@
         <javac srcdir="${java.src.dir}"
                destdir="${classes.dir}"
                source="1.5"
+               target="1.5"
                classpathref="lib.path"
                debug="true"/>
 
@@ -88,6 +89,7 @@
         <javac srcdir="${work.src.dir}"
                destdir="${classes.dir}"
                source="1.5"
+               target="1.5"
                classpathref="lib.path"
                debug="true"/>
     </target>
