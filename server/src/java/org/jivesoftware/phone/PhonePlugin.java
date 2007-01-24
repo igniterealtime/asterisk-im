@@ -8,24 +8,24 @@
  */
 package org.jivesoftware.phone;
 
+import org.jivesoftware.phone.asterisk.CallSessionFactory;
 import org.jivesoftware.phone.queue.QueueManager;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.util.PhoneExecutionService;
 import org.jivesoftware.phone.xmpp.PacketHandler;
 import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.element.PhoneStatus;
-import org.jivesoftware.phone.asterisk.CallSessionFactory;
 import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.jivesoftware.util.PropertyEventDispatcher;
 import org.jivesoftware.util.PropertyEventListener;
-import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.XMPPServer;
 import org.jivesoftware.wildfire.container.Plugin;
 import org.jivesoftware.wildfire.container.PluginManager;
 import org.jivesoftware.wildfire.event.SessionEventDispatcher;
 import org.jivesoftware.wildfire.interceptor.InterceptorManager;
+import org.jivesoftware.wildfire.session.ClientSession;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
