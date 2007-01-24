@@ -8,19 +8,19 @@
  */
 package org.jivesoftware.phone.xmpp;
 
+import org.jivesoftware.phone.asterisk.CallSession;
+import org.jivesoftware.phone.asterisk.CallSessionFactory;
+import org.jivesoftware.phone.asterisk.CallSessionListener;
+import org.jivesoftware.phone.queue.QueueManager;
+import org.jivesoftware.phone.xmpp.element.PhoneStatus;
 import org.jivesoftware.util.Log;
-import org.jivesoftware.wildfire.ClientSession;
 import org.jivesoftware.wildfire.PresenceRouter;
-import org.jivesoftware.wildfire.Session;
 import org.jivesoftware.wildfire.SessionManager;
 import org.jivesoftware.wildfire.event.SessionEventListener;
 import org.jivesoftware.wildfire.interceptor.PacketInterceptor;
 import org.jivesoftware.wildfire.interceptor.PacketRejectedException;
-import org.jivesoftware.phone.queue.QueueManager;
-import org.jivesoftware.phone.asterisk.CallSessionListener;
-import org.jivesoftware.phone.asterisk.CallSession;
-import org.jivesoftware.phone.asterisk.CallSessionFactory;
-import org.jivesoftware.phone.xmpp.element.PhoneStatus;
+import org.jivesoftware.wildfire.session.ClientSession;
+import org.jivesoftware.wildfire.session.Session;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
