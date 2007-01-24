@@ -27,7 +27,7 @@
         <fileset dir="${wildfire.dir}/build/lib">
             <include name="**/*.jar"/>
         </fileset>
-        <pathelement path="${wildfire.dir}/target/classes"/>
+        <pathelement path="${wildfire.dir}/work/classes"/>
     </path>
 
 
