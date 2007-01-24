@@ -127,7 +127,7 @@
 
         <copy todir="${work.dir}/lib">
             <fileset dir="${lib.dir}">
-                <include name="asterisk-java-0.2.jar"/>
+                <include name="asterisk-java.jar"/>
             </fileset>
         </copy>
         <jar file="${jar.file}" basedir="${work.dir}" update="false"/>
