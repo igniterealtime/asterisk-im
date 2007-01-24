@@ -79,7 +79,10 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         try {
             PropertyEventDispatcher.addListener(propertyListener);
-            doEnable(JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false));
+            boolean enable = JiveGlobals.getBooleanProperty(PhoneProperties.ENABLED, false);
+            if (enable != isEnabled()) {
+                doEnable(enable);
+            }
         }
         catch (Throwable e) {
             // Make sure we catch all exceptions show we can Log anything that might be
