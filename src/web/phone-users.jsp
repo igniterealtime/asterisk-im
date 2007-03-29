@@ -3,10 +3,10 @@
                  org.jivesoftware.util.LocaleUtils,
                  org.jivesoftware.util.Log,
                  org.jivesoftware.util.ParamUtils,
-                 org.jivesoftware.wildfire.XMPPServer,
-                 org.jivesoftware.wildfire.user.UserManager,
-                 org.jivesoftware.wildfire.user.UserNotFoundException,
-                 org.jivesoftware.wildfire.container.PluginManager,
+                 org.jivesoftware.openfire.XMPPServer,
+                 org.jivesoftware.openfire.user.UserManager,
+                 org.jivesoftware.openfire.user.UserNotFoundException,
+                 org.jivesoftware.openfire.container.PluginManager,
                  java.util.Collection,
                  java.util.HashMap" %>
 <%@ page import="java.util.List" %>

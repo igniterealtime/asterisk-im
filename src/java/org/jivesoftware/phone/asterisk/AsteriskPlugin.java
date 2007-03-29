@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Arrays;
 
 /**
- * Plugin for integrating Asterisk with wildfire. This plugin will create a new connection pull
+ * Plugin for integrating Asterisk with openfire. This plugin will create a new connection pull
  * to the asterisk manager server and assign a handler to handle events received from the server.
  * <p/>
  * This plugin exepects the following jive properties to be set up.

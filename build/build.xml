@@ -13,8 +13,8 @@
     <property name="lib.dir" value="${basedir}/build/lib"/>
     <property name="work.src.dir" value="${basedir}/src/work"/>
     <property name="web.src.dir" value="${basedir}/src/web"/>
-    <property name="jsp.package" value="org.jivesoftware.wildfire.plugin.phone"/>
-    <property name="wildfire.dir" value="${basedir}/../../wildfire"/>
+    <property name="jsp.package" value="org.jivesoftware.openfire.plugin.phone"/>
+    <property name="openfire.dir" value="${basedir}/../../wildfire"/>
     <property name="jar.file" value="${target.dir}/asterisk-im.jar"/>
     <property name="jar-jtapi.file" value="${target.dir}/jtapi/asterisk-im.jar"/>
     <property name="jar-ajtapi.file" value="${target.dir}/ajtapi/asterisk-im.jar"/>
@@ -24,10 +24,10 @@
         <fileset dir="${lib.dir}">
             <include name="**/*.jar"/>
         </fileset>
-        <fileset dir="${wildfire.dir}/build/lib">
+        <fileset dir="${openfire.dir}/build/lib">
             <include name="**/*.jar"/>
         </fileset>
-        <pathelement path="${wildfire.dir}/work/classes"/>
+        <pathelement path="${openfire.dir}/work/classes"/>
     </path>
 
 
@@ -50,8 +50,8 @@
                 <contains string="${ant.java.version}" substring="1.5"/>
             </not>
         </condition>
-        <fail if="ant.not.ok" message="Must use Ant 1.6.x to build Wildfire"/>
-        <fail if="java.not.ok" message="Must use JDK 1.5.x to build Wildfire"/>
+        <fail if="ant.not.ok" message="Must use Ant 1.6.x to build Openfire"/>
+        <fail if="java.not.ok" message="Must use JDK 1.5.x to build Openfire"/>
     </target>
 
     <target name="jspc" depends="init">
@@ -151,7 +151,7 @@
     </target>
 
     <target name="deploy" depends="jar">
-        <copy file="${jar.file}" todir="${wildfire.dir}/target/plugins"/>
+        <copy file="${jar.file}" todir="${openfire.dir}/target/plugins"/>
     </target>
 
 

@@ -13,9 +13,9 @@ import org.jivesoftware.phone.PhoneException;
 import org.jivesoftware.phone.PhoneManager;
 import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.util.Log;
-import org.jivesoftware.wildfire.SessionManager;
-import org.jivesoftware.wildfire.session.ClientSession;
-import org.jivesoftware.wildfire.user.UserNotFoundException;
+import org.jivesoftware.openfire.SessionManager;
+import org.jivesoftware.openfire.session.ClientSession;
+import org.jivesoftware.openfire.user.UserNotFoundException;
 import org.xmpp.packet.Presence;
 
 import java.util.*;

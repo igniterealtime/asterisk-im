@@ -87,7 +87,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../../wildfire/target/wildfire/lib/wildfire.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../wildfire/target/openfire/lib/openfire.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

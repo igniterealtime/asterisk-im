@@ -14,8 +14,8 @@
 <%@ page import="org.jivesoftware.phone.PhoneServer"%>
 <%@ page import="org.jivesoftware.util.Log"%>
 <%@ page import="org.jivesoftware.util.ParamUtils"%>
-<%@ page import="org.jivesoftware.wildfire.XMPPServer"%>
-<%@ page import="org.jivesoftware.wildfire.container.PluginManager"%>
+<%@ page import="org.jivesoftware.openfire.XMPPServer"%>
+<%@ page import="org.jivesoftware.openfire.container.PluginManager"%>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>

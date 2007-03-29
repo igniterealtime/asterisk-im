@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class DbPhoneDAOTest extends TestCase {
 
     static {
-        JiveGlobals.setConfigName("wildfire.xml");
+        JiveGlobals.setConfigName("openfire.xml");
         JiveGlobals.getPropertyNames(); // just called to intialize jive globals
     }
 

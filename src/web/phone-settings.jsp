@@ -1,8 +1,8 @@
 <%@ page import="org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.Log,
                  org.jivesoftware.util.ParamUtils,
-                 org.jivesoftware.wildfire.XMPPServer,
-                 org.jivesoftware.wildfire.container.PluginManager,
+                 org.jivesoftware.openfire.XMPPServer,
+                 org.jivesoftware.openfire.container.PluginManager,
                  javax.servlet.http.HttpServletRequest,
                  java.util.HashMap" %>
 <%@ page import="java.util.Map" %>
