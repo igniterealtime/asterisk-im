@@ -9,9 +9,9 @@ package org.jivesoftware.phone;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.util.Log;
-import org.jivesoftware.wildfire.SessionManager;
-import org.jivesoftware.wildfire.XMPPServer;
-import org.jivesoftware.wildfire.session.ClientSession;
+import org.jivesoftware.openfire.SessionManager;
+import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.session.ClientSession;
 import org.xmpp.packet.JID;
 
 import java.util.ArrayList;

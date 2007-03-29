@@ -30,7 +30,7 @@ import org.jivesoftware.smackx.packet.DiscoverItems;
 import java.util.Iterator;
 
 /**
- * Provides the ability to Phone Wildfire plugin.
+ * Provides the ability to Phone Openfire plugin.
  *
  * @author Andrew Wright
  */

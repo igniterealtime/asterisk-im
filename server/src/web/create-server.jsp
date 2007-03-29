@@ -3,8 +3,8 @@
 <%@ page import="org.jivesoftware.util.ParamUtils" %>
 <%@ page import="org.jivesoftware.phone.PhonePlugin" %>
 <%@ page import="org.jivesoftware.util.Log" %>
-<%@ page import="org.jivesoftware.wildfire.container.PluginManager" %>
-<%@ page import="org.jivesoftware.wildfire.XMPPServer" %>
+<%@ page import="org.jivesoftware.openfire.container.PluginManager" %>
+<%@ page import="org.jivesoftware.openfire.XMPPServer" %>
 <%@ page import="org.jivesoftware.phone.PhoneServer" %>
 <%
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
