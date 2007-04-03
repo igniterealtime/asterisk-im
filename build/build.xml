@@ -14,7 +14,7 @@
     <property name="work.src.dir" value="${basedir}/src/work"/>
     <property name="web.src.dir" value="${basedir}/src/web"/>
     <property name="jsp.package" value="org.jivesoftware.openfire.plugin.phone"/>
-    <property name="openfire.dir" value="${basedir}/../../wildfire"/>
+    <property name="openfire.dir" value="${basedir}/../../openfire"/>
     <property name="jar.file" value="${target.dir}/asterisk-im.jar"/>
     <property name="jar-jtapi.file" value="${target.dir}/jtapi/asterisk-im.jar"/>
     <property name="jar-ajtapi.file" value="${target.dir}/ajtapi/asterisk-im.jar"/>
