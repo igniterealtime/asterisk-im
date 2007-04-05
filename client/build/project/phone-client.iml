@@ -49,7 +49,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Groovy from GroovyJ 0.1.7 (Irida)" level="application" />
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">
