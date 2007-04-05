@@ -17,7 +17,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Whack" />
     <orderEntry type="module" module-name="Smack" />
-    <orderEntry type="module" module-name="Wildfire" />
+    <orderEntry type="module" module-name="Openfire" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -54,7 +54,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Groovy from GroovyJ 0.1.7 (Irida)" level="application" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
