@@ -97,6 +97,11 @@ public class AsteriskIMServerListener extends AbstractAsteriskServerListener imp
         {
             final AsteriskChannel dialedChannel = (AsteriskChannel) evt.getNewValue();
 
+            if (session == null)
+            {
+                return;
+            }
+
             // TODO what do we need dialing information for? (srt)
             if (dialedChannel.getCallerId() != null) {
                 session.setCallerID(dialedChannel.getCallerId().getNumber());
