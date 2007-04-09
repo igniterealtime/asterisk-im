@@ -18,7 +18,7 @@ import org.asteriskjava.manager.event.ManagerEvent;
 import org.asteriskjava.manager.ManagerEventListener;
 
 /**
- * Handles events that are delivered from an asterisk connection
+ * Handles events that are delivered from an asterisk connection.
  *
  * @author Andrew Wright
  */
@@ -84,8 +84,8 @@ public class AsteriskEventHandler implements ManagerEventListener {
                         event.getUniqueId(), phoneUser.getUsername());
             }
 
-            session.setChannel(device);
-            session.setCallerID(event.getCallerId());
+            session.setChannelName(device);
+            session.setCallerID(event.getCallerIdNum());
             session.setCallerIDName(event.getCallerIdName());
             callSessionFactory.modifyCallSession(session, CallSession.Status.onphone);
         }
@@ -193,7 +193,7 @@ public class AsteriskEventHandler implements ManagerEventListener {
                                 destPhoneUser.getUsername());
             }
 
-            session.setChannel(destDevice);
+            session.setChannelName(destDevice);
             String callerID = StringUtils.stripTags(event.getCallerId());
             session.setCallerID(callerID);
             session.setCallerIDName(event.getCallerIdName());
@@ -212,7 +212,7 @@ public class AsteriskEventHandler implements ManagerEventListener {
                 session = callSessionFactory.createCallSession(serverID, event.getDestUniqueId(),
                                 srcUser.getUsername());
             }
-            session.setChannel(srcDevice);
+            session.setChannelName(srcDevice);
             session.setCallerID(event.getCallerId());
             session.setCallerIDName(event.getCallerIdName());
             callSessionFactory.modifyCallSession(session, CallSession.Status.dialed);
