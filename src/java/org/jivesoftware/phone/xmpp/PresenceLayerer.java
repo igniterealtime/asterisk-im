@@ -104,7 +104,14 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         if (processed || !incoming || !(packet instanceof Presence)) {
             return;
         }
-        Presence presence = (Presence)packet;
+
+        final Presence presence = (Presence)packet;
+
+        if (presence instanceof PhonePresence) {
+            Log.debug("Not interception our own presence updates");
+            return;
+        }
+
         try {
             if (session instanceof ClientSession) {
                 queueManager.updateQueueStatus((ClientSession) session, presence);
@@ -130,8 +137,8 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         // TODO fix updating presence when on the phone
         if (sessionProxy != null) {
             Log.debug("intercepted: "+presence);
-            //sessionProxy.latestPresence = presence;
-            //throw new PacketRejectedException("Status will change after user is off the phone!");
+            sessionProxy.latestPresence = presence;
+            throw new PacketRejectedException("Status will change after user is off the phone!");
         }
     }
 
@@ -200,7 +207,7 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     }
 
     /**
-     * Restore all user presences
+     * Restores all user presences.
      */
     public synchronized void shutdown() {
         if(isShutdown) {
@@ -273,7 +280,7 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     
 
     private Presence createOnPhonePresence(String status) {
-        Presence presence = new Presence();
+        Presence presence = new PhonePresence();
         presence.setShow(Presence.Show.away);
         presence.setStatus(status);
 
