@@ -22,32 +22,34 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Andrew Wright
  */
 public class CallSessionFactory {
-
-    private Set<CallSessionListener> callSessionListeners
-            = new ConcurrentHashSet<CallSessionListener>();
-
-    /**
-     * key => asterisk unique id, value => CallSession for that id
-     */
-    private Map<String, CallSession> sessionMap = new ConcurrentHashMap<String, CallSession>();
-
-    /**
-     * key => username, value => all call sessions for that user
-     */
-    private Map<String, Collection<CallSession>> userSessionMap
-            = new ConcurrentHashMap<String, Collection<CallSession>>();
-
     private static final CallSessionFactory INSTANCE = new CallSessionFactory();
 
+    private final Set<CallSessionListener> callSessionListeners;
+
+    /**
+     * key => asterisk unique id, value => CallSession for that id.
+     */
+    private final Map<String, CallSession> sessionMap;
+
+    /**
+     * key => username, value => all call sessions for that user.
+     */
+    private final Map<String, Collection<CallSession>> userSessionMap;
+
     private CallSessionFactory() {
+        callSessionListeners = new ConcurrentHashSet<CallSessionListener>();
+        sessionMap = new ConcurrentHashMap<String, CallSession>();
+        userSessionMap = new ConcurrentHashMap<String, Collection<CallSession>>();
     }
 
     /**
-     * Acquire a call session by its id
+     * Acquire a call session by its id.
      *
+     * @param serverID id of the phone server.
      * @param id       the call session id
-     * @param username user who the session belongs too.
-     * @return the call session object with a specific id, else null
+     * @param username user who the session belongs to.
+     * @return the created call session
+     * @throws IllegalArgumentException if there is already a session with the given id.
      */
     public synchronized CallSession createCallSession(long serverID, String id, String username)
     {
@@ -100,29 +102,33 @@ public class CallSessionFactory {
     }
 
     /**
-     * destroys the specific call session
+     * destroys the specific call session.
      *
      * @param id id of the session to destory
+     * @return the session that has been destoryed or <code>null</code>
+     *         if there is no session with the given id.
      */
     public synchronized CallSession destroyPhoneSession(String id) {
-        CallSession session = sessionMap.remove(id);
-        if(session == null) {
-            if (Log.isDebugEnabled() && !id.startsWith("SIP/")) {
-                Log.debug("Cannot destroy non-existent CallSession with id: " + id);
-            }
+        final CallSession callSession;
+
+        callSession = sessionMap.remove(id);
+        if(callSession == null) {
+            Log.debug("Cannot destroy non-existent CallSession with id: " + id);
             return null;
+        } else {
+            Log.debug("Destoying CallSession " + callSession);
         }
 
-        Collection<CallSession> sessions = userSessionMap.get(session.getUsername());
+        Collection<CallSession> sessions = userSessionMap.get(callSession.getUsername());
         // should never be null
-        sessions.remove(session);
+        sessions.remove(callSession);
 
-        // Remove the map if there are nolonger any session for this user
+        // Remove the map if there are nolonger any callSession for this user
         if (sessions.size() == 0) {
-            userSessionMap.remove(session.getUsername());
+            userSessionMap.remove(callSession.getUsername());
         }
-        fireCallSessionDestroyed(session);
-        return session;
+        fireCallSessionDestroyed(callSession);
+        return callSession;
     }
 
     private void fireCallSessionDestroyed(CallSession session) {
@@ -144,15 +150,15 @@ public class CallSessionFactory {
             return null;
         }
         for (CallSession session : sessions) {
-            if (channel.equals(session.getChannel())) {
-                return destroyPhoneSession(session.getId());
+            if (channel.equals(session.getChannelName())) {
+                return destroyPhoneSession(session.getChannelId());
             }
         }
         return null;
     }
 
     /**
-     * Returns all sessions for a specific user
+     * Returns all sessions for a specific user.
      *
      * @param username there user who's call sessions to grab
      * @return collection of call sessions that belong to a specific user
@@ -171,7 +177,7 @@ public class CallSessionFactory {
     }
 
     /**
-     * Used to acquire an instance of the call session factory
+     * Used to acquire an instance of the call session factory.
      *
      * @return instance of the call session factory
      */
@@ -192,5 +198,4 @@ public class CallSessionFactory {
         }
         callSessionListeners.remove(listener);
     }
-
 }

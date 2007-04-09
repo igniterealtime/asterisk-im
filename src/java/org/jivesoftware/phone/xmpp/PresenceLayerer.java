@@ -114,25 +114,24 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
             Log.error("error checking users queue presence", ex);
         }
         if (isNoInterceptionNeeded(presence)) {
-            // Log.debug("passed presence: "+presence);
+            Log.debug("passed presence: "+presence);
             return;
         }
         // we need to sync so that the user's presence won't get out of sync
         updateSessionProxy(session, presence);
 
-        // Log.debug("passed presence, no session: "+presence);
-
+        Log.debug("passed presence, no session: "+presence);
     }
 
     private synchronized void updateSessionProxy(Session session, Presence presence)
             throws PacketRejectedException {
         SessionProxy sessionProxy = session2proxy.get(session);
         // interception on this session?
+        // TODO fix updating presence when on the phone
         if (sessionProxy != null) {
-            // Log.debug("intercepted: "+presence);
-            sessionProxy.latestPresence = presence;
-            throw new PacketRejectedException("Status will change after user is " +
-                    "off the phone!");
+            Log.debug("intercepted: "+presence);
+            //sessionProxy.latestPresence = presence;
+            //throw new PacketRejectedException("Status will change after user is off the phone!");
         }
     }
 
@@ -219,7 +218,8 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         if (!(session instanceof ClientSession) || isShutdown) {
             return;
         }
-        UserState us = name2state.get(session.getAddress());
+        // TODO check if this is correct (srt)
+        UserState us = name2state.get(session.getAddress().getNode());
         if (us != null) {
             // a user whose presences we intercept has created a new session!
             createInterceptSession(us, (ClientSession)session, us.phonePresence);
@@ -248,9 +248,18 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     }
 
     public synchronized void callSessionDestroyed(CallSession session) {
-        String username = session.getUsername();
-        if (callSessionFactory.getUserCallSessionsCount(session.getUsername()) <= 0) {
+        final String username;
+
+        username = session.getUsername();
+
+        Log.debug("CallSession destroyed for user '" + username + "'");
+        if (callSessionFactory.getUserCallSessionsCount(username) <= 0) {
+            Log.debug("Restoring presence for user '" + username + "'");
             restorePresence(username);
+        }
+        else
+        {
+            Log.debug("Not restoring presence for user '" + username + "', " + callSessionFactory.getUserCallSessionsCount(session.getUsername()) + " calls left");
         }
     }
 
