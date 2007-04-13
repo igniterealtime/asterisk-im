@@ -15,6 +15,7 @@ create table phoneDevice (
    callerID varchar(255),
    isPrimary integer not null,
    userID integer,
+   serverID bigint not null,
    constraint phoneDevice_pk primary key (deviceID)
 );
 create table phoneUser (
