@@ -40,6 +40,7 @@
 
     <target name="init">
         <!-- Check for min build requirements -->
+<!--
         <condition property="ant.not.ok" value="true">
             <not>
                 <contains string="${ant.version}" substring="1.6"/>
@@ -52,6 +53,7 @@
         </condition>
         <fail if="ant.not.ok" message="Must use Ant 1.6.x to build Openfire"/>
         <fail if="java.not.ok" message="Must use JDK 1.5.x to build Openfire"/>
+-->
     </target>
 
     <target name="jspc" depends="init">
