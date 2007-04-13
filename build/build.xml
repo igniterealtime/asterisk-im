@@ -124,7 +124,7 @@
 
         <copy file="${basedir}/plugin.xml" tofile="${work.dir}/plugin.xml"/>
         <copy todir="${work.dir}/database">
-            <fileset dir="${basedir}/src/database" includes="*.sql"/>
+            <fileset dir="${basedir}/src/database"/>
         </copy>
 
         <copy todir="${work.dir}/lib">
