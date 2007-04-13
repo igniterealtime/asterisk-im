@@ -165,6 +165,7 @@ public class AsteriskIMServerListener extends AbstractAsteriskServerListener imp
         //everything after the hyphen should be skipped
         device = AsteriskUtil.getDevice(channelName);
 
+        // TODO check if we really only need active users
         phoneUser = phoneManager.getActivePhoneUserByDevice(serverID, device);
 
         if (phoneUser == null)

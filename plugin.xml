@@ -5,8 +5,8 @@
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
     <author>Jive Software</author>
-    <version>1.3.0</version>
-    <date>03/29/2007</date>
+    <version>1.3.0-beta</version>
+    <date>04/12/2007</date>
     <minServerVersion>3.3.0</minServerVersion>
     <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>2</databaseVersion>
