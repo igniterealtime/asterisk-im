@@ -161,7 +161,7 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
                     context, targetExtension, 1, 5000, callerID, varMap);
         }
         catch (Exception e) {
-            throw new PhoneException("Unabled to dial extention " + targetExtension, e);
+            throw new PhoneException("Unable to dial extention " + targetExtension, e);
         }
     }
 
