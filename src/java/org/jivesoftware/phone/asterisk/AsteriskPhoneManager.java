@@ -161,11 +161,9 @@ public class AsteriskPhoneManager extends BasePhoneManager {
     public Map<Long, Collection<String>> getConfiguredDevices() throws PhoneException {
         Map<Long, Collection<String>> deviceMap = new HashMap<Long, Collection<String>>();
         for (Map.Entry<Long, CustomAsteriskServer> asteriskManager : asteriskServers.entrySet()) {
-            List<String> devices = asteriskManager.getValue().getSipDevices();
+            List<String> devices = asteriskManager.getValue().getDevices();
             Collections.sort(devices);
             deviceMap.put(asteriskManager.getKey(), devices);
-
-            // todo Add IAX support
         }
         return Collections.unmodifiableMap(deviceMap);
     }
@@ -173,7 +171,7 @@ public class AsteriskPhoneManager extends BasePhoneManager {
     public Collection<String> getConfiguredDevicesByServerID(long serverID) throws PhoneException {
         CustomAsteriskServer asteriskServer = asteriskServers.get(serverID);
         if (asteriskServer != null) {
-            return asteriskServer.getSipDevices();
+            return asteriskServer.getDevices();
         }
         return null;
     }
