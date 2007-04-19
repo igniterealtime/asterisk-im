@@ -90,10 +90,26 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
     }
 
     @SuppressWarnings({"unchecked"})
-    public List<String> getSipDevices() throws PhoneException {
+    public List<String> getDevices() throws PhoneException {
+        ArrayList<String> list = new ArrayList<String>();
+
+        list.addAll(getDevices("sip"));
+        list.addAll(getDevices("iax2"));
+        return list;
+    }
+
+    /**
+     * Returns a list of all devices configured on this Asterisk server for the given
+     * technology.
+     *
+     * @param technology either "sip" or "iax2".
+     * @return a list of devices, that is Asterisk channel names that can be mapped to phone users.
+     * @throws PhoneException if the list can't be retrived.
+     */
+    public List<String> getDevices(String technology) throws PhoneException {
         try {
             CommandAction action = new CommandAction();
-            action.setCommand("sip show peers");
+            action.setCommand(technology.toLowerCase() + " show peers");
 
             ManagerResponse managerResponse = getManagerConnection().sendAction(action);
             if (managerResponse instanceof ManagerError) {
@@ -105,18 +121,33 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
             List<String> results = response.getResult();
 
             ArrayList<String> list = new ArrayList<String>();
-            boolean isFirst = true; // The first entry is Name, we want to skip that one
+            boolean isFirst = true; // first line is header with field names
+
+            /*
+             * The result will look like this:
+             *
+             * Name/username              Host            Dyn Nat ACL Port     Status
+             * 1313/1313                  10.13.0.61       D       A  5061     OK (192 ms)
+             * 1312/1312                  10.13.0.61       D       A  5061     OK (183 ms)
+             * 1303/1303                  (Unspecified)    D   N      0        UNKNOWN
+             * 1302/1302                  (Unspecified)    D       A  0        UNKNOWN
+             */
             for (String result : results) {
                 if (!isFirst) {
                     result = result.trim();
+                    if (result.indexOf(" ") < 0) {
+                        continue;
+                    }
                     result = result.substring(0, result.indexOf(" "));
-                    list.add("SIP/" + result.split("/")[0]);
+                    if (result.indexOf("/") < 0) {
+                        continue;
+                    }
+                    list.add(technology.toUpperCase() + "/" + result.substring(0, result.indexOf("/")));
                 }
                 isFirst = false;
             }
             if (list.size() > 0) {
-                list.remove(list.size() - 1);   // Remove the last entry, it just tells how
-                // many are online
+                list.remove(list.size() - 1); // last line is footer with summary
             }
 
             return list;
@@ -161,7 +192,7 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
                     context, targetExtension, 1, 5000, callerID, varMap);
         }
         catch (Exception e) {
-            throw new PhoneException("Unable to dial extention " + targetExtension, e);
+            throw new PhoneException("Unable to dial extention " + targetExtension + ": " + e.getMessage(), e);
         }
     }
 
