@@ -56,6 +56,11 @@ public class PhoneProperties {
     public static final String DIAL_VARIABLES = "asterisk.manager.dialVariables";
 
     /**
+     * The default timeout for the first leg of the call (in originate)
+     */
+    public static final String FIRSTLEG_TIMEOUT = "asterisk.manager.firstlegTimeout";
+
+    /**
      * Whether or not users status in the queues is based on their presence
      */
     public static final String QUEUE_MANAGER_ENABLED = "asterisk.queues.enabled";
