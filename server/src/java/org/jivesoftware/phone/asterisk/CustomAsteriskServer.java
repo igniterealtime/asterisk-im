@@ -173,6 +173,11 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
                 context = PhoneConstants.DEFAULT_CONTEXT;
             }
 
+			String firstleg_timeout = getProperty(PhoneProperties.FIRSTLEG_TIMEOUT, PhoneConstants.DEFAULT_FIRSTLEG_TIMEOUT);
+            if ("".equals(firstleg_timeout)) {
+                firstleg_timeout = PhoneConstants.DEFAULT_FIRSTLEG_TIMEOUT;
+            }
+
             String variables = getProperty(PhoneProperties.DIAL_VARIABLES, "").trim();
 
             //noinspection unchecked
@@ -189,7 +194,7 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
                 }
             }
             originateToExtension(originatingDevice.getDevice(),
-                    context, targetExtension, 1, 5000, callerID, varMap);
+                    context, targetExtension, 1, Integer.parseInt(firstleg_timeout), callerID, varMap);
         }
         catch (Exception e) {
             throw new PhoneException("Unable to dial extention " + targetExtension + ": " + e.getMessage(), e);

@@ -284,6 +284,10 @@ public class PhoneClient {
             throw new IllegalArgumentException("JID cannot be empty or null!");
         }
 
+               if(!jid.matches(".*@.*"+conn.getServiceName())) {
+                       return false;
+               }
+       
         DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component, StringUtils.parseName(jid));
 
         return info.containsFeature("http://jivesoftware.com/phone");

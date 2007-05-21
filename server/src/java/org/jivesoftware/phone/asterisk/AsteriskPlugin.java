@@ -116,7 +116,10 @@ public class AsteriskPlugin extends PhonePlugin {
                         "DefaultCallerId"),
                 new PhoneOption("Dial Command Variables",
                         PhoneProperties.DIAL_VARIABLES,
-                        "DialVariables"));
+                        "DialVariables"),
+                new PhoneOption("Firstleg Timeout",
+                        PhoneProperties.FIRSTLEG_TIMEOUT,
+                        "FirstlegTimeout"));
     }
 
     public PhoneServerConfiguration getServerConfiguration() {
