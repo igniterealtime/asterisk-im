@@ -2,11 +2,11 @@
 
 <plugin>
     <class>org.jivesoftware.phone.asterisk.AsteriskPlugin</class>
-    <name>Asterisk-IM</name>
-    <description>Integration for Asterisk and Openfire.</description>
-    <author>Jive Software</author>
-    <version>1.3.0</version>
-    <date>06/20/2007</date>
+    <name>${pom.name}</name>
+    <description>${pom.description}</description>
+    <author>${pom.organization.name}</author>
+    <version>${pom.version}</version>
+    <date>${openfire-plugin.build.date}</date>
     <minServerVersion>3.3.1</minServerVersion>
     <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>2</databaseVersion>

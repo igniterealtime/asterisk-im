@@ -7,6 +7,7 @@
     <packaging>openfire-plugin</packaging>
     <version>1.4.0-SNAPSHOT</version>
     <name>Asterisk-IM</name>
+    <description>Integration for Asterisk and Openfire.</description>
     <organization>
         <name>Jive Software</name>
     </organization>
