@@ -33,12 +33,12 @@ public class PhoneClientTest extends TestCase {
 
         try {
 
-            ProviderManager.addExtensionProvider("phone-event",
+            ProviderManager.getInstance().addExtensionProvider("phone-event",
                     PhoneEventPacketExtension.NAMESPACE,
                     new PhoneEventPacketExtensionProvider());
 
 
-            ProviderManager.addIQProvider("phone-action",
+            ProviderManager.getInstance().addIQProvider("phone-action",
                     PhoneActionPacket.NAMESPACE,
                     new PhoneActionIQProvider());
         } catch (Exception e) {

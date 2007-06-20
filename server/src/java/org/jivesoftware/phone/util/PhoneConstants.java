@@ -39,4 +39,9 @@ public interface PhoneConstants {
      * The default port that asterisk servers run on.
      */
     int DEFAULT_ASTERISK_PORT = 5038;
+
+    /**
+     * The default timeout for the first leg of the call
+     */
+    public static final String DEFAULT_FIRSTLEG_TIMEOUT = "30000";
 }

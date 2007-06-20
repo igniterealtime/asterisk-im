@@ -16,32 +16,28 @@ import org.xmpp.packet.JID;
  */
 public class CallSession {
 
-    private String id;
-    private String channel;
+    private final long serverID;
+    private final String channelId;
+    private final String username;
+    
+    private String channelName;
     private String linkedChannel;
     private String callerID;
     private String callerIDName;
     private String forwardedExtension;
     private JID forwardedJID;
     private JID dialedJID;
-    private String username;
     private boolean isMonitored;
-    private long serverID;
     private Status status;
 
-    CallSession(long serverID, String id, String username, Status status) {
-        this.id = id;
-        this.username = username;
+    public CallSession(long serverID, String channelId, String username) {
         this.serverID = serverID;
-        this.status = status;
+        this.channelId = channelId;
+        this.username = username;
     }
 
-    public CallSession(long serverID, String id, String username) {
-        this(serverID, id, username, null);
-    }
-
-    public String getId() {
-        return id;
+    public String getChannelId() {
+        return channelId;
     }
 
     public String getUsername() {
@@ -52,12 +48,12 @@ public class CallSession {
         return serverID;
     }
 
-    public String getChannel() {
-        return channel;
+    public String getChannelName() {
+        return channelName;
     }
 
-    public void setChannel(String channel) {
-        this.channel = channel;
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
     }
 
     public String getLinkedChannel() {
@@ -133,7 +129,7 @@ public class CallSession {
         if (callerID != null ? !callerID.equals(that.callerID) : that.callerID != null) {
             return false;
         }
-        if (channel != null ? !channel.equals(that.channel) : that.channel != null) {
+        if (channelName != null ? !channelName.equals(that.channelName) : that.channelName != null) {
             return false;
         }
         if (dialedJID != null ? !dialedJID.equals(that.dialedJID) : that.dialedJID != null) {
@@ -149,7 +145,7 @@ public class CallSession {
         {
             return false;
         }
-        if (id != null ? !id.equals(that.id) : that.id != null) {
+        if (channelId != null ? !channelId.equals(that.channelId) : that.channelId != null) {
             return false;
         }
         if (linkedChannel != null ? !linkedChannel.equals(that.linkedChannel)
@@ -164,8 +160,8 @@ public class CallSession {
     @Override
     public int hashCode() {
         int result;
-        result = (id != null ? id.hashCode() : 0);
-        result = 29 * result + (channel != null ? channel.hashCode() : 0);
+        result = (channelId != null ? channelId.hashCode() : 0);
+        result = 29 * result + (channelName != null ? channelName.hashCode() : 0);
         result = 29 * result + (linkedChannel != null ? linkedChannel.hashCode() : 0);
         result = 29 * result + (callerID != null ? callerID.hashCode() : 0);
         result = 29 * result + (forwardedExtension != null ? forwardedExtension.hashCode() : 0);
@@ -180,8 +176,8 @@ public class CallSession {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("CallSession");
-        sb.append("{id='").append(id).append('\'');
-        sb.append(", channel='").append(channel).append('\'');
+        sb.append("{channelId='").append(channelId).append('\'');
+        sb.append(", channelName='").append(channelName).append('\'');
         sb.append(", linkedChannel='").append(linkedChannel).append('\'');
         sb.append(", callerID='").append(callerID).append('\'');
         sb.append(", forwardedExtension='").append(forwardedExtension).append('\'');

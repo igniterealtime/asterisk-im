@@ -255,10 +255,10 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
     private void handleOnPhone(CallSession session) {
         // Notify the client that they have answered the phone
         Message message = new Message();
-        message.setID(session.getId());
+        message.setID(session.getChannelId());
 
         PhoneEvent phoneEvent =
-                new PhoneEvent(session.getId(), PhoneEvent.Type.ON_PHONE, session.getLinkedChannel());
+                new PhoneEvent(session.getChannelId(), PhoneEvent.Type.ON_PHONE, session.getLinkedChannel());
         // Get the callerID to add to the phone-event. If no callerID info is available
         // then just set an empty string and let clients do the proper rendering
         phoneEvent.addElement("callerID").setText(session.getCallerID() == null ? ""
@@ -268,7 +268,7 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
     }
 
     public void callSessionDestroyed(CallSession session) {
-        sendHangupMessage(session.getId(), session.getLinkedChannel(), session.getUsername());
+        sendHangupMessage(session.getChannelId(), session.getLinkedChannel(), session.getUsername());
     }
 
     public void sendHangupMessage(String callSessionID, String device, String username) {
@@ -296,10 +296,10 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
 
     private void handleDialing(CallSession session) {
         Message message = new Message();
-        message.setID(session.getId());
+        message.setID(session.getChannelId());
 
         PhoneEvent phoneEvent =
-                new PhoneEvent(session.getId(), PhoneEvent.Type.DIALED, session.getChannel());
+                new PhoneEvent(session.getChannelId(), PhoneEvent.Type.DIALED, session.getChannelName());
         message.getElement().add(phoneEvent);
 
         phoneEvent.addElement("callerID").setText(session.getCallerID() != null
@@ -312,12 +312,12 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
 
     private void handleRinging(CallSession session) {
         Message message = new Message();
-        message.setID(session.getId()); //just put something in here
+        message.setID(session.getChannelId()); //just put something in here
         String callerIDName = session.getCallerIDName();
         String callerID = session.getCallerID();
 
         PhoneEvent phoneEvent =
-                new PhoneEvent(session.getId(), PhoneEvent.Type.RING, session.getChannel());
+                new PhoneEvent(session.getChannelId(), PhoneEvent.Type.RING, session.getChannelName());
 
         phoneEvent.addElement("callerID").setText(callerID != null ? callerID : "");
         phoneEvent.addElement("callerIDName").setText(callerIDName != null ? callerIDName : "");
