@@ -28,17 +28,18 @@ public class TestClient extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        conn = new XMPPConnection("cronus.pdx-int.jivesoftware.com");
-        conn.login("andrew", "test", "junit");
+        conn = new XMPPConnection("localhost");
+        conn.connect();
+        conn.login("srt", "test", "junit");
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
-        conn.close();
+        conn.disconnect();
     }
 
 
-    public void testDial() throws Exception {
+    public void XtestDial() throws Exception {
 
         // look at smack and openfire debugger to figure out why this isn't working
 
@@ -69,8 +70,7 @@ public class TestClient extends TestCase {
         msg.setSubject("hi");
         */
 
-        conn.createChat("andrew@pdx-int.jivesoftware.com")
-            .sendMessage("Howdy!");
+        conn.getChatManager().createChat("stefan.reuter@reucon.com", null).sendMessage("Howdy!");
 
         //conn.sendPacket(msg);
     }
