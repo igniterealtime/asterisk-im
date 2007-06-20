@@ -111,8 +111,12 @@
 		    <excludes>
 		    	<exclude>**/jtapi/**</exclude>
 			<exclude>**/ajtapi/**</exclude>
-			<exclude>**/TestClient.java</exclude>
+			<exclude>**/TestClient*</exclude>
 		    </excludes>
+		    <testExcludes>
+			<exclude>**/TestClient.java</exclude>
+			<exclude>**/DbPhoneDAOTest.java</exclude>
+		    </testExcludes>
                 </configuration>
             </plugin>
             <plugin>
