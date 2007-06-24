@@ -17,7 +17,7 @@
 
             <sidebar id="siderbar-phone" name="Asterisk-IM">
                 <item id="item-phone-settings" name="General Settings"
-                      description="phone admin tool"
+                      description="General phone settings"
                       url="phone-settings.jsp"/>
                 <item id="item-phone-users" name="Phone Mappings"
                       description="Mapping between usernames and phones"

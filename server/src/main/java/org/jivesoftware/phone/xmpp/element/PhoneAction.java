@@ -23,15 +23,15 @@ public class PhoneAction extends BaseElement {
 
     public static enum Type {
         /**
-         * When the action is dialing a new extension
+         * When the action is dialing a new extension.
          */
         DIAL,
         /**
-         * When the action is forwarding a call to a another extension
+         * When the action is forwarding a call to a another extension.
          */
         FORWARD,
         /**
-         * When the action is inviting a third person into the call
+         * When the action is inviting a third person into the call.
          */
         INVITE
     }

@@ -29,7 +29,8 @@
     </licenses>
     <scm>
         <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/server</connection>
-        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/server</developerConnection>
+        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/server
+        </developerConnection>
     </scm>
     <distributionManagement>
         <repository>
@@ -109,21 +110,21 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
-		    <excludes>
-		    	<exclude>**/jtapi/**</exclude>
-			<exclude>**/ajtapi/**</exclude>
-			<exclude>**/TestClient*</exclude>
-		    </excludes>
-		    <testExcludes>
-			<exclude>**/TestClient.java</exclude>
-			<exclude>**/DbPhoneDAOTest.java</exclude>
-		    </testExcludes>
+                    <excludes>
+                        <exclude>**/jtapi/**</exclude>
+                        <exclude>**/ajtapi/**</exclude>
+                        <exclude>**/TestClient*</exclude>
+                    </excludes>
+                    <testExcludes>
+                        <exclude>**/TestClient.java</exclude>
+                        <exclude>**/DbPhoneDAOTest.java</exclude>
+                    </testExcludes>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
-                    <tagBase>https://https://svn.igniterealtime.org/svn/repos/asterisk-im/tags</tagBase>
+                    <tagBase>https://svn.igniterealtime.org/svn/repos/asterisk-im/tags</tagBase>
                 </configuration>
             </plugin>
             <plugin>
