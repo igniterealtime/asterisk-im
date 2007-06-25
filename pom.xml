@@ -1,11 +1,9 @@
-<project xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-         xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd'
-         xmlns='http://maven.apache.org/POM/4.0.0'>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jivesoftware.phone</groupId>
     <artifactId>asterisk-im</artifactId>
     <packaging>openfire-plugin</packaging>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.3.1</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
     <organization>
@@ -28,9 +26,8 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/server</connection>
-        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/server
-        </developerConnection>
+        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/tags/asterisk-im-1.3.1</connection>
+        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/tags/asterisk-im-1.3.1</developerConnection>
     </scm>
     <distributionManagement>
         <repository>
