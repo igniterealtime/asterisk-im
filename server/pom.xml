@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.igniterealtime.openfire</groupId>
             <artifactId>openfire</artifactId>
-            <version>3.3.1</version>
+            <version>3.3.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>org.asteriskjava</groupId>
             <artifactId>asterisk-java</artifactId>
-            <version>0.3-m2</version>
+            <version>0.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
