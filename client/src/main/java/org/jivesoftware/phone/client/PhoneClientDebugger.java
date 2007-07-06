@@ -39,12 +39,12 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
 
         try {
 
-            ProviderManager.addExtensionProvider("phone-event",
+            ProviderManager.getInstance().addExtensionProvider("phone-event",
                     PhoneEventPacketExtension.NAMESPACE,
                     new PhoneEventPacketExtensionProvider());
 
 
-            ProviderManager.addIQProvider("phone-action",
+            ProviderManager.getInstance().addIQProvider("phone-action",
                     PhoneActionPacket.NAMESPACE,
                     new PhoneActionIQProvider());
         }
@@ -191,12 +191,12 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
         }
         else if ("disconnect".equals(command)) {
 
-            conn.close();
+            conn.disconnect();
 
         }
         else if ("exit".equals(command)) {
             try {
-                conn.close();
+                conn.disconnect();
             }
             finally {
                 System.exit(0);
