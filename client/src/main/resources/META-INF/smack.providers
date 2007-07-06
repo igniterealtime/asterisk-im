@@ -1,5 +1,5 @@
- <?xml version="1.0"?>
- <smackProviders>
+<?xml version="1.0"?>
+<smackProviders>
      <iqProvider>
          <elementName>phone-action</elementName>
          <namespace>http://jivesoftware.com/xmlns/phone</namespace>
@@ -10,4 +10,4 @@
          <namespace>http://jivesoftware.com/xmlns/phone</namespace>
          <className>org.jivesoftware.phone.client.event.PhoneEventPacketExtensionProvider</className>
      </extensionProvider>
- </smackProviders>
+</smackProviders>
