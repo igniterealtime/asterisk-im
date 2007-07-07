@@ -70,30 +70,59 @@
             <layout>default</layout>
         </repository>
     </repositories>
-    <dependencies>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smack</artifactId>
-            <version>3.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smackx</artifactId>
-            <version>3.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.igniterealtime.smack</groupId>
-            <artifactId>smackx-debug</artifactId>
-            <version>3.0.4</version>
-        </dependency>
-    </dependencies>
+    <properties>
+        <smack-version>3.0.4</smack-version>
+        <openfire-version>3.3.2</openfire-version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>3.8.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.igniterealtime.smack</groupId>
+                <artifactId>smack</artifactId>
+                <version>${smack-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.igniterealtime.smack</groupId>
+                <artifactId>smackx</artifactId>
+                <version>${smack-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.igniterealtime.smack</groupId>
+                <artifactId>smackx-debug</artifactId>
+                <version>${smack-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>2.3</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.igniterealtime.openfire</groupId>
+                <artifactId>openfire</artifactId>
+                <version>${openfire-version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.asteriskjava</groupId>
+                <artifactId>asterisk-java</artifactId>
+                <version>0.3</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

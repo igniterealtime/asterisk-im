@@ -11,116 +11,18 @@
     <packaging>jar</packaging>
     <name>Asterisk-IM Client Library</name>
     <description>Integration for Asterisk and Openfire.</description>
-    <organization>
-        <name>Jive Software</name>
-    </organization>
-    <developers>
-        <developer>
-            <name>Stefan Reuter</name>
-            <id>srt</id>
-            <email>stefan.reuter at reucon.com</email>
-            <organization>reuter network consulting</organization>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
-    <licenses>
-        <license>
-            <name>GNU General Public License, Version 2.0</name>
-            <url>http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    <scm>
-        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/client</connection>
-        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk/client
-        </developerConnection>
-    </scm>
-    <distributionManagement>
-        <repository>
-            <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/public</url>
-        </repository>
-        <snapshotRepository>
-            <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/public-snapshot</url>
-        </snapshotRepository>
-        <site>
-            <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/projects/public/${artifactId}/${version}</url>
-        </site>
-    </distributionManagement>
-    <repositories>
-        <repository>
-            <id>reucon</id>
-            <name>reucon public repository</name>
-            <url>http://maven.reucon.com/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>reucon</id>
-            <name>reucon public snapshot repository</name>
-            <url>http://maven.reucon.com/public-snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <layout>default</layout>
-        </repository>
-    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack</artifactId>
-            <version>3.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smackx</artifactId>
-            <version>3.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smackx-debug</artifactId>
-            <version>3.0.4</version>
         </dependency>
     </dependencies>
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <tagBase>https://svn.igniterealtime.org/svn/repos/asterisk-im/tags</tagBase>
-                </configuration>
-            </plugin>
-        </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav</artifactId>
-                <version>1.0-beta-2</version>
-            </extension>
-        </extensions>
-        <finalName>phone-client</finalName>
-    </build>
 </project>
