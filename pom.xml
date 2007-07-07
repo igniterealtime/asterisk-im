@@ -7,9 +7,16 @@
     <version>1.4.0-SNAPSHOT</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
+    <url>http://maven.reucon.com/projects/public/asterisk-im/${version}</url>
+    <inceptionYear>2005</inceptionYear>
     <organization>
         <name>Jive Software</name>
+        <url>http://www.jivesoftware.com</url>
     </organization>
+    <properties>
+        <smack-version>3.0.4</smack-version>
+        <openfire-version>3.3.2</openfire-version>
+    </properties>
     <developers>
         <developer>
             <name>Stefan Reuter</name>
@@ -30,6 +37,10 @@
         <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk</connection>
         <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk</developerConnection>
     </scm>
+    <issueManagement>
+        <system>JIRA</system>
+        <url>http://www.igniterealtime.org/issues/browse/PHONE</url>
+    </issueManagement>
     <distributionManagement>
         <repository>
             <id>reucon</id>
@@ -41,7 +52,7 @@
         </snapshotRepository>
         <site>
             <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/projects/public/${artifactId}/${version}</url>
+            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${version}</url>
         </site>
     </distributionManagement>
     <repositories>
@@ -70,10 +81,6 @@
             <layout>default</layout>
         </repository>
     </repositories>
-    <properties>
-        <smack-version>3.0.4</smack-version>
-        <openfire-version>3.3.2</openfire-version>
-    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -146,6 +153,17 @@
             </extension>
         </extensions>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jxr-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
     <modules>
         <module>client</module>
         <module>server</module>

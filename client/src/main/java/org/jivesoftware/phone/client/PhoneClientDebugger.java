@@ -179,6 +179,7 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
 
             try {
                 conn = new XMPPConnection(server.getText());
+                conn.connect();
                 conn.login(username.getText(), password.getText());
                 client = new PhoneClient(conn);
                 client.addEventListener(this);
