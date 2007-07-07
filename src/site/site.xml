@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="${project.name}">
+    <body>
+        <menu ref="parent" />
+        <menu ref="modules" />
+        <links>
+            <item name="Ignite Realtime" href="http://www.igniterealtime.org/"/>
+            <item name="Asterisk" href="http://www.asterisk.org/"/>
+            <item name="${project.name}" href="${project.url}"/>
+        </links>
+        <menu ref="reports"/>
+    </body>
+</project>
