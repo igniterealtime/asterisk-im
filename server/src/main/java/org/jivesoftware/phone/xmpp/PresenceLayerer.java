@@ -202,7 +202,7 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         for (SessionProxy sessionProxy : userStateSessionsCopy) {
             userState.removeSession(sessionProxy);
             session2proxy.remove(sessionProxy.session);
-            presenceRouter.route(sessionProxy.latestPresence);
+            presenceRouter.route(new PhonePresence(sessionProxy.latestPresence));
         }
     }
 
