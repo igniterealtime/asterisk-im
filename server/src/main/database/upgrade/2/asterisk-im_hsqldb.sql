@@ -5,7 +5,7 @@ create table phoneServer (
     port integer not null,
     username varchar(255) not null,
     password varchar(255) not null,
-    constraint phoneServer_pk key(serverID)
+    constraint phoneServer_pk primary key(serverID)
 );
 
 alter table phoneDevice add column serverID bigint not null;

@@ -10,8 +10,12 @@
     <artifactId>asterisk-im-client</artifactId>
     <packaging>jar</packaging>
     <name>Asterisk-IM Client Library</name>
-    <description>Integration for Asterisk and Openfire.</description>
+    <description>Smack extension for Asterisk-IM.</description>
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack</artifactId>
