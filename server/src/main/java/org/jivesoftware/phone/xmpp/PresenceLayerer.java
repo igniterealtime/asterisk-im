@@ -49,7 +49,8 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
 
     public PresenceLayerer(String serverName, SessionManager sessionManager,
                            QueueManager queueManager, PresenceRouter presenceRouter,
-                           CallSessionFactory callSessionFactory) {
+                           CallSessionFactory callSessionFactory)
+    {
         this.queueManager = queueManager;
         this.sessionManager = sessionManager;
         this.presenceRouter = presenceRouter;
@@ -61,26 +62,32 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
      * True if we don't need to do an interception. True for
      * annonymous and control packages and packages coming not from our server.
      */
-    public boolean isNoInterceptionNeeded(Presence presence) {
+    public boolean isNoInterceptionNeeded(Presence presence)
+    {
         final JID from = presence.getFrom();
         // Only process packets sent by users on our server
-        if (!serverName.equals(from.getDomain())) {
+        if (!serverName.equals(from.getDomain()))
+        {
             return true;
         }
         // Ignore unavailable presences. That case is covered by #sessionDestroyed(Session)
-        if (Presence.Type.unavailable.equals(presence.getType())) {
+        if (Presence.Type.unavailable.equals(presence.getType()))
+        {
             return true;
         }
         // If the presence type is error we should just ignore it
-        if (Presence.Type.error.equals(presence.getType())) {
+        if (Presence.Type.error.equals(presence.getType()))
+        {
             return true;
         }
         // We should also ignore probe presence types
-        if (Presence.Type.probe.equals(presence.getType())) {
+        if (Presence.Type.probe.equals(presence.getType()))
+        {
             return true;
         }
         // If this presence is directed to an individual then ignore it
-        if (presence.getTo() != null) {
+        if (presence.getTo() != null)
+        {
             return true;
         }
         final String username = from.getNode();
@@ -92,7 +99,8 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     public void interceptPacket(Packet packet,
                                 Session session,
                                 boolean incoming,
-                                boolean processed) throws PacketRejectedException {
+                                boolean processed) throws PacketRejectedException
+    {
         // BTW: i dont really like this interecption interface, different methods
         // would be fine and a parameter / retrun type interface for the rejection ;jw
 
@@ -101,42 +109,51 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         // received. Therefore, we implement the SessionEventListener interface to react when
         // the session is destroyed
         // Log.debug("presence interceptor: "+packet);
-        if (processed || !incoming || !(packet instanceof Presence)) {
+        if (processed || !incoming || !(packet instanceof Presence))
+        {
             return;
         }
 
-        final Presence presence = (Presence)packet;
+        final Presence presence = (Presence) packet;
 
-        if (presence instanceof PhonePresence) {
+        if (presence instanceof PhonePresence)
+        {
             Log.debug("Not interception our own presence updates");
             return;
         }
 
-        try {
-            if (session instanceof ClientSession) {
-                queueManager.updateQueueStatus((ClientSession) session, presence);
+        try
+        {
+            if (session instanceof ClientSession)
+            {
+                queueManager.updateQueueStatus(presence, (ClientSession) session);
             }
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
             Log.error("error checking users queue presence", ex);
         }
-        if (isNoInterceptionNeeded(presence)) {
-            Log.debug("passed presence: "+presence);
+        
+        if (isNoInterceptionNeeded(presence))
+        {
+            Log.debug("passed presence: " + presence);
             return;
         }
         // we need to sync so that the user's presence won't get out of sync
         updateSessionProxy(session, presence);
 
-        Log.debug("passed presence, no session: "+presence);
+        Log.debug("passed presence, no session: " + presence);
     }
 
     private synchronized void updateSessionProxy(Session session, Presence presence)
-            throws PacketRejectedException {
+            throws PacketRejectedException
+    {
         SessionProxy sessionProxy = session2proxy.get(session);
         // interception on this session?
         // TODO fix updating presence when on the phone
-        if (sessionProxy != null) {
-            Log.debug("intercepted: "+presence);
+        if (sessionProxy != null)
+        {
+            Log.debug("intercepted: " + presence);
             sessionProxy.latestPresence = presence;
             throw new PacketRejectedException("Status will change after user is off the phone!");
         }
@@ -147,19 +164,22 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     {
         SessionProxy sessionProxy = session2proxy.get(clientSession);
         // there is no interception going on!
-        if (sessionProxy == null) {
+        if (sessionProxy == null)
+        {
             sessionProxy = new SessionProxy(clientSession, userState);
             sessionProxy.latestPresence = clientSession.getPresence();
             userState.sessions.add(sessionProxy);
             session2proxy.put(clientSession, sessionProxy);
         }
         // a phone presence is passed in if one is currently available to this user.
-        if(presence != null) {
+        if (presence != null)
+        {
             routePresence(clientSession, presence);
         }
     }
 
-    private void routePresence(ClientSession clientSession, Presence presence) {
+    private void routePresence(ClientSession clientSession, Presence presence)
+    {
         // send updated presence packet
         JID fullJID = clientSession.getAddress();
         presence.setFrom(fullJID);
@@ -171,15 +191,19 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
      * from the user client is intercepted until restorePresence is called for that
      * user.
      */
-    public void setPresence(String username, Presence presence) {
+    public void setPresence(String username, Presence presence)
+    {
         Log.debug("Set special presence for " + username + ": " + presence.toString());
         UserState userState;
-        synchronized (this) {
-            if(isShutdown) {
+        synchronized (this)
+        {
+            if (isShutdown)
+            {
                 return;
             }
             userState = name2state.get(username);
-            if (userState == null) {
+            if (userState == null)
+            {
                 userState = new UserState();
                 name2state.put(username, userState);
             }
@@ -187,19 +211,23 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         }
 
         Collection<ClientSession> sessions = sessionManager.getSessions(username);
-        for (ClientSession clientSession : sessions) {
+        for (ClientSession clientSession : sessions)
+        {
             createInterceptSession(userState, clientSession, presence);
         }
     }
 
-    public synchronized void restorePresence(String username) {
+    public synchronized void restorePresence(String username)
+    {
         Log.debug("Restoring special presence for " + username);
         UserState userState = name2state.remove(username);
-        if (userState == null) {
+        if (userState == null)
+        {
             return;
         }
         List<SessionProxy> userStateSessionsCopy = new ArrayList<SessionProxy>(userState.sessions);
-        for (SessionProxy sessionProxy : userStateSessionsCopy) {
+        for (SessionProxy sessionProxy : userStateSessionsCopy)
+        {
             userState.removeSession(sessionProxy);
             session2proxy.remove(sessionProxy.session);
             presenceRouter.route(new PhonePresence(sessionProxy.latestPresence));
@@ -209,58 +237,85 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     /**
      * Restores all user presences.
      */
-    public synchronized void shutdown() {
-        if(isShutdown) {
+    public synchronized void shutdown()
+    {
+        if (isShutdown)
+        {
             return;
         }
         isShutdown = true;
         // Make a copy of the usernames
         List<String> usernames = new ArrayList<String>(name2state.keySet());
-        for (String username : usernames) {
+        for (String username : usernames)
+        {
             restorePresence(username);
         }
     }
 
-    public synchronized void sessionCreated(Session session) {
-        if (!(session instanceof ClientSession) || isShutdown) {
+    public synchronized void sessionCreated(Session session)
+    {
+        if (!(session instanceof ClientSession) || isShutdown)
+        {
             return;
         }
         // TODO check if this is correct (srt)
         UserState us = name2state.get(session.getAddress().getNode());
-        if (us != null) {
+        if (us != null)
+        {
             // a user whose presences we intercept has created a new session!
-            createInterceptSession(us, (ClientSession)session, us.phonePresence);
+            createInterceptSession(us, (ClientSession) session, us.phonePresence);
         }
     }
 
-    public synchronized void sessionDestroyed(Session session) {
+    public synchronized void sessionDestroyed(Session session)
+    {
         SessionProxy sp = session2proxy.remove(session);
-        if (sp != null) {
+        if (sp != null)
+        {
             sp.user.removeSession(sp);
         }
+
+        // make sure user is paused after log off.
+        try
+        {
+            if (session instanceof ClientSession)
+            {
+                queueManager.updateQueueStatus(null, (ClientSession) session);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.error("error checking users queue presence", ex);
+        }
     }
 
-    public void anonymousSessionCreated(Session session) {
+    public void anonymousSessionCreated(Session session)
+    {
         // we are only interested in user sessions
     }
 
-    public void anonymousSessionDestroyed(Session session) {
+    public void anonymousSessionDestroyed(Session session)
+    {
         // we are only interested in user sessions
     }
 
-    public synchronized void callSessionCreated(CallSession session) {
-        if(session.getStatus() == CallSession.Status.onphone) {
+    public synchronized void callSessionCreated(CallSession session)
+    {
+        if (session.getStatus() == CallSession.Status.onphone)
+        {
             setPresence(session.getUsername(), createOnPhonePresence("On the phone"));
         }
     }
 
-    public synchronized void callSessionDestroyed(CallSession session) {
+    public synchronized void callSessionDestroyed(CallSession session)
+    {
         final String username;
 
         username = session.getUsername();
 
         Log.debug("CallSession destroyed for user '" + username + "'");
-        if (callSessionFactory.getUserCallSessionsCount(username) <= 0) {
+        if (callSessionFactory.getUserCallSessionsCount(username) <= 0)
+        {
             Log.debug("Restoring presence for user '" + username + "'");
             restorePresence(username);
         }
@@ -273,13 +328,14 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     public synchronized void callSessionModified(CallSession session,
                                                  CallSession.Status oldStatus)
     {
-        if(session.getStatus() == CallSession.Status.onphone) {
+        if (session.getStatus() == CallSession.Status.onphone)
+        {
             setPresence(session.getUsername(), createOnPhonePresence("On the phone"));
         }
     }
-    
 
-    private Presence createOnPhonePresence(String status) {
+    private Presence createOnPhonePresence(String status)
+    {
         Presence presence = new PhonePresence();
         presence.setShow(Presence.Show.away);
         presence.setStatus(status);
@@ -289,36 +345,42 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
         return presence;
     }
 
-    private class UserState {
+    private class UserState
+    {
         private List<SessionProxy> sessions = new ArrayList<SessionProxy>();
         private Presence phonePresence;
 
-        void removeSession(SessionProxy sp) {
+        void removeSession(SessionProxy sp)
+        {
             sessions.remove(sp);
         }
 
     }
 
-    private class SessionProxy {
+    private class SessionProxy
+    {
 
         final Session session;
 
         /**
-         * latest presence we received in this session
+         * latest presence we received in this session.
          */
         Presence latestPresence;
 
         final UserState user;
 
-        SessionProxy(Session session, UserState user) {
+        SessionProxy(Session session, UserState user)
+        {
             this.session = session;
             this.user = user;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if(obj instanceof SessionProxy) {
-                return ((SessionProxy)obj).session == session;
+        public boolean equals(Object obj)
+        {
+            if (obj instanceof SessionProxy)
+            {
+                return ((SessionProxy) obj).session == session;
             }
             return false;
         }
