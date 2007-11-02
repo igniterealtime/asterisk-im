@@ -1,13 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jivesoftware.phone</groupId>
     <artifactId>asterisk-im</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.0</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
-    <url>http://maven.reucon.com/projects/public/asterisk-im/${version}</url>
+    <url>http://maven.reucon.com/projects/public/asterisk-im/${pom.version}</url>
     <inceptionYear>2005</inceptionYear>
     <organization>
         <name>Jive Software</name>
@@ -15,7 +14,7 @@
     </organization>
     <properties>
         <smack-version>3.0.4</smack-version>
-        <openfire-version>3.3.2</openfire-version>
+        <openfire-version>3.4.1</openfire-version>
     </properties>
     <developers>
         <developer>
@@ -34,8 +33,8 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk</connection>
-        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk</developerConnection>
+        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/tags/asterisk-im-1.4.0</connection>
+        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/tags/asterisk-im-1.4.0</developerConnection>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -52,7 +51,7 @@
         </snapshotRepository>
         <site>
             <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${version}</url>
+            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${pom.version}</url>
         </site>
     </distributionManagement>
     <repositories>

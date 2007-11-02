@@ -8,10 +8,8 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="org.jivesoftware.phone.*" %>
-
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
-
 <%
 
     // if we were not enabled before and we are now restart the plugin
