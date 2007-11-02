@@ -7,7 +7,7 @@
     <version>1.4.0-SNAPSHOT</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
-    <url>http://maven.reucon.com/projects/public/asterisk-im/${version}</url>
+    <url>http://maven.reucon.com/projects/public/asterisk-im/${pom.version}</url>
     <inceptionYear>2005</inceptionYear>
     <organization>
         <name>Jive Software</name>
@@ -15,7 +15,7 @@
     </organization>
     <properties>
         <smack-version>3.0.4</smack-version>
-        <openfire-version>3.3.2</openfire-version>
+        <openfire-version>3.4.1</openfire-version>
     </properties>
     <developers>
         <developer>
@@ -52,7 +52,7 @@
         </snapshotRepository>
         <site>
             <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${version}</url>
+            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${pom.version}</url>
         </site>
     </distributionManagement>
     <repositories>

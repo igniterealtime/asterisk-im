@@ -1,11 +1,16 @@
-<%@ page import="java.util.Map" %>
-<%@ page import="java.util.HashMap" %>
-<%@ page import="org.jivesoftware.util.ParamUtils" %>
-<%@ page import="org.jivesoftware.phone.PhonePlugin" %>
-<%@ page import="org.jivesoftware.util.Log" %>
-<%@ page import="org.jivesoftware.openfire.container.PluginManager" %>
 <%@ page import="org.jivesoftware.openfire.XMPPServer" %>
+<%@ page import="org.jivesoftware.openfire.container.PluginManager" %>
+<%@ page import="org.jivesoftware.phone.PhoneManager" %>
+<%@ page import="org.jivesoftware.phone.PhoneOption" %>
+<%@ page import="org.jivesoftware.phone.PhonePlugin" %>
 <%@ page import="org.jivesoftware.phone.PhoneServer" %>
+<%@ page import="org.jivesoftware.util.JiveGlobals" %>
+<%@ page import="org.jivesoftware.util.Log" %>
+<%@ page import="org.jivesoftware.util.ParamUtils" %>
+<%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="java.util.Collection" %>
+<%@ page import="java.util.HashMap" %>
+<%@ page import="java.util.Map" %>
 <%
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
     PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
