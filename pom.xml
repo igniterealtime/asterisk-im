@@ -3,7 +3,7 @@
     <groupId>org.jivesoftware.phone</groupId>
     <artifactId>asterisk-im</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
     <url>http://maven.reucon.com/projects/public/asterisk-im/${pom.version}</url>
@@ -33,8 +33,8 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/tags/asterisk-im-1.4.0</connection>
-        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/tags/asterisk-im-1.4.0</developerConnection>
+        <connection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk</connection>
+        <developerConnection>scm:svn:https://svn.igniterealtime.org/svn/repos/asterisk-im/trunk</developerConnection>
     </scm>
     <issueManagement>
         <system>JIRA</system>
