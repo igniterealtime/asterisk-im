@@ -14,7 +14,7 @@ create table phoneDevice (
    extension nvarchar(255) not null,
    callerID nvarchar(255),
    isPrimary integer not null,
-   userID bigint,
+   userID integer,
    serverID integer not null,
    primary key (deviceID)
 );
