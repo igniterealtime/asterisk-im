@@ -34,8 +34,7 @@ import java.util.*;
  *
  * @author Jens Wilke
  */
-public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
-        CallSessionListener
+public class PresenceLayerer implements PacketInterceptor, SessionEventListener, CallSessionListener
 {
 
     private Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
@@ -297,6 +296,11 @@ public class PresenceLayerer implements PacketInterceptor, SessionEventListener,
     public void anonymousSessionDestroyed(Session session)
     {
         // we are only interested in user sessions
+    }
+
+    public void resourceBound(Session session)
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public synchronized void callSessionCreated(CallSession session)

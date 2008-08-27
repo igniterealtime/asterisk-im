@@ -3,6 +3,8 @@ package org.jivesoftware.phone.asterisk;
 import org.asteriskjava.live.AbstractAsteriskServerListener;
 import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.ChannelState;
+import org.asteriskjava.live.AsteriskQueueEntry;
+import org.asteriskjava.live.internal.AsteriskAgentImpl;
 import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.util.Log;
 
@@ -48,6 +50,16 @@ public class AsteriskIMServerListener extends AbstractAsteriskServerListener imp
         {
             createNewCallSession(phoneUser, channel);
         }
+    }
+
+    public void onNewAgent(AsteriskAgentImpl agent)
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void onNewQueueEntry(AsteriskQueueEntry entry)
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void propertyChange(PropertyChangeEvent evt)

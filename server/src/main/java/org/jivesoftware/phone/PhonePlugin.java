@@ -105,7 +105,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
         XMPPServer server = XMPPServer.getInstance();
         this.queueManager = new QueueManager(server.getSessionManager(),
                 getPhoneManager());
-        this.presenceHandler = new PresenceLayerer(server.getServerInfo().getName(),
+        this.presenceHandler = new PresenceLayerer(server.getServerInfo().getXMPPDomain(),
                 server.getSessionManager(), queueManager, server.getPresenceRouter(),
                 CallSessionFactory.getInstance());
         CallSessionFactory.getInstance().addCallSessionListener(presenceHandler);
