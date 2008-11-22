@@ -13,8 +13,8 @@
         <url>http://www.jivesoftware.com</url>
     </organization>
     <properties>
-        <smack-version>3.0.4</smack-version>
-        <openfire-version>3.6.0</openfire-version>
+        <smack-version>3.1.0</smack-version>
+        <openfire-version>3.6.2</openfire-version>
     </properties>
     <developers>
         <developer>
