@@ -33,6 +33,11 @@
             <groupId>org.asteriskjava</groupId>
             <artifactId>asterisk-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>javax.telephony</groupId>
+            <artifactId>jtapi</artifactId>
+	    <version>1.3.1</version>
+        </dependency>
     </dependencies>
     <build>
         <resources>
@@ -47,11 +52,13 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
+		    <!--
                     <excludes>
                         <exclude>**/jtapi/**</exclude>
                         <exclude>**/ajtapi/**</exclude>
                         <exclude>**/TestClient*</exclude>
                     </excludes>
+		    -->
                     <testExcludes>
                         <exclude>**/TestClient.java</exclude>
                         <exclude>**/DbPhoneDAOTest.java</exclude>
