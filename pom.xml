@@ -6,7 +6,7 @@
     <version>1.4.1-SNAPSHOT</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
-    <url>http://maven.reucon.com/projects/public/asterisk-im/${pom.version}</url>
+    <url>http://maven.reucon.com/projects/public/asterisk-im/${project.version}</url>
     <inceptionYear>2005</inceptionYear>
     <organization>
         <name>Jive Software</name>
@@ -43,43 +43,17 @@
     <distributionManagement>
         <repository>
             <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/public</url>
+            <url>https://secure.reucon.net/nexus/content/repositories/opensource</url>
         </repository>
         <snapshotRepository>
             <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/public-snapshot</url>
+            <url>https://secure.reucon.net/nexus/content/repositories/opensource-snapshots</url>
         </snapshotRepository>
         <site>
             <id>reucon</id>
-            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${pom.version}</url>
+            <url>dav:https://secure.reucon.net/maven/projects/public/asterisk-im/${project.version}</url>
         </site>
     </distributionManagement>
-    <repositories>
-        <repository>
-            <id>reucon</id>
-            <name>reucon public repository</name>
-            <url>http://maven.reucon.com/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>reucon</id>
-            <name>reucon public snapshot repository</name>
-            <url>http://maven.reucon.com/public-snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <layout>default</layout>
-        </repository>
-    </repositories>
     <dependencyManagement>
         <dependencies>
             <dependency>
