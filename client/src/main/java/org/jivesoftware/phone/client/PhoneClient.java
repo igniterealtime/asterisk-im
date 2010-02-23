@@ -9,14 +9,16 @@
  */
 package org.jivesoftware.phone.client;
 
+import java.util.Iterator;
+
 import org.jivesoftware.phone.client.action.DialAction;
 import org.jivesoftware.phone.client.action.ForwardAction;
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
 import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
 import org.jivesoftware.phone.client.event.PhoneEventPacketListener;
+import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketCollector;
 import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.PacketExtensionFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
@@ -27,8 +29,6 @@ import org.jivesoftware.smackx.ServiceDiscoveryManager;
 import org.jivesoftware.smackx.packet.DiscoverInfo;
 import org.jivesoftware.smackx.packet.DiscoverItems;
 
-import java.util.Iterator;
-
 /**
  * Provides the ability to Phone Openfire plugin.
  *
@@ -36,7 +36,7 @@ import java.util.Iterator;
  */
 public class PhoneClient {
 
-    private XMPPConnection conn;
+    private Connection conn;
     private PhoneEventDispatcher eventDispatcher;
     private String component;
     private ServiceDiscoveryManager serviceDiscoveryManager;
@@ -46,7 +46,7 @@ public class PhoneClient {
      *
      * @param conn XMPP Connection to use for the phone client
      */
-    public PhoneClient(XMPPConnection conn) throws XMPPException {
+    public PhoneClient(Connection conn) throws XMPPException {
         this.conn = conn;
 
         if(!conn.isAuthenticated()) {
@@ -62,8 +62,8 @@ public class PhoneClient {
         DiscoverItems items = serviceDiscoveryManager.discoverItems(conn.getServiceName());
 
         // Attempt to discover the component jid and see if this user can use the phone service
-        for (Iterator i = items.getItems(); i.hasNext();) {
-            DiscoverItems.Item item = (DiscoverItems.Item) i.next();
+        for (Iterator<DiscoverItems.Item> i = items.getItems(); i.hasNext();) {
+            DiscoverItems.Item item = i.next();
 
             if ("phone".equals(item.getName())) {
                 component = item.getEntityID();
