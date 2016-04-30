@@ -45,9 +45,9 @@ public class ForwardAction extends PhoneActionPacket {
     }
 
     /**
-     * Returns {@link ActionType.FORWARD}
+     * Returns {@link ActionType#FORWARD}
      *
-     * @return {@link ActionType.FORWARD}
+     * @return {@link ActionType#FORWARD}
      */
     public ActionType getActionType() {
         return ActionType.FORWARD;

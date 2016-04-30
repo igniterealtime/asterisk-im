@@ -70,11 +70,13 @@ public abstract class PhoneActionPacket extends IQ {
     private String id = null;
 
     protected PhoneActionPacket() {
-        super.setType(IQ.Type.SET);
+        super( CHILD_ELEMENT_NAME, NAMESPACE);
+        super.setType(Type.set);
     }
 
     protected PhoneActionPacket(String id) {
-        super.setType(IQ.Type.SET);
+        super( CHILD_ELEMENT_NAME, NAMESPACE);
+        super.setType(Type.set);
         this.id = id;
     }
 
@@ -83,9 +85,10 @@ public abstract class PhoneActionPacket extends IQ {
      *
      * @return a phone-action element
      */
-    public final String getChildElementXML() {
+    protected IQChildElementXmlStringBuilder getIQChildElementBuilder(IQChildElementXmlStringBuilder buffer) {
 
-        StringBuffer buffer = new StringBuffer("<")
+        buffer.rightAngleBracket();
+        buffer.append("<")
                 .append(CHILD_ELEMENT_NAME)
                 .append(" xmlns=\"")
                 .append(NAMESPACE)
@@ -113,7 +116,7 @@ public abstract class PhoneActionPacket extends IQ {
                 .append(CHILD_ELEMENT_NAME)
                 .append(">");
 
-        return buffer.toString();
+        return buffer;
 
 
     }

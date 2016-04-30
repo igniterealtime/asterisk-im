@@ -10,7 +10,7 @@
 package org.jivesoftware.phone.client;
 
 
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
+import org.jivesoftware.phone.client.event.PhoneEventExtensionElement;
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
 
 /**
@@ -20,7 +20,7 @@ import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
  * 
  * @author Andrew Wright
  */
-public class DialedEvent extends PhoneEventPacketExtension {
+public class DialedEvent extends PhoneEventExtensionElement {
 
     private Call call;
 

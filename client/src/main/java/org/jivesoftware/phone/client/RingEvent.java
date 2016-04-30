@@ -11,14 +11,14 @@ package org.jivesoftware.phone.client;
 
 
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
+import org.jivesoftware.phone.client.event.PhoneEventExtensionElement;
 
 /**
  * Event is thrown when the user's phone is ringing.
  *
  * @author Andrew Wright
  */
-public class RingEvent extends PhoneEventPacketExtension {
+public class RingEvent extends PhoneEventExtensionElement {
 
     public static final String CALLER_ID_ELEMENT = "callerID";
     public static final String CALLER_ID_NAME_ELEMENT = "callerIDName";
