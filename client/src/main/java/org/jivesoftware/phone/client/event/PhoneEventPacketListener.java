@@ -9,10 +9,10 @@
  */
 package org.jivesoftware.phone.client.event;
 
-import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.phone.client.OnPhoneEvent;
 import org.jivesoftware.phone.client.RingEvent;
+import org.jivesoftware.smack.packet.Stanza;
 
 /**
  * Listens for Packets that have phone-event packet extensions and dispatches them
@@ -20,7 +20,7 @@ import org.jivesoftware.phone.client.RingEvent;
  *
  * @author Andrew Wright
  */
-public class PhoneEventPacketListener implements PacketListener {
+public class PhoneEventPacketListener implements StanzaListener{
 
     private PhoneEventDispatcher eventDispatcher;
 
@@ -35,11 +35,10 @@ public class PhoneEventPacketListener implements PacketListener {
     }
 
 
-    public void processPacket(Packet packet) {
+    public void processPacket(Stanza packet) {
 
-        PhoneEventPacketExtension eventPacketExtension =
-                (PhoneEventPacketExtension) packet.getExtension(
-                        org.jivesoftware.phone.client.event.PhoneEventPacketExtension.ELEMENT_NAME, org.jivesoftware.phone.client.event.PhoneEventPacketExtension.NAMESPACE);
+        PhoneEventExtensionElement eventPacketExtension = packet.getExtension(
+                        PhoneEventExtensionElement.ELEMENT_NAME, PhoneEventExtensionElement.NAMESPACE);
 
         if(eventPacketExtension != null) {
 

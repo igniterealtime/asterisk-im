@@ -25,25 +25,7 @@ public class PhoneException extends XMPPException {
         super(message);
     }
 
-    public PhoneException(Throwable wrappedThrowable) {
-        super(wrappedThrowable);
-    }
-
-    public PhoneException(XMPPError error) {
-        super(error);
-    }
-
     public PhoneException(String message, Throwable wrappedThrowable) {
         super(message, wrappedThrowable);
     }
-
-    public PhoneException(String message, XMPPError error, Throwable wrappedThrowable) {
-        super(message, error, wrappedThrowable);
-    }
-
-    public PhoneException(String message, XMPPError error) {
-        super(message, error);    
-    }
-
-
 }

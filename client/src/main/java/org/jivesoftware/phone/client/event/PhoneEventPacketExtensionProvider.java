@@ -13,8 +13,8 @@ import org.jivesoftware.phone.client.DialedEvent;
 import org.jivesoftware.phone.client.HangUpEvent;
 import org.jivesoftware.phone.client.OnPhoneEvent;
 import org.jivesoftware.phone.client.RingEvent;
-import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.provider.PacketExtensionProvider;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.provider.ExtensionElementProvider;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -23,17 +23,17 @@ import java.util.logging.Logger;
 
 /**
  * A PacketExtension Provider that can be used to create subclasses of
- * {@link PhoneEventPacketExtension} based off packet extension information
+ * {@link PhoneEventExtensionElement} based off packet extension information
  *
  * @author Andrew Wright
  */
-public class PhoneEventPacketExtensionProvider implements PacketExtensionProvider {
+public class PhoneEventPacketExtensionProvider extends ExtensionElementProvider<PhoneEventExtensionElement> {
 
     private static final Logger log =
             Logger.getLogger(PhoneEventPacketExtensionProvider.class.getName());
 
 
-    public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
+    public PhoneEventExtensionElement parse(XmlPullParser parser, int i) throws XmlPullParserException, IOException, SmackException {
 
         String type = parser.getAttributeValue(null, "type");
         String device = parser.getAttributeValue(null, "device");
@@ -45,19 +45,19 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
             throw new IllegalStateException("Could not find type attribute");
         }
 
-        PacketExtension pe = null;
+        PhoneEventExtensionElement ee = null;
 
-        if (PhoneEventPacketExtension.EventStatus.ON_PHONE.name().equals(type)) {
-            pe = createOnPhoneEvent(parser, callID, device);
+        if (PhoneEventExtensionElement.EventStatus.ON_PHONE.name().equals(type)) {
+            ee = createOnPhoneEvent(parser, callID, device);
         }
-        else if (PhoneEventPacketExtension.EventStatus.HANG_UP.name().equals(type)) {
-            pe = createHangUpEvent(callID, device);
+        else if (PhoneEventExtensionElement.EventStatus.HANG_UP.name().equals(type)) {
+            ee = createHangUpEvent(callID, device);
         }
-        else if (PhoneEventPacketExtension.EventStatus.RING.name().equals(type)) {
-            pe = createRingEvent(parser, callID, device);
+        else if (PhoneEventExtensionElement.EventStatus.RING.name().equals(type)) {
+            ee = createRingEvent(parser, callID, device);
         }
-        else if (PhoneEventPacketExtension.EventStatus.DIALED.name().equals(type)) {
-            pe = createDialedEvent(callID, device);
+        else if (PhoneEventExtensionElement.EventStatus.DIALED.name().equals(type)) {
+            ee = createDialedEvent(callID, device);
         }
 
         //ensure we are at the proper stopping point
@@ -65,7 +65,7 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
             parser.next();
         }
 
-        return pe;
+        return ee;
     }
 
     /**
@@ -73,7 +73,7 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
      */
     private boolean isDone(XmlPullParser parser) throws XmlPullParserException {
 
-        return org.jivesoftware.phone.client.event.PhoneEventPacketExtension.ELEMENT_NAME.equals(
+        return PhoneEventExtensionElement.ELEMENT_NAME.equals(
                 parser.getName()) &&
                 parser.getEventType() == XmlPullParser.END_TAG;
 

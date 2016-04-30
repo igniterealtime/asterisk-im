@@ -9,17 +9,21 @@
  */
 package org.jivesoftware.phone.client.action;
 
+import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.provider.IQProvider;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 
 /**
  * @author Andrew Wright
  */
-public class PhoneActionIQProvider implements IQProvider {
+public class PhoneActionIQProvider extends IQProvider<PhoneActionPacket> {
 
 
-    public IQ parseIQ(XmlPullParser parser) throws Exception {
+    public PhoneActionPacket parse(XmlPullParser parser, int i) throws XmlPullParserException, IOException, SmackException {
 
         String type = parser.getAttributeValue(null, "type");
 
