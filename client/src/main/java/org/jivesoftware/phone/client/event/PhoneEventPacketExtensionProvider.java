@@ -13,27 +13,29 @@ import org.jivesoftware.phone.client.DialedEvent;
 import org.jivesoftware.phone.client.HangUpEvent;
 import org.jivesoftware.phone.client.OnPhoneEvent;
 import org.jivesoftware.phone.client.RingEvent;
-import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.provider.PacketExtensionProvider;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import org.jivesoftware.smack.packet.XmlEnvironment;
+import org.jivesoftware.smack.parsing.SmackParsingException;
+import org.jivesoftware.smack.provider.ExtensionElementProvider;
+import org.jivesoftware.smack.xml.XmlPullParser;
+import org.jivesoftware.smack.xml.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
  * A PacketExtension Provider that can be used to create subclasses of
- * {@link PhoneEventPacketExtension} based off packet extension information
+ * {@link PhoneEventExtensionElement} based off packet extension information
  *
  * @author Andrew Wright
  */
-public class PhoneEventPacketExtensionProvider implements PacketExtensionProvider {
+public class PhoneEventPacketExtensionProvider extends ExtensionElementProvider<PhoneEventExtensionElement> {
 
     private static final Logger log =
             Logger.getLogger(PhoneEventPacketExtensionProvider.class.getName());
 
 
-    public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
+    @Override
+    public PhoneEventExtensionElement parse(XmlPullParser parser, int initialDepth, XmlEnvironment xmlEnvironment) throws org.jivesoftware.smack.xml.XmlPullParserException, IOException, SmackParsingException {
 
         String type = parser.getAttributeValue(null, "type");
         String device = parser.getAttributeValue(null, "device");
@@ -45,19 +47,19 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
             throw new IllegalStateException("Could not find type attribute");
         }
 
-        PacketExtension pe = null;
+        PhoneEventExtensionElement ee = null;
 
-        if (PhoneEventPacketExtension.EventStatus.ON_PHONE.name().equals(type)) {
-            pe = createOnPhoneEvent(parser, callID, device);
+        if (PhoneEventExtensionElement.EventStatus.ON_PHONE.name().equals(type)) {
+            ee = createOnPhoneEvent(parser, callID, device);
         }
-        else if (PhoneEventPacketExtension.EventStatus.HANG_UP.name().equals(type)) {
-            pe = createHangUpEvent(callID, device);
+        else if (PhoneEventExtensionElement.EventStatus.HANG_UP.name().equals(type)) {
+            ee = createHangUpEvent(callID, device);
         }
-        else if (PhoneEventPacketExtension.EventStatus.RING.name().equals(type)) {
-            pe = createRingEvent(parser, callID, device);
+        else if (PhoneEventExtensionElement.EventStatus.RING.name().equals(type)) {
+            ee = createRingEvent(parser, callID, device);
         }
-        else if (PhoneEventPacketExtension.EventStatus.DIALED.name().equals(type)) {
-            pe = createDialedEvent(callID, device);
+        else if (PhoneEventExtensionElement.EventStatus.DIALED.name().equals(type)) {
+            ee = createDialedEvent(callID, device);
         }
 
         //ensure we are at the proper stopping point
@@ -65,7 +67,7 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
             parser.next();
         }
 
-        return pe;
+        return ee;
     }
 
     /**
@@ -73,9 +75,9 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
      */
     private boolean isDone(XmlPullParser parser) throws XmlPullParserException {
 
-        return org.jivesoftware.phone.client.event.PhoneEventPacketExtension.ELEMENT_NAME.equals(
+        return PhoneEventExtensionElement.ELEMENT_NAME.equals(
                 parser.getName()) &&
-                parser.getEventType() == XmlPullParser.END_TAG;
+                parser.getEventType() == XmlPullParser.Event.END_ELEMENT;
 
     }
 
@@ -95,17 +97,17 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
         while (!isDone(parser)) {
 
             if ("extension".equals(parser.getName()) &&
-                    parser.getEventType() == XmlPullParser.START_TAG) {
+                    parser.getEventType() == XmlPullParser.Event.START_ELEMENT) {
                 // TODO:  KD - I'm not sure why this is here - extension isn't part of the OnPhoneEvent
                 extension = parser.nextText();
             }
             else if ("callerID".equals(parser.getName()) &&
-                    parser.getEventType() == XmlPullParser.START_TAG) {
+                    parser.getEventType() == XmlPullParser.Event.START_ELEMENT) {
 
                 callerId = parser.nextText();
             }
             else if ("callerIDName".equals(parser.getName()) &&
-                    parser.getEventType() == XmlPullParser.START_TAG) {
+                    parser.getEventType() == XmlPullParser.Event.START_ELEMENT) {
 
                 callerIdName = parser.nextText();
             }
@@ -131,12 +133,12 @@ public class PhoneEventPacketExtensionProvider implements PacketExtensionProvide
         while (!isDone(parser)) {
 
             if ("callerID".equals(parser.getName()) &&
-                    parser.getEventType() == XmlPullParser.START_TAG) {
+                    parser.getEventType() == XmlPullParser.Event.START_ELEMENT) {
 
                 callerID = parser.nextText();
             }
             else if ("callerIDName".equals(parser.getName()) &&
-                    parser.getEventType() == XmlPullParser.START_TAG) {
+                    parser.getEventType() == XmlPullParser.Event.START_ELEMENT) {
 
                 callerIDName = parser.nextText();
 

@@ -9,8 +9,6 @@
  */
 package org.jivesoftware.phone.client;
 
-import org.jivesoftware.smack.packet.XMPPError;
-
 /**
  * Thrown when there is a problem trying to execute a phone action
  *
@@ -26,25 +24,7 @@ public class PhoneActionException extends PhoneException {
         super(message);
     }
 
-    public PhoneActionException(Throwable wrappedThrowable) {
-        super(wrappedThrowable);
-    }
-
-    public PhoneActionException(XMPPError error) {
-        super(error);
-    }
-
     public PhoneActionException(String message, Throwable wrappedThrowable) {
         super(message, wrappedThrowable);
     }
-
-    public PhoneActionException(String message, XMPPError error, Throwable wrappedThrowable) {
-        super(message, error, wrappedThrowable);
-    }
-
-    public PhoneActionException(String message, XMPPError error) {
-        super(message, error);    
-    }
-
-
 }

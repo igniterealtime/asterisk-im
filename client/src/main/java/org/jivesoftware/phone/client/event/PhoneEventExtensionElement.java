@@ -1,5 +1,5 @@
 /**
- * $RCSfile: PhoneEventPacketExtension.java,v $
+ * $RCSfile: PhoneEventExtensionElement.java,v $
  * $Revision: 1.6 $
  * $Date: 2005/06/25 21:02:15 $
  *
@@ -10,14 +10,15 @@
 package org.jivesoftware.phone.client.event;
 
 import org.jivesoftware.phone.client.PhoneEvent;
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.packet.XmlEnvironment;
 
 /**
  * Base class for all phone-event packets
  *
  * @author Andrew Wright
  */
-public abstract class PhoneEventPacketExtension implements PhoneEvent, PacketExtension {
+public abstract class PhoneEventExtensionElement implements PhoneEvent, ExtensionElement {
 
     /**
      * namespace for the phone schema
@@ -29,13 +30,18 @@ public abstract class PhoneEventPacketExtension implements PhoneEvent, PacketExt
     private String device;
     private String callID = null;
 
-    protected PhoneEventPacketExtension(String device) {
+    protected PhoneEventExtensionElement(String device) {
         this.device = device;
     }
 
-    protected PhoneEventPacketExtension(String callID, String device) {
+    protected PhoneEventExtensionElement(String callID, String device) {
         this.device = device;
         this.callID = callID;
+    }
+
+    @Override
+    public CharSequence toXML(XmlEnvironment xmlEnvironment) {
+        return toXML();
     }
 
     public String toXML() {

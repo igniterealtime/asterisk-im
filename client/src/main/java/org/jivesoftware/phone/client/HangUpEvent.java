@@ -10,14 +10,14 @@
 package org.jivesoftware.phone.client;
 
 
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
+import org.jivesoftware.phone.client.event.PhoneEventExtensionElement;
 
 /**
  * Event is dispatched when the current xmpp user hangs up his phone
  *
  * @author Andrew Wright
  */
-public class HangUpEvent extends PhoneEventPacketExtension {
+public class HangUpEvent extends PhoneEventExtensionElement {
 
     public HangUpEvent(String callID, String device) {
         super(callID, device);
