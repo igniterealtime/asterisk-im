@@ -77,7 +77,7 @@
                 <artifactId>smackx-debug</artifactId>
                 <version>${smack-version}</version>
             </dependency>
-                        <dependency>
+            <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>2.5</version>
