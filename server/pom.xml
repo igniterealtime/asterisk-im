@@ -10,6 +10,9 @@
     <packaging>openfire-plugin</packaging>
     <name>Asterisk-IM Openfire Plugin</name>
     <description>Integration for Asterisk and Openfire.</description>
+   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
+  </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -49,9 +52,10 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                 <version>3.0</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
 		    <!--
                     <excludes>
                         <exclude>**/jtapi/**</exclude>
