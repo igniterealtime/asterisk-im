@@ -9,25 +9,21 @@
  */
 package org.jivesoftware.phone.client;
 
-import java.util.Iterator;
-
 import org.jivesoftware.phone.client.action.DialAction;
 import org.jivesoftware.phone.client.action.ForwardAction;
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
+import org.jivesoftware.phone.client.event.PhoneEventExtensionElement;
 import org.jivesoftware.phone.client.event.PhoneEventPacketListener;
-import org.jivesoftware.smack.Connection;
-import org.jivesoftware.smack.PacketCollector;
-import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.filter.PacketExtensionFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.ServiceDiscoveryManager;
-import org.jivesoftware.smackx.packet.DiscoverInfo;
-import org.jivesoftware.smackx.packet.DiscoverItems;
+import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+import org.jxmpp.util.XmppStringUtils;
 
 /**
  * Provides the ability to Phone Openfire plugin.
@@ -36,7 +32,7 @@ import org.jivesoftware.smackx.packet.DiscoverItems;
  */
 public class PhoneClient {
 
-    private Connection conn;
+    private XMPPConnection conn;
     private PhoneEventDispatcher eventDispatcher;
     private String component;
     private ServiceDiscoveryManager serviceDiscoveryManager;
@@ -46,7 +42,7 @@ public class PhoneClient {
      *
      * @param conn XMPP Connection to use for the phone client
      */
-    public PhoneClient(Connection conn) throws XMPPException {
+    public PhoneClient(XMPPConnection conn) throws XMPPException, SmackException.NotConnectedException, SmackException.NoResponseException {
         this.conn = conn;
 
         if(!conn.isAuthenticated()) {
@@ -55,16 +51,14 @@ public class PhoneClient {
 
         eventDispatcher = new PhoneEventDispatcher();
         conn.addPacketListener(new PhoneEventPacketListener(eventDispatcher),
-                new PacketExtensionFilter(PhoneEventPacketExtension.ELEMENT_NAME,
-                        PhoneEventPacketExtension.NAMESPACE));
+                new PacketExtensionFilter(PhoneEventExtensionElement.ELEMENT_NAME,
+                        PhoneEventExtensionElement.NAMESPACE));
 
         serviceDiscoveryManager = ServiceDiscoveryManager.getInstanceFor(conn);
         DiscoverItems items = serviceDiscoveryManager.discoverItems(conn.getServiceName());
 
         // Attempt to discover the component jid and see if this user can use the phone service
-        for (Iterator<DiscoverItems.Item> i = items.getItems(); i.hasNext();) {
-            DiscoverItems.Item item = i.next();
-
+        for (DiscoverItems.Item item : items.getItems()) {
             if ("phone".equals(item.getName())) {
                 component = item.getEntityID();
                 break;
@@ -76,7 +70,7 @@ public class PhoneClient {
         }
 
         DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component,
-                StringUtils.parseName(conn.getUser()));
+                XmppStringUtils.parseLocalpart(conn.getUser()));
         if (!info.containsFeature("http://jivesoftware.com/phone")) {
             throw new PhoneException("User does not have phone support");
         }
@@ -100,15 +94,19 @@ public class PhoneClient {
         action.setFrom(conn.getUser());
 
         // Wait for a response packet back from the server.
-        PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
+        PacketIDFilter responseFilter = new PacketIDFilter(action.getPacketID());
         PacketCollector response = conn.createPacketCollector(responseFilter);
 
         // do iq stuff here
         // packet reply timeout
-        conn.sendPacket(action);
+        try {
+            conn.sendPacket(action);
+        } catch (SmackException.NotConnectedException e) {
+            throw new PhoneActionException("Not connected!");
+        }
 
         // Wait up to a certain number of seconds for a reply.
-        IQ iq = (IQ) response.nextResult(SmackConfiguration.getPacketReplyTimeout());
+        IQ iq = response.nextResult(SmackConfiguration.getDefaultPacketReplyTimeout());
 
         // Stop queuing results
         response.cancel();
@@ -118,7 +116,7 @@ public class PhoneClient {
         }
 
         if (iq.getError() != null) {
-            throw new PhoneActionException(iq.getError());
+            throw new PhoneActionException(iq.getError().toString());
         }
 
         if (!(iq instanceof DialAction)) {
@@ -143,15 +141,19 @@ public class PhoneClient {
         action.setFrom(conn.getUser());
 
         // Wait for a response packet back from the server.
-        PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
+        PacketIDFilter responseFilter = new PacketIDFilter(action.getPacketID());
         PacketCollector response = conn.createPacketCollector(responseFilter);
 
         // do iq stuff here
         // packet reply timeout
-        conn.sendPacket(action);
+        try {
+            conn.sendPacket(action);
+        } catch (SmackException.NotConnectedException e) {
+            throw new PhoneActionException("Not connected!");
+        }
 
         // Wait up to a certain number of seconds for a reply.
-        IQ iq = (IQ) response.nextResult(SmackConfiguration.getPacketReplyTimeout());
+        IQ iq = response.nextResult(SmackConfiguration.getDefaultPacketReplyTimeout());
 
         // Stop queuing results
         response.cancel();
@@ -161,7 +163,7 @@ public class PhoneClient {
         }
 
         if (iq.getError() != null) {
-            throw new PhoneActionException(iq.getError());
+            throw new PhoneActionException(iq.getError().toString());
         }
 
         if (!(iq instanceof DialAction)) {
@@ -192,15 +194,19 @@ public class PhoneClient {
         action.setFrom(conn.getUser());
 
         // Wait for a response packet back from the server.
-        PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
+        PacketIDFilter responseFilter = new PacketIDFilter(action.getPacketID());
         PacketCollector response = conn.createPacketCollector(responseFilter);
 
         // do iq stuff here
         // packet reply timeout
-        conn.sendPacket(action);
+        try {
+            conn.sendPacket(action);
+        } catch (SmackException.NotConnectedException e) {
+            throw new PhoneActionException("Not connected!");
+        }
 
         // Wait up to a certain number of seconds for a reply.
-        IQ iq = (IQ) response.nextResult(SmackConfiguration.getPacketReplyTimeout());
+        IQ iq = response.nextResult(SmackConfiguration.getDefaultPacketReplyTimeout());
 
         // Stop queuing results
         response.cancel();
@@ -211,7 +217,7 @@ public class PhoneClient {
         }
 
         if (iq.getError() != null) {
-            throw new PhoneActionException(iq.getError());
+            throw new PhoneActionException(iq.getError().toString());
         }
 
         if (!(iq instanceof ForwardAction)) {
@@ -243,15 +249,19 @@ public class PhoneClient {
         action.setJID(jid);
 
         // Wait for a response packet back from the server.
-        PacketFilter responseFilter = new PacketIDFilter(action.getPacketID());
+        PacketIDFilter responseFilter = new PacketIDFilter(action.getPacketID());
         PacketCollector response = conn.createPacketCollector(responseFilter);
 
         // do iq stuff here
         // packet reply timeout
-        conn.sendPacket(action);
+        try {
+            conn.sendPacket(action);
+        } catch (SmackException.NotConnectedException e) {
+            throw new PhoneActionException("Not connected!");
+        }
 
         // Wait up to a certain number of seconds for a reply.
-        IQ iq = (IQ) response.nextResult(SmackConfiguration.getPacketReplyTimeout());
+        IQ iq = response.nextResult(SmackConfiguration.getDefaultPacketReplyTimeout());
 
         // Stop queuing results
         response.cancel();
@@ -262,7 +272,7 @@ public class PhoneClient {
         }
 
         if (iq.getError() != null) {
-            throw new PhoneActionException(iq.getError());
+            throw new PhoneActionException(iq.getError().toString());
         }
 
         if (!(iq instanceof ForwardAction)) {
@@ -277,8 +287,9 @@ public class PhoneClient {
      * @param jid jid to check and see if the phone service is enabled
      * @return true if the user has the phone service
      * @throws XMPPException if there is an issue doing the disco query
+     * @throws SmackException if there is an issue doing the disco query
      */
-    public boolean isPhoneEnabled(String jid) throws XMPPException {
+    public boolean isPhoneEnabled(String jid) throws SmackException.NotConnectedException, XMPPException.XMPPErrorException, SmackException.NoResponseException {
 
         if (jid == null || "".equals(jid)) {
             throw new IllegalArgumentException("JID cannot be empty or null!");
@@ -287,8 +298,8 @@ public class PhoneClient {
                if(!jid.matches(".*@.*"+conn.getServiceName())) {
                        return false;
                }
-       
-        DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component, StringUtils.parseName(jid));
+
+        DiscoverInfo info = serviceDiscoveryManager.discoverInfo(component, XmppStringUtils.parseLocalpart(jid));
 
         return info.containsFeature("http://jivesoftware.com/phone");
     }

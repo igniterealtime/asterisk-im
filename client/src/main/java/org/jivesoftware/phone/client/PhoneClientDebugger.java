@@ -12,16 +12,17 @@ package org.jivesoftware.phone.client;
 
 import org.jivesoftware.phone.client.action.PhoneActionIQProvider;
 import org.jivesoftware.phone.client.action.PhoneActionPacket;
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
+import org.jivesoftware.phone.client.event.PhoneEventExtensionElement;
 import org.jivesoftware.phone.client.event.PhoneEventPacketExtensionProvider;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,16 +36,16 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
     private static final Logger log = Logger.getLogger(PhoneClientDebugger.class.getName());
 
     static {
-        XMPPConnection.DEBUG_ENABLED = true;
+        SmackConfiguration.DEBUG = true;
 
         try {
 
-            ProviderManager.getInstance().addExtensionProvider("phone-event",
-                    PhoneEventPacketExtension.NAMESPACE,
+            ProviderManager.addExtensionProvider("phone-event",
+                    PhoneEventExtensionElement.NAMESPACE,
                     new PhoneEventPacketExtensionProvider());
 
 
-            ProviderManager.getInstance().addIQProvider("phone-action",
+            ProviderManager.addIQProvider("phone-action",
                     PhoneActionPacket.NAMESPACE,
                     new PhoneActionIQProvider());
         }
@@ -55,7 +56,7 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
     }
 
     private PhoneClient client;
-    private XMPPConnection conn;
+    private AbstractXMPPConnection conn;
 
     private JTextField input;
     private JTextField username;
@@ -178,13 +179,21 @@ public class PhoneClientDebugger extends JFrame implements ActionListener, Phone
         else if ("connect".equals(command)) {
 
             try {
-                conn = new XMPPConnection(server.getText());
+                conn = new XMPPTCPConnection(username.getText(), password.getText(), server.getText());
                 conn.connect();
-                conn.login(username.getText(), password.getText());
+                conn.login();
                 client = new PhoneClient(conn);
                 client.addEventListener(this);
             }
+            catch (IOException e1) {
+                log.log(Level.SEVERE, e1.getMessage(), e1);
+                throw new RuntimeException(e1);
+            }
             catch (XMPPException e1) {
+                log.log(Level.SEVERE, e1.getMessage(), e1);
+                throw new RuntimeException(e1);
+            }
+            catch (SmackException e1) {
                 log.log(Level.SEVERE, e1.getMessage(), e1);
                 throw new RuntimeException(e1);
             }

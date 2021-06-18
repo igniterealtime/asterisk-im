@@ -11,7 +11,7 @@ package org.jivesoftware.phone.client;
 
 
 import org.jivesoftware.phone.client.event.PhoneEventDispatcher;
-import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
+import org.jivesoftware.phone.client.event.PhoneEventExtensionElement;
 
 /**
  * This event will be dispatched when the user answer's his/her phone.
@@ -20,7 +20,7 @@ import org.jivesoftware.phone.client.event.PhoneEventPacketExtension;
  *
  * @author Andrew Wright
  */
-public class OnPhoneEvent extends PhoneEventPacketExtension {
+public class OnPhoneEvent extends PhoneEventExtensionElement {
 
     public static final String CALLER_ID_ELEMENT = "callerID";
     public static final String CALLER_ID_NAME_ELEMENT = "callerIDName";

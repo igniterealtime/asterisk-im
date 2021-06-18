@@ -34,9 +34,9 @@ public class InviteAction extends PhoneActionPacket {
     }
 
     /**
-     * Returns {@link ActionType.INVITE}
+     * Returns {@link ActionType#INVITE}
      *
-     * @return {@link ActionType.INVITE}
+     * @return {@link ActionType#INVITE}
      */
     public ActionType getActionType() {
         return ActionType.INVITE;

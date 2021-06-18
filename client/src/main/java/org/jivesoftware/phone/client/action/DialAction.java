@@ -45,9 +45,9 @@ public class DialAction extends PhoneActionPacket {
 
 
     /**
-     * Returns {@link ActionType.DIAL}
+     * Returns {@link ActionType#DIAL}
      *
-     * @return {@link ActionType.DIAL}
+     * @return {@link ActionType#DIAL}
      */
     public ActionType getActionType() {
         return ActionType.DIAL;
