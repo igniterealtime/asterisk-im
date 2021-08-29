@@ -1,0 +1,330 @@
+<HTML>
+<HEAD>
+<TITLE>SAPI tags supported in S.410 TTS Player </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+
+<H2>SAPI Syntax</h2>
+
+Text-to-speech escape sequences follow these general rules of syntax:
+<ul><li>
+All tags begin and end with a backslash character (<tt>\</tt>).
+</li><li>
+The backslash character is not allowed within a tag.
+</li><li>
+An odd number of backslash characters in tagged text produce
+undefined behavior in the player/recorder resource.
+</li><li>
+Escape sequences are case-insensitive. 
+For example, <tt>\vce\</tt> is the same as <tt>\VCE\</tt>.
+</li><li>
+Escape sequences are white-space – dependent.
+For example, <tt>\Rst\</tt> is not the same as <tt>\ Rst \</tt>.
+</li></ul>
+To include a backslash character in tagged text, but outside a tag,
+use a double backslash (<tt>\\</tt>).
+<p>
+Escape sequences that set TTS rendering attributes are expected to be
+persistent unless the resource rendering TTS data is deconfigured
+from a group. For example, if the <tt>\ ctx="e-mail"\</tt> tag is
+passed to a TTS Player resource that supports that escape 
+sequence, the engine stays in the <tt>"e-mail"</tt> context 
+until another sequence changes the context.
+<p>
+Escape sequences unknown to a resource attempting to decode
+SAPI-encoded data are expected to be ignored.
+<p>
+If the syntax of an escape sequence is in error (for example, missing
+a "<tt>/</tt>" character), the enclosed text is ignored. Although it is
+expected that a coder implementation should take reasonable measures
+to recover from text errors, it is the responsibility of the creator
+of the MDO to insure its contents is encoded properly. To limit the
+effects of erroneous syntax it may be useful to include some maximum
+range over which an escape sequence is valid, say up to the end of a
+sentence or paragraph.
+<p>
+
+<h2>SAPI Escape Sequences for Minimal S.410 Conformance</h2>
+
+This section uses the following typographic conventions.
+The following codes are required for minimal compliance with S.100:
+
+<table border="1" cellpadding="3">
+<tr><td>Example</td><td>Description</td><tr>
+<tr><td><b>Chr</b></td>
+<td>Bold type indicates speech-inflection keywords.</td></tr>
+<tr><td><i>string</i></td>
+<td>Italic indicates placeholders for information you supply, 
+such as a character or context string.</td></tr>
+<tr><td>[option]</td>
+<td> Square brackets indicate items that are optional.</td></tr>
+<tr><td>[option...]</td>
+<td>Three dots (an ellipsis) following an item indicate 
+that more items having the same form may appear.</td></tr>
+<tr><td>"C"</td>
+<td>Quotation marks are required to delimit strings.</td></tr>
+</table>
+<p>
+
+Required SAPI tags
+
+<table border="1" cellpadding="3">
+<tr><td>Sequence</td><td>Description</td><tr>
+<tr><td>
+<tt>\<b>COM</b>=<i>string</i>\</tt>
+<br><i>string</i> Text of the comment.
+<p>Example:
+<br><tt>\<b>COM</b>="This is a comment."\</tt>
+</td><td>
+Embeds a comment in the text. 
+Comments are not translated into speech. 
+</td></tr>
+
+<tr><td>
+<tt>\<b>DLM</b>="&lt;symbol&gt;"\</tt>
+<br><i>&lt;symbol&gt;</i> A text character.
+<p>Example:
+<br><tt>\<b>DLM</b>="&lt;Esc&gt;"\</tt>
+</td><td>
+Replaces the escape sequence character with "&lt;symbol&gt;"
+All subsequent occurrences of &lt;symbol&gt; are treated as the
+escape secqence character.
+</td></tr>
+
+<tr><td>
+<tt>\<b>EMP</b>\</tt>
+<p>Example:
+<br><tt>\"... the \<b>EMP</b>\truth, the \<b>EMP</b>\whole truth,
+and nothing \<b>EMP</b>\but the truth."</tt>
+</td><td>
+Emphasizes the next word to be spoken.
+</td></tr>
+
+<tr><td>
+<tt>\<b>Eng</b>:&lt;VendorID&gt;:&lt;command&gt;\</tt><br>
+<tt>\<b>Eng</b>:&lt;command&gt;\</tt>
+<br><i>VendorID</i> Naming scope identifier
+<br><i>command</i> Vendor-specific command
+<p>Examples:<tt>
+<br>\<b>Eng</b>:DLGC:beep\
+<br>\<b>Eng</b>:SUNW:DTMF=9,555-1212\
+<br>\<b>Eng</b>:CGRM:playwav "\\windows\\sounds\\tada.wav"\
+</td><td>
+Embeds a vendor- or engine-specific command that affects only a
+specific TTS Player resource implementation. Subsequent
+<tt>\<b>Eng</b></tt> commands for a specified engine can omit the
+<tt>&lt;VendorID&gt;:</tt>, until an engine-specific escape sequence
+for another engine is specified.
+<br>
+The engine-specific commands may include any optional parameters 
+as demonstrated in the examples.
+</td></tr>
+
+<tr><td>
+<tt>\<b>PAU</b>=number\</tt>
+<br><i>number</i> Number of milliseconds to pause.
+<p>Example:
+<br><tt>\<b>PAU</b>=1000\</tt>
+</td><td>
+Pauses speech for the specified number of milliseconds.
+</td></tr>
+
+<tr><td>
+<tt>\<b>PIT</b>=number\</tt>
+<br><i>number</i> Pitch, in hertz. 
+The actual pitch fluctuates above and below this baseline.
+<p>Example:
+<br><tt>\<b>PIT</b>=120\</tt>
+</td><td>
+Sets the baseline pitch of the text-to-speech mode to 
+the specified value in hertz.
+</td></tr>
+
+<tr><td>
+<tt>\<b>PRN</b>=pronounciation[=part_of_speech]\</tt>
+<br><i>pronounciation</i> 
+<br><tt>part_of_speech</tt>
+A string from the list defined for the "PRT" escape sequence.
+<p>Example:
+<br><tt>\<b>PRN</b>=tomato=tomaato\
+<br>\<b>PRN</b>=resume=rezumay=N\</tt>
+</td><td>
+Indicates how to pronounce text by passing the phonetic equivalent
+to the Player resource.
+</td></tr>
+
+<tr><td>
+<tt>\<b>RST</b>\</tt>
+<p>Example:
+<br><tt>\<b>RST</b>\</tt>
+</td><td>
+Resets all escape sequences to the Player resource's default settings.
+</td></tr>
+
+<tr><td>
+<tt>\<b>SPD</b>=number\</tt>
+<br><i>number</i> 
+Baseline average talking speed, in words per minute.
+<p>Example:
+<br><tt>\<b>SPD</b>=90\</tt>
+</td><td>
+Sets the baseline average talking speed of the text-to-speech coder
+to the specified number of words per minute.
+</td></tr>
+
+<tr><td>
+<tt>\<b>VOL</b>=number\</tt>
+<br><i>number</i> 
+Baseline speaking volume.
+The volume level is a linear range from 0 for absolute silence 
+to 65535 for maximum volume. The default is 65535.
+<p>Example:
+<br><tt>\<b>VOL</b>=32768\</tt>
+</td><td>
+Sets the baseline speaking volume for the text-to-speech coder.
+</td></tr>
+
+</table>
+
+<h2>Optional SAPI Escape Sequences</h2>
+
+Many TTS engines support SAPI tags that, while not within the scope
+of minimal compliance for S.410, demonstrate features that
+distinguish them in the marketplace. An application developer may
+select a Player resource via the attribute <tt>a_SapiOptions</tt>,
+using symbols corresponding to these tags. The tags
+and their corresponding symbols are given in the table below. 
+
+<table border="1" cellpadding="3">
+<tr><td>Tag</td><td>Symbol
+</td></tr><tr><td>
+<b><tt>Chr</tt></b></td><td><tt>ESymbol.Container_SAPIChr</tt>
+</td></tr><tr><td>
+<b><tt>Ctx</tt></b></td><td><tt>ESymbol.Container_SAPICtx</tt>
+</td></tr><tr><td>
+<b><tt>Mrk</tt></b></td><td><tt>ESymbol.Container_SAPIMrk</tt>
+</td></tr><tr><td>
+<b><tt>Pro</tt></b></td><td><tt>ESymbol.Container_SAPIPro</tt>
+</td></tr><tr><td>
+<b><tt>Prt</tt></b></td><td><tt>ESymbol.Container_SAPIPrt</tt>
+</td></tr><tr><td>
+<b><tt>Vce</tt></b></td><td><tt>ESymbol.Container_SAPIVce</tt>
+</td></tr>
+</table>
+
+<p>
+The meaning of the tags are described in the following tables.
+<p>
+
+<table border="1" cellpadding="3">
+<tr><td>
+<tt>\<b>CHR</b>=string[[,string]...]\</tt>
+<br><i>string</i> 
+String that specifies the characteristics of the voice.
+<p>Example:
+<br><tt>\<b>CHR</b>="Angry","Loud"\</tt>
+</td><td>
+Sets the character of the voice. Although less specific than setting
+the inflection, stress, attack, and whispering qualities individually,
+it is easier to use and allows the engine more flexibility and
+intelligence in its response.
+<p>
+
+Some commonly available characteristics are: Normal, Angry, Business,
+Calm, Depressed, Excited, Falsetto, Happy, Loud, Monotone, Perky,
+Quiet, Sarcastic, Scared, Shout, Tense, Whisper
+
+</td></tr>
+
+<tr><td>
+<tt>\<b>CTX</b>=string\</tt>
+<br><i>string</i>
+String that specifies the context. 
+<p>Example:
+<br><tt>\<b>CTX</b>="Address"\</tt>
+</td><td>
+Sets the context for the text that follows, which determines 
+how symbols are spoken.
+The <i>string</i> can be one of the following:
+Address, C, Document, E-Mail, Numbers, Spreadsheet, Unknown, Normal.
+</td></tr>
+
+<tr><td>
+<tt>\<b>MRK</b>=number\</tt>
+<br><i>number</i> 
+Number of the bookmark.
+<p>Example:
+<br><tt>\<b>MRK</b>=75000\</tt>
+</td><td>
+Indicates a bookmark in the text.
+<p>
+When the TTS Player resource encounters this escape sequence, it
+notifies the application by generating the <tt>Player.ev_Marker</tt>
+event. The <i>number</i> is in the event as <tt>Player.ev_Mark</tt>
+<p>
+Note: Bookmark number zero (\Mrk=0\) is reserved; a
+<tt>Player.ev_Marker</tt> event is not sent for bookmark number zero.
+</td></tr>
+
+<tr><td>
+<tt>\<b>PRO</b>=number\</tt>
+<br><i>number</i> 
+Setting <i>number</i> to 1 activates prosodic rules (the default).
+Setting <i>number</i> to 0 deactivates prosodic rules
+<p>Example:
+<br><tt>\<b>PRO</b>=0\</tt>
+</td><td>
+Activates or deactivates prosodic rules, which affect pitch, speaking
+rate, and volume of words independently of control tags embedded in
+the text.
+</td></tr>
+
+
+<tr><td>
+<tt>\<b>PRT</b>=string\</tt>
+<br><i>string</i> 
+Indicates the part of speech.
+<p>Example:
+<br><tt>\<b>PRT</b>="Abbr"\</tt>
+</td><td>
+Indicates the part of speech of the next word.
+<p><i>string</i> can be one of:
+ "Abbr" (Abbreviation), "Adj" (Adjective), "Adv" (Adverb),
+ "Card" (Cardinal number), "Conj" (Conjunction), "Cont" (Contraction),
+ "Det" (Determiner), "Interj" (Interjection), "N" (Noun),
+ "Ord" (Ordinal number), "Prep" (Preposition), "Pron" (Pronoun),
+ "Prop" (Proper noun), "Punct" (Punctuation), "Quant" (Quantifier),
+ "V" (Verb).
+</td></tr>
+
+<tr><td>
+<tt>\<b>VCE</b>=charact=value[[,charact=value]...]\</tt>
+<br><i>charact</i> 
+One of the defined characteristics: 
+Accent, Dialect, Gender, Speaker, Age, Style.
+<br><i>value</i> 
+String that specifies value or type for the given characteristic.
+<p>Example:
+<br><tt>\<b>VCE</b>=Gender="Female","Age=Adolescent"\</tt>
+</td><td>
+Instructs the engine to change its speaking voice to one that has the
+specified characteristics.
+<P>
+<b>Accent:</b> speak the given language with this accent.
+<br>For example: Language="English", Accent="French".
+<p>
+<b>Dialect:</b> speak in the given dialect.
+<p>
+<b>Gender:</b> value is "Male", "Female", "Neutral"
+<p>
+<b>Speaker:</b> name of the voice or "NULL".
+<p>
+<b>Age:</b> one of "Baby" (about 1 yr), "Toddler" (about 3 yrs), 
+"Child" (about 5 yrs), "Adolescent" (about 14 yrs), 
+"Adult" (between 20 and 60 yrs) or "Elderly" (over 60 yrs).
+</td></tr>
+</table>
+
+
+</BODY>
+</HTML>

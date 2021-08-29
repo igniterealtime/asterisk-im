@@ -1,0 +1,263 @@
+<HTML>
+<HEAD>
+<!-- 
+/*
+ * ECTF S.410-R2 Source code distribution.
+ *
+ * Copyright (c) 2002, Enterprise Computer Telephony Forum (ECTF),
+ * All Rights Reserved.
+ *
+ * Use and redistribution of this file is subject to a License.
+ * For terms and conditions see: javax/telephony/media/LICENSE.HTML
+ * 
+ * In short, you can use this source code if you keep and display
+ * the ECTF Copyright and the License conditions. The code is supplied
+ * "AS IS" and ECTF disclaims all warranties and liability.
+ */
+ -->
+<TITLE>ECTF S.410: Media Services API for Java</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<p>
+S.410 Media Services API
+</p>
+<h3>Overview of S.410 Revision 2 (JTAPI Media Version 1.4)</h3>
+
+ECTF S.410 defines the <a href="javax/telephony/media/package-summary.html">media package</a> for the Java Telephony API (JTAPI).
+This API
+is suitable for applications doing <i>content</i> processing, 
+independent of the call setup, signalling and routing.
+For example, S.410 is designed to simplify applications that implement
+interactive voice response (IVR) systems,
+auto-attendant or <i>robotic</i> agents (versus <i>live</i> operators),
+voice mail, speech recognition, text-to-speech, fax, integrated messaging, etc.
+</p><p>
+<a href="http://www.ectf.org/pages/pubdocs/c100r2/index.html">
+ECTF C.100</a> defines the Core and Call Control extension packages of JTAPI.
+The C.100 API is suitable for applications doing detailed call control,
+monitoring/routing calls in a PBX (or other switching system),
+managing a call center, controlling a phone terminal,
+and other activities concerned with call states and signalling.
+</p>
+
+
+<h3>To download the S.410-R2 specification:</h3>
+The S.410-R2 release is available from the
+<a href="http://www.ectf.org/pages/specs/download.htm#s410">
+ECTF download page</a> in several formats:
+<ul><li>
+<a href="s410r2.pdf">s410r2.pdf</a>; a PDF document (when it is ready).
+</li><li>
+<a href="s410r2-html.zip">s410r2-html.zip</a>; Javadoc HTML tree.
+</li><li>
+<a href="s410r2-jars.zip">s410r2-jars.zip</a>; compiled jar file for S.410-R2.
+<br>(includes: <tt>javax.telephony</tt> and <tt>javax.telephony.capabilities</tt>)
+<br><b>Note:</b> S410.jar allows you to compile programs, but they
+will not execute unless you get a MediaPeer/MediaProvider from
+an implementation vendor.
+</li><li>
+<a href="s410r2-java.zip">s410r2-java.zip</a>; the Java source code,
+including the provider package is availabe for those who
+are creating MediaPeer/MediaProvider implementation packages.
+Contact the <a href="mailto: jeff.peck@intel.com">S.410 Editor</a> for
+information on updates and maintenance of the S.410-R2 reference source code.
+</li></ul>
+<b>Note:</b>
+Use and redistribution of the source files is subject to a License.
+<br>For terms and conditions see:
+<a href="LICENSE.HTML">javax/telephony/media/LICENSE.HTML</a>
+<br>  
+  In short, you can use this source code if you keep and display
+  the ECTF Copyright and the License conditions. The code is supplied
+  "AS IS" and ECTF disclaims all warranties and liability.
+
+
+<h3>A guide to the classes:</h3>
+<p>
+To help guide you through the new classes,
+here is a brief tour of the package/class structure:
+</p>
+
+<h4>S.410 Media Async Package</h4>
+<p>
+The "<tt>async</tt>" package is pure interface.
+It establishes an interface structure and naming convention that 
+is echoed in the provider classes that implement those interfaces.
+</p>
+<p>
+The Async package defines the MediaService methods for asynchronous methods;
+methods that return an <tt>Async.Event</tt> object. 
+The <tt>Async.Event</tt> is delivered to the application via
+an Async.MediaListener that is notified by <i>callback</i>
+when the operation is complete. 
+Alternatively, an application  can <i>wait</i> for completion 
+of the Event, and proceed from there
+(which is how the <i>synchronous</i> methods in the S.410 Media Package
+ are defined and implemented).
+</p>
+
+<h4>S.410 Media Package</h4>
+<p>
+Most of the S.410 API is defined by interfaces. The centerpiece is 
+the <tt>MediaService</tt> interface which defines the standard 
+methods to access and control the media streams of a call.
+As an aid to application developers, a MediaService implementation class
+(<tt>BasicMediaService</tt>) is also supplied.
+<p>
+</p>
+The reference implementation of <tt>BasicMediaService</tt>
+inherits virtually all its implementation 
+from the <tt>provider.Base_MediaService</tt> class.  
+A particular vendor/supplier of S.410 may implement some other way.
+<tt>BasicMediaService.java</tt> contains the required Constructors 
+plus machine generated code for each resource-specific method 
+that delegates to vendor-supplied implementation code.
+<p>
+<b>Note:</b> <tt>Base_MediaService.java</tt> does not implement the Resource behaviors,
+it is just a framework mediating the interface between the Application 
+and a Vendor-supplied MPI implemetation.
+</p>
+<p>
+The resource-specific methods in <tt>Base_MediaService.java</tt>
+convert the Resource method calls into a 
+<tt>Request</tt> which is forwarded to the <tt>Base_MediaService</tt>
+using <tt>invokeGroupMethod</tt>. That protected method invokes 
+the Resource-specific method on the currently bound <tt>MediaGroup</tt>.
+In this way, the public API methods do not expose access to the
+<tt>MediaGroup</tt> or the vendor-supplied implementation methods.
+</p>
+<tt>Base_MediaService</tt> is described in
+<a href="javax/telephony/media/provider/package-summary.html#msb">
+the provider package</a>.
+</p>
+<h4>S.410 Media Provider Package</h4>
+<p>
+The <tt>media.provider</tt> package contains implementation code
+for several "standard" components for building a media "Peer".
+<ul> <li>
+The interfaces between the main components are defined in the <tt>MPI</tt>.
+</li> <li>
+A <tt>MediaPeer</tt> supplies a <tt>MediaProvider</tt>. [to parallel JTAPI core]
+<li> </li>
+A <tt>MediaProvider</tt> supplies a <tt>GroupProvider</tt> [akin to the S.100 SCR]
+<li> </li>
+A <tt>GroupProvider</tt> supplies the <tt>MediaGroups</tt>.
+<li> </li>
+A <tt>MediaGroup</tt> is bound to a <tt>Base_MediaService</tt>, and
+delivers <tt>MediaEvents</tt> to Listeners of the <tt>Base_MediaService</tt>.
+<li>
+<tt>Base.Event</tt> implements the required MediaEvents.
+</li> <li>
+<tt>Dispatcher</tt> works with the <tt>Base.Events</tt> to dispatch events
+to the correct Listeners of the <tt>Base_MediaService</tt>.
+</li> <li>
+<tt>BasicMediaService</tt> extends <tt>Base_MediaService</tt>;
+all <tt>Resource</tt> methods and other extensions beyond <tt>MediaService</tt>
+are found using a <tt>Request</tt> object 
+which uses <tt>Base_MediaService.getTargetForMethod()</tt> to find
+the Resource/Extension component.
+</li> </ul>
+<p>
+The Provider package defines an interoperability interface between the
+<tt>BasicMediaService</tt> object and any vendor's implementation.  
+The Provider package contains reference implementation classes for 
+the <tt>Async.Event</tt> objects (<tt>Base.Event</tt>), 
+and reference implementations for Event dispatching and Listener management. 
+The vendor specific extensions are constrained
+to meet the "Media Provider's Interface" (the MPI), and the various
+interfaces are defined as nested interfaces within <tt>MPI.java</tt>.
+<P>
+The Provider package is, in effect, a "Media Provider developer's toolkit".
+Media implementations based on the Provider package should result in
+compatible and interoperable implementations. Hopefully, a single
+application (a single <tt>BasicMediaService</tt> object)
+could utilize <tt>MediaGroups</tt> from different, independently 
+developed MediaPeer suppliers.
+<br>That is the goal...
+<p>
+For more details, see the
+<a href="javax/telephony/media/provider/package-summary.html">Provider Package</a>
+<p>
+
+<h4>JTAPI core</h4>
+<p>
+There are only a few JTAPI core items that are actually 
+referenced in S.410: the Provider, Call, Connection and Terminal,
+plus one or two Exceptions.
+</p>
+<p>
+From the top, there is the master factory: <tt>JTAPIPeerFactory</tt>, 
+which loads [using <tt>class.forName()</tt>] a <tt>JTAPIPeer</tt>. 
+A <tt>JTAPIPeer</tt> is a vendor supplied factory that supplies a <tt>Provider</tt>
+(based on a "login/session" to a "server").
+A Provider is a vendor supplied factory that supplies <tt>Call</tt>, 
+<tt>Connection</tt>, <tt>Terminal</tt> and other objects.
+The methods for managing and monitoring a "call" are spread among 
+those interfaces, plus their CallControl and CallCenter extensions.
+</p>
+
+<h3>New in S.410 Release 2:</h3>
+This section describes the new packages and interfaces in S.410-R2.
+<ol> <li>
+The <a href="javax/telephony/media/Delegation.html">Delegation interface</a>
+provides access to the "complex handoff" services of an ECTF media server.
+These services allow cooperating appications to share 
+control of a call using an "owner stack" with complete
+control of <i>return</i> and <i>throw</i> capabilities.
+Delegation includes methods for: <tt>delegateToService, release, retrieve</tt>.
+</li><li>
+The <a href="javax/telephony/media/ASR.html">ASR interface</a>
+is a translation of the ASR interface from ECTF S.100-R2.
+</li><li>
+The <a href="javax/telephony/media/TTSPlayer.html">TTS interface</a>
+extends the Player Resource to include control of  TTS pronounciation 
+dictionaries.
+</li><li>
+The 
+<a href="javax/telephony/media/async/package-summary.html#package_description">
+async package</a> 
+defines interfaces for non-blocking versions of the MediaService
+and Resource methods, plus the associated Events and Listeners.
+The <a href="javax/telephony/media/async/Async.html">Async interface</a> 
+contains nested interfaces for Async MediaService Events and their Listeners
+plus the 
+<a href="javax/telephony/media/async/Async.MediaService.html">Async.MediaService interface</a>
+for MediaService methods.
+Each of the Resources has its own Async_<i>Resource</i> interface
+for Methods, Events and Listeners.
+</li><li>
+The
+<a href="javax/telephony/media/provider/package-summary.html">
+Provider Package</a> is a "reference implementation" framework, 
+or a "provider developer's toolkit". 
+The MediaService, Resource, and Async methods are all implemented 
+by "<tt>BasicMediaService</tt>" which extends 
+the "<tt>provider.Base_MediaService</tt>" class.
+<br>
+The <a href="javax/telephony/media/provider/Base_MediaService.html">
+Base_MediaService</a> class
+implements bind/release and all the event and Listener management
+for <tt>MediaService</tt> and <tt>Async.MediaService</tt> methods.
+<br>
+The <a href="javax/telephony/media/provider/MPI.html">
+Media Provider Interface (MPI)</a>
+defines the interface to the provider package's reference framework.
+Vendors can support S.410 simply by implementing to the MPI 
+and leverage the (provider package) reference implementation
+of Base_MediaService, Base events, and the EventQueue and Dispatcher.
+</li><li>
+The <a href="javax/telephony/media/connection/package-summary.html">
+Media Connection Package</a> enables Group-to-Group media connections.
+</li><li>
+The <a href="javax/telephony/media/container/package-summary.html">
+Container Package</a> enables S.410 applications to read/write the
+contents for Media Data Objects.
+</li><li>
+The <a href="javax/telephony/media/messaging/package-summary.html">
+Messaging Package</a> enables S.410 applications to find other ECTF
+applications and exchange messages (commands and events).
+</li>
+</ol>
+
+</BODY>
+</HTML>
