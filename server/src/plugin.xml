@@ -6,7 +6,7 @@
     <description>${pom.description}</description>
     <author>${pom.organization.name}</author>
     <version>${pom.version}</version>
-    <date>${openfire-plugin.build.date}</date>
+    <date>08/29/2021</date>
     <minServerVersion>3.6.0</minServerVersion>
     <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>2</databaseVersion>

@@ -225,7 +225,7 @@
                     phoneDevice.setServerID(phoneServer.getID());
 
                     // Make all the other users not the primary
-                    if (isPrimary && devices != null) {
+                    if (isPrimary && devices != null && !devices.isEmpty()) {
 
                         for (PhoneDevice currentDevice : devices) {
 
@@ -633,7 +633,7 @@
         </td>
         <td width="99%">
 
-            <% if (useSipDropDown && sipDevices != null) { %>
+            <% if (useSipDropDown && sipDevices != null && !sipDevices.isEmpty()) { %>
             <select name="device" id="device">
                 <option value="">Select</option>
 
