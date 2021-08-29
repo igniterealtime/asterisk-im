@@ -59,6 +59,10 @@ public class AsteriskIMServerListener extends AbstractAsteriskServerListener imp
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public void onNewAgent(AsteriskAgent agent)
+    {
+    }
+
     public void propertyChange(PropertyChangeEvent evt)
     {
         final AsteriskChannel channel;
