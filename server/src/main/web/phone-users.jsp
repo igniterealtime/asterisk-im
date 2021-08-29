@@ -1,7 +1,6 @@
 <%@ page import="org.jivesoftware.phone.*,
                  org.jivesoftware.util.JiveGlobals,
                  org.jivesoftware.util.LocaleUtils,
-                 org.jivesoftware.util.Log,
                  org.jivesoftware.util.ParamUtils,
                  org.jivesoftware.openfire.XMPPServer,
                  org.jivesoftware.openfire.user.UserManager,
@@ -10,6 +9,8 @@
                  java.util.Collection,
                  java.util.HashMap" %>
 <%@ page import="java.util.List" %>
+<%@ page import="org.slf4j.Logger" %>
+<%@ page import="org.slf4j.LoggerFactory" %>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
@@ -22,6 +23,8 @@
 %>
 
 <%
+    Logger Log = LoggerFactory.getLogger(getClass());
+
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
     PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
     if (plugin == null) {
@@ -147,7 +150,7 @@
                         userManager.getUser(username);
                     }
                     catch (UserNotFoundException e) {
-                        Log.debug(e);
+                        Log.debug("user '{}' not found", username, e);
                         errors.put("username", "User does not exist");
                     }
 
@@ -260,7 +263,7 @@
 
                 }
                 catch (Exception e) {
-                    Log.error(e);
+                    Log.error("An exception occurred while modifying database content.", e);
                 }
                 response.sendRedirect("phone-users.jsp?success=true&start="
                         + start + "&range=" + range);
@@ -310,7 +313,7 @@
                 sipDevices = phoneManager.getConfiguredDevicesByServerID(defaultServer.getID());
             }
             catch (PhoneException e) {
-                Log.error(e);
+                Log.error("An exception occurred while getting configured devices for server {}", defaultServer != null ? defaultServer.getName() + "(id: " + defaultServer.getID() + ")" : "null", e);
             }
         }
 %>
@@ -714,7 +717,7 @@
 <%
     }
     catch (Exception e) {
-        Log.error(e);
+        Log.error("Error!", e);
     }
 
 %>

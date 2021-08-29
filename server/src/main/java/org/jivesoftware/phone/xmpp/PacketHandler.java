@@ -15,11 +15,11 @@ import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.asterisk.CallSession;
 import org.jivesoftware.phone.asterisk.CallSessionListener;
-import org.jivesoftware.util.Log;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.*;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
 
 /**
@@ -29,7 +29,7 @@ import java.util.logging.Level;
  */
 public class PacketHandler implements PhoneConstants, CallSessionListener {
 
-    private static final Logger log = Logger.getLogger(PacketHandler.class.getName());
+    private static final Logger Log = LoggerFactory.getLogger(PacketHandler.class);
 
     private PhoneManager phoneManager;
     private PhonePlugin plugin;
@@ -104,7 +104,7 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
 
         }
         catch (PhoneException e) {
-            Log.debug(e);
+            Log.debug("Exception occurred while handling 'dial' IQ: {}", iq.toXML(), e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
             PacketError error = new PacketError(PacketError.Condition.undefined_condition,
@@ -153,7 +153,7 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
 
         }
         catch (PhoneException e) {
-            Log.debug(e);
+            Log.debug("Exception occurred while handling 'forward' IQ: {}", iq.toXML(), e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
             PacketError error = new PacketError(PacketError.Condition.undefined_condition,
@@ -231,7 +231,7 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
                     }
                 }
                 catch (Exception e) {
-                    log.log(Level.SEVERE, e.getMessage(), e);
+                    Log.debug("Exception occurred while handling 'disco' IQ: {}", iq.toXML(), e);
                 }
 
             }

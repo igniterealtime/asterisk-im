@@ -12,15 +12,18 @@
                  org.jivesoftware.phone.PhonePlugin"
 %>
 <%@ page import="org.jivesoftware.phone.PhoneServer"%>
-<%@ page import="org.jivesoftware.util.Log"%>
 <%@ page import="org.jivesoftware.util.ParamUtils"%>
 <%@ page import="org.jivesoftware.openfire.XMPPServer"%>
 <%@ page import="org.jivesoftware.openfire.container.PluginManager"%>
+<%@ page import="org.slf4j.Logger" %>
+<%@ page import="org.slf4j.LoggerFactory" %>
 
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
 
 <%
+    Logger Log = LoggerFactory.getLogger(getClass());
+
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
     PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
     if (plugin == null) {

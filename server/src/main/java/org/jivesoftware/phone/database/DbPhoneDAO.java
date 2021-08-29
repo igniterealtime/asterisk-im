@@ -14,7 +14,8 @@ import org.jivesoftware.database.SequenceManager;
 import org.jivesoftware.phone.PhoneDevice;
 import org.jivesoftware.phone.PhoneUser;
 import org.jivesoftware.phone.PhoneServer;
-import org.jivesoftware.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,6 +35,8 @@ import java.util.Collections;
  */
 @DAOInfo(DAOInfo.daoType.JDBC)
 public class DbPhoneDAO implements PhoneDAO {
+
+    private static final Logger Log = LoggerFactory.getLogger(DbPhoneDAO.class);
 
     public PhoneUser getPhoneUserByDevice(long serverID, String device) {
 
@@ -576,7 +579,7 @@ public class DbPhoneDAO implements PhoneDAO {
             }
         }
         catch (SQLException e) {
-            Log.error(e);
+            Log.error("An exception occurred while trying to get phone server for server name '{}'", serverName, e);
         }
         finally {
             DbConnectionManager.closeConnection(rs, psmt, con);
@@ -604,7 +607,7 @@ public class DbPhoneDAO implements PhoneDAO {
             }
         }
         catch (SQLException e) {
-            Log.error(e);
+            Log.error("An exception occurred while trying to get phone server for server ID '{}'", id, e);
         }
         finally {
             DbConnectionManager.closeConnection(rs, psmt, con);
@@ -630,7 +633,7 @@ public class DbPhoneDAO implements PhoneDAO {
             }
         }
         catch (SQLException e) {
-            Log.error(e);
+            Log.error("An exception occurred while trying to get phone servers", e);
         }
         finally {
             DbConnectionManager.closeConnection(rs, psmt, con);

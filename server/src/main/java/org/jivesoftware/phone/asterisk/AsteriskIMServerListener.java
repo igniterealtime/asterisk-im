@@ -3,7 +3,8 @@ package org.jivesoftware.phone.asterisk;
 import org.asteriskjava.live.*;
 import org.asteriskjava.live.internal.AsteriskAgentImpl;
 import org.jivesoftware.phone.PhoneUser;
-import org.jivesoftware.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -15,6 +16,8 @@ import java.beans.PropertyChangeListener;
  */
 public class AsteriskIMServerListener extends AbstractAsteriskServerListener implements PropertyChangeListener
 {
+    private static final Logger Log = LoggerFactory.getLogger(AsteriskIMServerListener.class);
+
     private final long serverID;
     private final AsteriskPhoneManager phoneManager;
     private final CallSessionFactory callSessionFactory;

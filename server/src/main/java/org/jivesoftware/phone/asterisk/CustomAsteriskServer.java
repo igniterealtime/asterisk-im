@@ -23,7 +23,9 @@ import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.util.PhoneConstants;
 import static org.jivesoftware.util.JiveGlobals.getProperty;
-import org.jivesoftware.util.Log;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ import java.util.*;
  *
  */
 public class CustomAsteriskServer extends DefaultAsteriskServer {
+
+    private static final Logger Log = LoggerFactory.getLogger(CustomAsteriskServer.class);
 
     private String hostname;
     private int port;

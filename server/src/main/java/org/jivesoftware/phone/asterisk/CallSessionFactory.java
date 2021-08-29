@@ -10,8 +10,9 @@
 package org.jivesoftware.phone.asterisk;
 
 
-import org.jivesoftware.util.Log;
 import org.jivesoftware.util.ConcurrentHashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Andrew Wright
  */
 public class CallSessionFactory {
+    private static final Logger Log = LoggerFactory.getLogger(CallSessionFactory.class);
+
     private static final CallSessionFactory INSTANCE = new CallSessionFactory();
 
     private final Set<CallSessionListener> callSessionListeners;

@@ -11,7 +11,8 @@ import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.util.PhoneConstants;
 import org.jivesoftware.phone.database.DbPhoneDAO;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Arrays;
@@ -22,6 +23,8 @@ import java.util.Arrays;
 @PluginVersion("1.0.0")
 @PBXInfo(make = "JTAPI", version = "0.2")
 public class JtapiPlugin extends PhonePlugin {
+
+    private static final Logger Log = LoggerFactory.getLogger(JtapiPlugin.class);
 
     JtapiPhoneManager jtpaiPhoneManager;
 
@@ -65,7 +68,7 @@ public class JtapiPlugin extends PhonePlugin {
                 jtpaiPhoneManager.init(this);
             }
             catch (Throwable e) {
-                Log.error(e);
+                Log.error("An exception occurred while initializing to enabled={}", enabled, e);
             }
 
         }

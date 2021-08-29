@@ -21,7 +21,7 @@ import javax.telephony.Address;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.Log;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
 
 import java.util.*;
@@ -35,7 +35,9 @@ import java.util.logging.Logger;
  */
 public class JtapiPhoneManager extends BasePhoneManager  {
 
-    private static final Logger log = Logger.getLogger(JtapiPhoneManager.class.getName());
+	private static final org.slf4j.Logger Log = LoggerFactory.getLogger(JtapiPhoneManager.class);
+
+	private static final Logger log = Logger.getLogger(JtapiPhoneManager.class.getName());
     private Provider provider;
     private JtapiEvents events;
 

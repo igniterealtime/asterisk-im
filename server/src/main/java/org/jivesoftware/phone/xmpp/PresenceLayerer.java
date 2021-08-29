@@ -13,7 +13,6 @@ import org.jivesoftware.phone.asterisk.CallSessionFactory;
 import org.jivesoftware.phone.asterisk.CallSessionListener;
 import org.jivesoftware.phone.queue.QueueManager;
 import org.jivesoftware.phone.xmpp.element.PhoneStatus;
-import org.jivesoftware.util.Log;
 import org.jivesoftware.openfire.PresenceRouter;
 import org.jivesoftware.openfire.SessionManager;
 import org.jivesoftware.openfire.event.SessionEventListener;
@@ -21,6 +20,8 @@ import org.jivesoftware.openfire.interceptor.PacketInterceptor;
 import org.jivesoftware.openfire.interceptor.PacketRejectedException;
 import org.jivesoftware.openfire.session.ClientSession;
 import org.jivesoftware.openfire.session.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
@@ -36,6 +37,7 @@ import java.util.*;
  */
 public class PresenceLayerer implements PacketInterceptor, SessionEventListener, CallSessionListener
 {
+    private static final Logger Log = LoggerFactory.getLogger(PresenceLayerer.class);
 
     private Map<Session, SessionProxy> session2proxy = new HashMap<Session, SessionProxy>();
     private Map<String, UserState> name2state = new HashMap<String, UserState>();

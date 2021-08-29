@@ -16,7 +16,6 @@ import org.jivesoftware.phone.xmpp.PacketHandler;
 import org.jivesoftware.phone.xmpp.PresenceLayerer;
 import org.jivesoftware.phone.xmpp.element.PhoneStatus;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.Log;
 import org.jivesoftware.util.PropertyEventDispatcher;
 import org.jivesoftware.util.PropertyEventListener;
 import org.jivesoftware.openfire.SessionManager;
@@ -26,6 +25,8 @@ import org.jivesoftware.openfire.container.PluginManager;
 import org.jivesoftware.openfire.event.SessionEventDispatcher;
 import org.jivesoftware.openfire.interceptor.InterceptorManager;
 import org.jivesoftware.openfire.session.ClientSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
@@ -42,6 +43,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
+
+    private static final Logger Log = LoggerFactory.getLogger(PhonePlugin.class);
 
     // FIXME: a plugin should get the server reference throuh initialization ;jw
     protected XMPPServer server = XMPPServer.getInstance();
@@ -229,7 +232,7 @@ public abstract class PhonePlugin implements Plugin, Component, PhoneConstants {
             componentManager.sendPacket(this, packet);
         }
         catch (Exception e) {
-            Log.error(e);
+            Log.debug("Exception occurred while sending stanza: {}", packet.toXML(), e);
         }
     }
 

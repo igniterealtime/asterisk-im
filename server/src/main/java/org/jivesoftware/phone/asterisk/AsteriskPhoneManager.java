@@ -13,8 +13,9 @@ import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.Log;
 import org.jivesoftware.util.JiveConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 import org.asteriskjava.manager.TimeoutException;
@@ -36,6 +37,7 @@ import java.util.*;
 @PBXInfo(make = "Asterisk", version = "1.2")
 public class AsteriskPhoneManager extends BasePhoneManager
 {
+    private static final Logger Log = LoggerFactory.getLogger(AsteriskPhoneManager.class);
 
     private final Map<Long, CustomAsteriskServer> asteriskServers
             = Collections.synchronizedMap(new HashMap<Long, CustomAsteriskServer>());

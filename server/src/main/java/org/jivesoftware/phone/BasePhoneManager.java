@@ -8,10 +8,11 @@ package org.jivesoftware.phone;
 
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.phone.queue.PhoneQueue;
-import org.jivesoftware.util.Log;
 import org.jivesoftware.openfire.SessionManager;
 import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.session.ClientSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
 
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ import java.util.List;
  * @author Andrew Wright
  */
 public abstract class BasePhoneManager implements PhoneManager {
+
+    private static final Logger Log = LoggerFactory.getLogger(BasePhoneManager.class);
 
     private PhoneDAO phoneDAO;
     protected XMPPServer server = XMPPServer.getInstance();

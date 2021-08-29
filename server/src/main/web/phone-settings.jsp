@@ -1,5 +1,4 @@
 <%@ page import="org.jivesoftware.util.JiveGlobals,
-                 org.jivesoftware.util.Log,
                  org.jivesoftware.util.ParamUtils,
                  org.jivesoftware.openfire.XMPPServer,
                  org.jivesoftware.openfire.container.PluginManager,
@@ -8,9 +7,12 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="org.jivesoftware.phone.*" %>
+<%@ page import="org.slf4j.Logger" %>
+<%@ page import="org.slf4j.LoggerFactory" %>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jstl/fmt_rt" prefix="fmt" %>
 <%
+    Logger Log = LoggerFactory.getLogger(getClass());
 
     // if we were not enabled before and we are now restart the plugin
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();

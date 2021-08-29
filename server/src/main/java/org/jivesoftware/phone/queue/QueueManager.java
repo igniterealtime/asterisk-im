@@ -12,10 +12,11 @@ import org.jivesoftware.phone.PhoneDevice;
 import org.jivesoftware.phone.PhoneException;
 import org.jivesoftware.phone.PhoneManager;
 import org.jivesoftware.phone.PhoneUser;
-import org.jivesoftware.util.Log;
 import org.jivesoftware.openfire.SessionManager;
 import org.jivesoftware.openfire.session.ClientSession;
 import org.jivesoftware.openfire.user.UserNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.Presence;
 
 import java.util.*;
@@ -25,6 +26,8 @@ import java.util.*;
  */
 public class QueueManager
 {
+    private static final Logger Log = LoggerFactory.getLogger(QueueManager.class);
+
     private PhoneManager phoneManager;
     private SessionManager sessionManager;
     private Map<String, Object> queueUsers;

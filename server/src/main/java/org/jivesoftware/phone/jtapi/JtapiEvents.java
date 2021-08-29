@@ -19,11 +19,11 @@ import javax.telephony.TerminalConnectionEvent;
 import javax.telephony.TerminalConnectionListener;
 import javax.telephony.callcontrol.CallControlCall;
 
-import org.jivesoftware.util.Log;
-
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.xmpp.element.PhoneEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.packet.Message;
 
 /**
@@ -32,7 +32,9 @@ import org.xmpp.packet.Message;
  *
  */
 public class JtapiEvents implements TerminalConnectionListener {
-	
+
+	private static final Logger Log = LoggerFactory.getLogger(JtapiEvents.class);
+
 	PhoneManager phoneManager;
 	PhonePlugin plugin;
 	
