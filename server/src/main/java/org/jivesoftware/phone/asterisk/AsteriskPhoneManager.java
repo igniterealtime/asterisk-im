@@ -200,6 +200,7 @@ public class AsteriskPhoneManager extends BasePhoneManager
 
     public Collection<String> getConfiguredDevicesByServerID(long serverID) throws PhoneException
     {
+        Log.debug("Get configured devices by server ID '{}'", serverID);
         CustomAsteriskServer asteriskServer = asteriskServers.get(serverID);
         if (asteriskServer != null)
         {

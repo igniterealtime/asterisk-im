@@ -193,7 +193,8 @@ public class JtapiPhoneManager extends BasePhoneManager  {
     }
 
     public Collection<String> getConfiguredDevicesByServerID(long serverID) throws PhoneException {
-        return getConfiguredDevices().get(0);
+		Log.debug("Get configured devices (ignoring server ID '{}' argument)", serverID);
+		return getConfiguredDevices().get(0);
     }
 
     public void dial(String username, String extension, JID jid) throws PhoneException {

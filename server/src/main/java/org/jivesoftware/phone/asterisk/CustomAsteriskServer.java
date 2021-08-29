@@ -111,47 +111,58 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
      * @throws PhoneException if the list can't be retrived.
      */
     public List<String> getDevices(String technology) throws PhoneException {
+        Log.debug("Get '{}' devices.", technology);
         try {
             CommandAction action = new CommandAction();
             action.setCommand(technology.toLowerCase() + " show peers");
 
             ManagerResponse managerResponse = getManagerConnection().sendAction(action);
             if (managerResponse instanceof ManagerError) {
-                Log.warn(managerResponse.getMessage());
+                Log.warn("Manager response that was an error while trying to get '{}' devices: {}", technology, managerResponse.getMessage());
                 throw new PhoneException(managerResponse.getMessage());
             }
 
             CommandResponse response = (CommandResponse) managerResponse;
             List<String> results = response.getResult();
-
+            Log.debug("Response has {} result line(s).", results != null ? results.size() : "no");
             ArrayList<String> list = new ArrayList<String>();
-            boolean isFirst = true; // first line is header with field names
+
+            if (results.size() < 2) {
+                return list;
+            }
 
             /*
              * The result will look like this:
+             *
+             * for older versions of Asterisk:
              *
              * Name/username              Host            Dyn Nat ACL Port     Status
              * 1313/1313                  10.13.0.61       D       A  5061     OK (192 ms)
              * 1312/1312                  10.13.0.61       D       A  5061     OK (183 ms)
              * 1303/1303                  (Unspecified)    D   N      0        UNKNOWN
              * 1302/1302                  (Unspecified)    D       A  0        UNKNOWN
+             * <some footer summary>
+             *
+             * For newer versions of Asterisk:
+             * Name/username             Host                                    Dyn Forcerport Comedia    ACL Port     Status      Description
+             * 701                       (Unspecified)                            D  No         No          A  0        UNKNOWN     Guus
+             * 1 sip peers [Monitored: 0 online, 1 offline Unmonitored: 0 online, 0 offline]
              */
+
+            // Trim header and footer
+            results = results.subList(1, results.size() - 1);
             for (String result : results) {
-                if (!isFirst) {
-                    result = result.trim();
-                    if (result.indexOf(" ") < 0) {
-                        continue;
-                    }
-                    result = result.substring(0, result.indexOf(" "));
-                    if (result.indexOf("/") < 0) {
-                        continue;
-                    }
-                    list.add(technology.toUpperCase() + "/" + result.substring(0, result.indexOf("/")));
+                Log.debug(result);
+                result = result.trim();
+                if (!result.contains(" ")) {
+                    continue;
                 }
-                isFirst = false;
-            }
-            if (list.size() > 0) {
-                list.remove(list.size() - 1); // last line is footer with summary
+                result = result.substring(0, result.indexOf(" "));
+                if (result.contains("/")) {
+                    list.add(technology.toUpperCase() + "/" + result.substring(0, result.indexOf("/")));
+                } else {
+                    list.add(technology.toUpperCase() + "/" + result);
+                }
             }
 
             return list;
