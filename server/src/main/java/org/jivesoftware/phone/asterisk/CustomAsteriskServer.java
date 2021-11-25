@@ -12,13 +12,9 @@ import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.ManagerCommunicationException;
 import org.asteriskjava.manager.*;
-import org.asteriskjava.manager.event.QueueMemberEvent;
-import org.asteriskjava.manager.event.ResponseEvent;
+import org.asteriskjava.manager.event.*;
 import org.asteriskjava.manager.action.*;
-import org.asteriskjava.manager.response.CommandResponse;
-import org.asteriskjava.manager.response.MailboxCountResponse;
-import org.asteriskjava.manager.response.ManagerError;
-import org.asteriskjava.manager.response.ManagerResponse;
+import org.asteriskjava.manager.response.*;
 import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.util.PhoneConstants;
@@ -95,11 +91,34 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
 
     @SuppressWarnings({"unchecked"})
     public List<String> getDevices() throws PhoneException {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
 
-        list.addAll(getDevices("sip"));
-        list.addAll(getDevices("iax2"));
+        if (isChannelAvailable("sip")) {
+            list.addAll(getDevices("sip"));
+        }
+        if (isChannelAvailable("iax2")) {
+            list.addAll(getDevices("iax2"));
+        }
         return list;
+    }
+
+    public boolean isChannelAvailable(String technology) throws PhoneException {
+        Log.debug("Verify if Asterisk server supports channel '{}'.", technology);
+        try {
+            CommandAction action = new CommandAction();
+            action.setCommand("core show channeltype " + technology);
+
+            ManagerResponse managerResponse = getManagerConnection().sendAction(action);
+            if (managerResponse instanceof ManagerError) {
+                Log.debug("Manager response indicates that channel '{}' is not supported.", technology);
+                return false;
+            }
+
+            Log.debug("Manager response indicates that channel '{}' is supported.", technology);
+            return true;
+        } catch (Exception e) {
+            throw new PhoneException(e);
+        }
     }
 
     /**
