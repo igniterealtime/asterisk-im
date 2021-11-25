@@ -99,6 +99,10 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
         if (isChannelAvailable("iax2")) {
             list.addAll(getDevices("iax2"));
         }
+        if (isChannelAvailable("pjsip")) {
+            list.addAll(getPJSIPDevices());
+        }
+
         return list;
     }
 
@@ -125,9 +129,9 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
      * Returns a list of all devices configured on this Asterisk server for the given
      * technology.
      *
-     * @param technology either "sip" or "iax2".
+     * @param technology A channel name, such as "sip" or "iax2".
      * @return a list of devices, that is Asterisk channel names that can be mapped to phone users.
-     * @throws PhoneException if the list can't be retrived.
+     * @throws PhoneException if the list can't be retrieved.
      */
     public List<String> getDevices(String technology) throws PhoneException {
         Log.debug("Get '{}' devices.", technology);
@@ -189,6 +193,40 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
         catch (Exception e) {
             throw new PhoneException(e);
         }
+    }
+
+    /**
+     * Returns a list of all devices configured on this Asterisk server for the pjsip channel.
+     *
+     * @return a list of devices, that is Asterisk channel names that can be mapped to phone users.
+     * @throws PhoneException if the list can't be retrieved.
+     */
+    public List<String> getPJSIPDevices() throws PhoneException {
+        Log.debug("Get PJSIP Devices");
+        final List<String> result = new ArrayList<>();
+        try {
+            final PJSipShowEndpointsAction action = new PJSipShowEndpointsAction();
+            final ResponseEvents responseEvents = getManagerConnection().sendEventGeneratingAction(action);
+            final Collection<ResponseEvent> events = responseEvents.getEvents();
+            Log.trace("Received {} event(s).", events.size());
+            events.forEach(responseEvent -> {
+                if (responseEvent instanceof EndpointList) {
+                    EndpointList event = (EndpointList) responseEvent;
+                    Log.trace("Received: {}, {}, {}, {}", event.getEvent(), event.getObjectName(), event.getObjectType(), event.getAor());
+                    if (event.getObjectType().equalsIgnoreCase("endpoint")) {
+                        result.add(event.getAor());
+                    }
+                } else if (responseEvent instanceof EndpointListComplete) {
+                    Log.trace("Completed {} for list {}", ((EndpointListComplete) responseEvent).getListItems(), ((EndpointListComplete) responseEvent).getEventList());
+                } else {
+                    Log.debug("Unknown response type: {}", responseEvent);
+                }
+            });
+        } catch (IOException | EventTimeoutException e) {
+            throw new PhoneException("Exception occurred while trying to get PJSIP devices.", e);
+        }
+
+        return result;
     }
 
     public void dial(PhoneDevice originatingDevice, String targetExtension) throws PhoneException {
