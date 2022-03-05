@@ -6,7 +6,7 @@
     <description>${pom.description}</description>
     <author>${pom.organization.name}</author>
     <version>${pom.version}</version>
-    <date>11/29/2021</date>
+    <date>2022-03-05</date>
     <minServerVersion>3.6.0</minServerVersion>
     <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>2</databaseVersion>

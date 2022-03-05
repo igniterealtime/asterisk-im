@@ -119,6 +119,44 @@
         table.settingsTable tr {
             padding: 0px 0px 10px 0px;
         }
+
+        /* --------------------------------------------- */
+        /*  Tooltip styles                               */
+        /* --------------------------------------------- */
+        .openfire-helpicon-with-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .openfire-helpicon-with-tooltip .helpicon {
+            display: block;
+            float: left;
+            width: 14px;
+            height: 14px;
+            background: transparent url('images/setup_helpicon.gif') no-repeat;
+        }
+
+        .openfire-helpicon-with-tooltip .tooltiptext {
+            font-family: Arial, Helvetica sans-serif;
+            font-size: small;
+            visibility: hidden;
+            width: 240px;
+            background-color: #FFFBE2;
+            color: black;
+            text-align: center;
+            border: 1px solid #bbb;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -120px;
+            white-space: normal;
+        }
+
+        .openfire-helpicon-with-tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
     </style>
 </head>
 
@@ -225,9 +263,9 @@ else if (errors.size() > 0) { %>
             <td><%=phoneServer.getUsername()%></td>
             <td>
                 <a href="create-server.jsp?serverID=<%=phoneServer.getID()%>">
-                    <img src="/images/edit-16x16.gif" border="0" alt="Edit Server"/></a>
+                    <img src="images/edit-16x16.gif" border="0" alt="Edit Server"/></a>
                 <a href="delete-server.jsp?serverID=<%=phoneServer.getID()%>">
-                    <img src="/images/delete-16x16.gif" border="0" alt="Delete Server"/></a>
+                    <img src="images/delete-16x16.gif" border="0" alt="Delete Server"/></a>
             </td>
         </tr>
         <% }
@@ -294,15 +332,13 @@ else if (errors.size() > 0) { %>
                 <%= option.isRequired() ? "* " : "" %>
                 <%= title %>:
             </label></nobr>
-            <% if (description != null) { %>
-                    <span class="jive-setup-helpicon"><a href="" onmouseover="domTT_activate(this,
-                    event, 'content', '<%=description%>', 'styleClass', 'jiveTooltip', 'trail',
-                    true, 'delay', 300, 'lifetime', 8000);"></a>
-            <% } %>
         </td>
         <td width="99%">
             <textarea cols="45" rows="5" name="<%= parameterName  %>" wrap="virtual"
                       id="<%= parameterName %>"><%= val %></textarea>
+            <% if (description != null) { %>
+            <div class="openfire-helpicon-with-tooltip"><span class="helpicon"></span><span class="tooltiptext"><%=description%></span></div>
+            <% } %>
             <% if (errors.containsKey(parameterName)) { %>
             <br/>
             <span class="jive-error-text"><%=errors.get(parameterName)%></span>
@@ -328,6 +364,9 @@ else if (errors.size() > 0) { %>
             <span><input type="radio" name="<%= parameterName %>"
                          value="false" <%= !"true".equals(val) ? "checked" : ""%> />
                 No</span>
+            <% if (description != null) { %>
+            <div class="openfire-helpicon-with-tooltip"><span class="helpicon"></span><span class="tooltiptext"><%=description%></span></div>
+            <% } %>
         </td>
     </tr>
     <%
@@ -345,6 +384,9 @@ else if (errors.size() > 0) { %>
             <input type="<%= type %>" size="30" maxlength="100" name="<%= parameterName %>"
                    value="<%= val %>"
                    id="<%= parameterName %>"/>
+            <% if (description != null) { %>
+            <div class="openfire-helpicon-with-tooltip"><span class="helpicon"></span><span class="tooltiptext"><%=description%></span></div>
+            <% } %>
             <% if (errors.containsKey(parameterName)) { %>
             <br/>
             <span class="jive-error-text"><%=errors.get(parameterName)%></span>
