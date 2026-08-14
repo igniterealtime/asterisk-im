@@ -25,4 +25,4 @@ create table phoneUser (
 );
 create unique index phoneUser_username_idx on phoneUser(username);
 
-INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', 2);
+INSERT INTO ofVersion (name, version) VALUES ('asterisk-im', 2);
