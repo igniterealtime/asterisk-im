@@ -5,9 +5,12 @@
     <name>asterisk-im</name>
     <description>${pom.description}</description>
     <author>${pom.organization.name}</author>
+    <licenseType>gpl</licenseType>
     <version>${pom.version}</version>
-    <date>11/29/2021</date>
-    <minServerVersion>3.6.0</minServerVersion>
+    <date>2026-08-11</date>
+    <!-- The admin console JSPs are compiled against Openfire 5's Jetty 12 (EE8) environment. -->
+    <minServerVersion>5.0.0</minServerVersion>
+    <minJavaVersion>17</minJavaVersion>
     <databaseKey>asterisk-im</databaseKey>
     <databaseVersion>2</databaseVersion>
 

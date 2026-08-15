@@ -3,7 +3,7 @@
     <groupId>org.jivesoftware.phone</groupId>
     <artifactId>asterisk-im</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>Asterisk-IM</name>
     <description>Integration for Asterisk and Openfire.</description>
     <url>http://maven.reucon.com/projects/public/asterisk-im/${project.version}</url>
@@ -13,8 +13,10 @@
         <url>http://www.jivesoftware.com</url>
     </organization>
     <properties>
-        <smack-version>4.4.2</smack-version>
-        <openfire-version>4.0.4</openfire-version>
+        <smack-version>4.4.8</smack-version>
+        <openfire-version>5.1.1</openfire-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
     <developers>
         <developer>
@@ -59,10 +61,9 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.13.0</version>
                     <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
+                        <release>17</release>
                     </configuration>
                 </plugin>
             </plugins>
@@ -73,7 +74,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>3.8.1</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
