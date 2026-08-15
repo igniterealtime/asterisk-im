@@ -75,8 +75,13 @@
 <h2>Prerequesites</h2>
 
 <p>
-    <a href="http://www.asterisk.org/" target="_blank">Asterisk</a> installed with the
-    Manager API enabled.
+    <a href="http://www.asterisk.org/" target="_blank">Asterisk</a> 16 or later, installed with the
+    Manager API (AMI) enabled. The AMI account used by this plugin needs the <tt>command</tt>
+    permission, which is what device discovery for the SIP and IAX2 technologies relies on.
+</p>
+
+<p>
+    This version of the plugin requires Openfire 5.0.0 or later, running on Java 17 or later.
 </p>
 
 <h2>Installation</h2>
@@ -115,10 +120,15 @@
 <p>
     The client API first requires that the Asterisk-IM server plugin is installed. To initialize the
     client do the following:
-    <blockquote><tt>XMPPConnection conn = new XMPPConnection("myserver.foo.com", "user", "password");<br>
+    <blockquote><tt>XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.setUsernameAndPassword("user", "password")<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.setXmppDomain("myserver.foo.com")<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.build();<br>
+        AbstractXMPPConnection conn = new XMPPTCPConnection(config);<br>
+        conn.connect().login();<br>
         PhoneClient client = new PhoneClient(conn);</tt></blockquote>
-    Note that the XMPPConnection passed in must be authenticated. If an unauthenticated connection is passed in an
-    exception will be thrown.
+    Note that the XMPPConnection passed in must be authenticated, as shown above. If an unauthenticated
+    connection is passed in an exception will be thrown.
 </p>
 
 <h2>Phone Events</h2>

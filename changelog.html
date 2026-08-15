@@ -50,6 +50,26 @@
     Asterisk-IM Plugin Changelog
 </h1>
 
+<p><b>3.0.0</b> -- unreleased</p>
+<ul>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/18'>#18</a>] - Now requires
+        Openfire 5.0.0 or later, and Java 17 or later</li>
+    <li>Built against the Openfire 5 plugin parent (Jetty 12 / Jakarta EE8 JSP compilation)</li>
+    <li>Upgraded the Asterisk-Java library to 3.42.2, which supports Asterisk 10 through 23</li>
+    <li>Verified against every Asterisk major version from 16 through 23 over AMI</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/17'>#17</a>] - Corrected the
+        database schema scripts to use Openfire's <tt>ofVersion</tt> table, which replaced
+        <tt>jiveVersion</tt> in Openfire 3.7</li>
+    <li>Fixed PJSIP device discovery: devices are now reported as <tt>PJSIP/&lt;endpoint&gt;</tt>
+        rather than the bare AOR name, so that they match live channel names and can be dialled</li>
+    <li>The plugin no longer bundles its own SLF4J/Log4j jars, which detached its log output
+        from Openfire's logging configuration</li>
+    <li>Upgraded Smack to 4.4.8 in the client library</li>
+    <li>Creating or editing a phone server while the plugin is disabled now reports the problem
+        instead of failing with a NullPointerException</li>
+    <li>Corrected the Smack 3 era client API example in this plugin's readme</li>
+</ul>
+
 <p><b>2.0.0</b> -- November 29, 2021</p>
 <ul>
     <li>Now depends on Java 8</li>
