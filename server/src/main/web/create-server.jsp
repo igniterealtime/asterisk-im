@@ -1,5 +1,6 @@
 <%@ page import="org.jivesoftware.openfire.XMPPServer" %>
 <%@ page import="org.jivesoftware.openfire.container.PluginManager" %>
+<%@ page import="org.jivesoftware.phone.PhoneManager" %>
 <%@ page import="org.jivesoftware.phone.PhonePlugin" %>
 <%@ page import="org.jivesoftware.phone.PhoneServer" %>
 <%@ page import="org.jivesoftware.util.ParamUtils" %>
@@ -22,6 +23,16 @@
     boolean editServer = request.getParameter("serverID") != null;
     int editServerID = ParamUtils.getIntParameter(request, "serverID", -1);
     boolean saved = request.getParameter("createServer") != null;
+
+    // The phone manager only exists once the plugin has been enabled on the general settings
+    // page. Without this guard, submitting this form against a disabled plugin fails with a
+    // NullPointerException rather than telling the administrator what to do.
+    PhoneManager phoneManager = plugin.getPhoneManager();
+    if (phoneManager == null) {
+        errors.put("general", "Asterisk-IM must be enabled on the General Settings page before"
+                + " phone servers can be configured.");
+        saved = false;
+    }
 %>
 <head>
     <title><%=editServer ? "Edit Phone Server" : "Create Phone Server"%></title>
@@ -50,12 +61,18 @@
         password = ParamUtils.getParameter(request, "password", true);
     }
     else if(editServer && !saved) {
-        PhoneServer server = plugin.getPhoneManager().getPhoneServerByID(editServerID);
-        serverName = server.getName();
-        serverAddress = server.getHostname();
-        serverPort = server.getPort();
-        username = server.getUsername();
-        password = server.getPassword();
+        PhoneServer server = phoneManager == null
+                ? null : phoneManager.getPhoneServerByID(editServerID);
+        if (server == null) {
+            errors.put("general", "That phone server could not be loaded.");
+        }
+        else {
+            serverName = server.getName();
+            serverAddress = server.getHostname();
+            serverPort = server.getPort();
+            username = server.getUsername();
+            password = server.getPassword();
+        }
     }
 
     if (saved && (serverName != null || serverAddress != null || username != null)) {
@@ -73,15 +90,24 @@
         }
 
         if (errors.size() <= 0) {
+            PhoneServer server = null;
             if (!editServer) {
-                PhoneServer server = plugin.getPhoneManager().createPhoneServer(serverName,
+                server = phoneManager.createPhoneServer(serverName,
                         serverAddress, serverPort, username, password);
-                response.sendRedirect("phone-settings.jsp?serverCreated=" + server.getID());
             }
             else {
-                PhoneServer server = plugin.getPhoneManager().updatePhoneServer(editServerID,
+                server = phoneManager.updatePhoneServer(editServerID,
                         serverName, serverAddress, serverPort, username, password);
-                response.sendRedirect("phone-settings.jsp?serverEdited=" + server.getID());
+            }
+
+            if (server == null) {
+                // Both calls return null rather than throwing when they reject their arguments.
+                errors.put("general", "The phone server could not be saved.");
+            }
+            else {
+                response.sendRedirect("phone-settings.jsp?"
+                        + (editServer ? "serverEdited=" : "serverCreated=") + server.getID());
+                return;
             }
         }
     }
@@ -90,6 +116,10 @@
 <p>
     Add a connection to a new phone server.
 </p>
+
+<% if (errors.get("general") != null) { %>
+<p class="jive-error-text"><%= errors.get("general") %></p>
+<% } %>
 
 <form action="create-server.jsp" method="post">
     <table class="div-border" cellpadding="3">
