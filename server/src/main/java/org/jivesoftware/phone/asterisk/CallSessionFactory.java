@@ -10,7 +10,6 @@
 package org.jivesoftware.phone.asterisk;
 
 
-import org.jivesoftware.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,9 +39,9 @@ public class CallSessionFactory {
     private final Map<String, Collection<CallSession>> userSessionMap;
 
     private CallSessionFactory() {
-        callSessionListeners = new ConcurrentHashSet<CallSessionListener>();
-        sessionMap = new ConcurrentHashMap<String, CallSession>();
-        userSessionMap = new ConcurrentHashMap<String, Collection<CallSession>>();
+        callSessionListeners = ConcurrentHashMap.newKeySet();
+        sessionMap = new ConcurrentHashMap<>();
+        userSessionMap = new ConcurrentHashMap<>();
     }
 
     /**
