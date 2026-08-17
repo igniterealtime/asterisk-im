@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.asteriskjava</groupId>
             <artifactId>asterisk-java</artifactId>
-            <version>3.12.0</version>
+            <version>3.42.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
