@@ -80,6 +80,11 @@
     <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - The Asterisk
         context is checked against the dialplan when it is saved. A context that does not exist
         made every call fail with nothing to say why</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Telephony is
+        no longer offered to a client that cannot use it. The phone feature was advertised over
+        service discovery to any user with a phone mapping, whether or not they had a primary
+        phone and whether or not the phone server was connected, so clients presented a dial pad
+        for calls that could not be placed</li>
     <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Dialling as
         a user who has no phone mapping, or no primary phone, now returns an error to the client
         instead of throwing a NullPointerException that left the request unanswered</li>
