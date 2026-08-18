@@ -40,6 +40,19 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
      */
     private static final String NO_SUCH_CONTEXT = "no existence of";
 
+    /**
+     * How Asterisk reports a device it does not have. chan_sip and chan_iax2 answer "Peer <name>
+     * not found."; res_pjsip answers "Unable to find object <name>.". Verified against Asterisk
+     * 16 to 23.
+     */
+    private static final String[] NO_SUCH_DEVICE = {"not found.", "Unable to find object"};
+
+    /**
+     * Asterisk's reply when the module that would answer is not loaded, which says nothing about
+     * whether the device exists.
+     */
+    private static final String NO_SUCH_COMMAND = "No such command";
+
     private static final String SIP_TECHNOLOGY = "sip";
     private static final String IAX2_TECHNOLOGY = "iax2";
     private static final String PJSIP_TECHNOLOGY = "pjsip";
@@ -135,6 +148,81 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
             return true;
         } catch (Exception e) {
             throw new PhoneException(e);
+        }
+    }
+
+    /**
+     * Reports whether this Asterisk server has a given device.
+     *
+     * <p>The device is looked up by name rather than by listing every device the server has, so
+     * that the check costs the same on a deployment with five phones and one with five thousand.
+     *
+     * @param device a device in the '&lt;technology&gt;/&lt;name&gt;' form the plugin stores, such
+     *               as "PJSIP/2001".
+     * @return true when the server has it, false when the server reports that it does not, and
+     *         null when the question could not be answered, including for a technology this
+     *         plugin does not know how to ask about.
+     */
+    public Boolean isDeviceAvailable(String device) {
+        if (device == null) {
+            return null;
+        }
+
+        int separator = device.indexOf('/');
+        if (separator < 1 || separator == device.length() - 1) {
+            return null;
+        }
+
+        String technology = device.substring(0, separator);
+        String name = device.substring(separator + 1);
+
+        final String command;
+        if (SIP_TECHNOLOGY.equalsIgnoreCase(technology)) {
+            command = "sip show peer " + name;
+        }
+        else if (IAX2_TECHNOLOGY.equalsIgnoreCase(technology)) {
+            command = "iax2 show peer " + name;
+        }
+        else if (PJSIP_TECHNOLOGY.equalsIgnoreCase(technology)) {
+            command = "pjsip show endpoint " + name;
+        }
+        else {
+            // DAHDI, Local and the rest: the plugin has no way to ask, so it does not judge.
+            Log.debug("No way to look up a '{}' device; not checking '{}'.", technology, device);
+            return null;
+        }
+
+        Log.debug("Verify if Asterisk server has device '{}'.", device);
+        try {
+            CommandAction action = new CommandAction();
+            action.setCommand(command);
+
+            // As with a missing dialplan context, a lookup that finds nothing fails the CLI
+            // command, so the answer arrives as an Error whose output carries the reason.
+            ManagerResponse managerResponse = getManagerConnection().sendAction(action);
+            String output = managerResponse.getOutput();
+            Log.trace("Device lookup for '{}' answered {}: {}", device,
+                    managerResponse.getResponse(), output);
+
+            if (output == null || output.isEmpty()) {
+                return null;
+            }
+
+            if (output.contains(NO_SUCH_COMMAND)) {
+                // The channel driver is not loaded, so this server cannot answer either way.
+                return null;
+            }
+
+            for (String marker : NO_SUCH_DEVICE) {
+                if (output.contains(marker)) {
+                    return false;
+                }
+            }
+
+            return managerResponse instanceof ManagerError ? null : true;
+        } catch (Exception e) {
+            Log.debug("Unable to look up device '{}'.", device, e);
+            return null;
         }
     }
 

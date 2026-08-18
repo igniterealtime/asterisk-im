@@ -80,6 +80,10 @@
     <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - The Asterisk
         context is checked against the dialplan when it is saved. A context that does not exist
         made every call fail with nothing to say why</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Phone
+        mappings are checked when they are saved. A phone must name its channel technology, as in
+        <tt>PJSIP/2001</tt>, since a bare device name never matches a call; and for the
+        technologies the plugin can enumerate, it must be one the server actually reports</li>
     <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Telephony is
         no longer offered to a client that cannot use it. The phone feature was advertised over
         service discovery to any user with a phone mapping, whether or not they had a primary

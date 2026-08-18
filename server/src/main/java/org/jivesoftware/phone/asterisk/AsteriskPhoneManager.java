@@ -377,6 +377,20 @@ public class AsteriskPhoneManager extends BasePhoneManager
     }
 
     /**
+     * Reports whether a phone server has a given device.
+     *
+     * @param serverID identifies the server to ask.
+     * @param device the device, in the '&lt;technology&gt;/&lt;name&gt;' form the plugin stores.
+     * @return true when the server has it, false when it reports that it does not, and null when
+     *         the question could not be answered.
+     */
+    public Boolean isDeviceAvailable(long serverID, String device)
+    {
+        CustomAsteriskServer asteriskServer = asteriskServers.get(serverID);
+        return asteriskServer == null ? null : asteriskServer.isDeviceAvailable(device);
+    }
+
+    /**
      * Reports whether a dialplan context exists on any connected phone server.
      *
      * @param context the dialplan context to look for.
