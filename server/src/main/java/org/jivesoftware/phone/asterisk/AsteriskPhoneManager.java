@@ -13,7 +13,6 @@ import org.jivesoftware.phone.*;
 import org.jivesoftware.phone.queue.PhoneQueue;
 import org.jivesoftware.phone.database.PhoneDAO;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.JiveConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
@@ -25,6 +24,7 @@ import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.ChannelState;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.*;
 
 
@@ -294,7 +294,7 @@ public class AsteriskPhoneManager extends BasePhoneManager
 
     private class ChannelStatusTask extends TimerTask
     {
-        private static final long PERIOD = JiveConstants.MINUTE * 2;
+        private static final long PERIOD = Duration.ofMinutes(2).toMillis();
 
         public void run()
         {

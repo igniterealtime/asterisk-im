@@ -26,7 +26,7 @@
     Logger Log = LoggerFactory.getLogger(getClass());
 
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
-    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
+    PhonePlugin plugin = (PhonePlugin) pluginManager.getPluginByName("asterisk-im").orElse(null);
     if (plugin == null) {
 	    // Complain about not being able to get the plugin
     	String msg = "Unable to acquire asterisk plugin instance!";

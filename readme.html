@@ -75,8 +75,13 @@
 <h2>Prerequesites</h2>
 
 <p>
-    <a href="http://www.asterisk.org/" target="_blank">Asterisk</a> installed with the
-    Manager API enabled.
+    <a href="http://www.asterisk.org/" target="_blank">Asterisk</a> 16 or later, installed with the
+    Manager API (AMI) enabled. The AMI account used by this plugin needs the <tt>command</tt>
+    permission, which is what device discovery for the SIP and IAX2 technologies relies on.
+</p>
+
+<p>
+    This version of the plugin requires Openfire 5.0.0 or later, running on Java 17 or later.
 </p>
 
 <h2>Installation</h2>
@@ -86,6 +91,42 @@
     <li>Restart Openfire.</li>
     <li>Configure the asterisk manager connection on the PBX Integration page.</li>
 </ol>
+
+<h2>Upgrading from 2.0.0</h2>
+
+<p>
+    Openfire 5.0.0 or later, on Java 17 or later, is required. Openfire will not load this plugin
+    on an older server, so upgrade Openfire first.
+</p>
+
+<p>
+    <b>Existing PJSIP phone mappings have to be re-selected.</b> Version 2.0.0 offered PJSIP
+    devices by their address of record, so a mapping was stored as a bare name such as
+    <tt>2001</tt>. Asterisk names PJSIP channels <tt>PJSIP/&lt;endpoint&gt;-&lt;uniqueid&gt;</tt>,
+    so a bare name never matched a live channel: those mappings produced no call events and could
+    not be dialled. This version reports the same device as <tt>PJSIP/2001</tt>, which does match,
+    but it cannot repair mappings that were already stored, because the endpoint an address of
+    record belongs to cannot be worked out from the stored value alone.
+</p>
+
+<p>
+    After upgrading, open <i>Asterisk-IM</i> &rarr; <i>Phone Mappings</i> and select the device
+    again for each user whose phone is a PJSIP endpoint. Mappings that name a SIP or IAX2 device
+    were always stored as <tt>SIP/1001</tt> or <tt>IAX2/3001</tt> and are unaffected; the ones that
+    need attention are those with no <tt>&lt;technology&gt;/</tt> prefix.
+</p>
+
+<p>
+    If the Asterisk server was upgraded to version 21 or later at the same time, note that
+    <tt>chan_sip</tt> has been removed from Asterisk. Every <tt>SIP/&lt;device&gt;</tt> mapping then
+    has to be re-created as <tt>PJSIP/&lt;endpoint&gt;</tt>, since the plugin can only offer the
+    devices that the server still reports.
+</p>
+
+<p>
+    Nothing has to be done to the database. The plugin's schema is unchanged at version 2, so there
+    is no upgrade script to run and no table to alter.
+</p>
 
 <h2>Configuration</h2>
 
@@ -115,10 +156,15 @@
 <p>
     The client API first requires that the Asterisk-IM server plugin is installed. To initialize the
     client do the following:
-    <blockquote><tt>XMPPConnection conn = new XMPPConnection("myserver.foo.com", "user", "password");<br>
+    <blockquote><tt>XMPPTCPConnectionConfiguration config = XMPPTCPConnectionConfiguration.builder()<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.setUsernameAndPassword("user", "password")<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.setXmppDomain("myserver.foo.com")<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.build();<br>
+        AbstractXMPPConnection conn = new XMPPTCPConnection(config);<br>
+        conn.connect().login();<br>
         PhoneClient client = new PhoneClient(conn);</tt></blockquote>
-    Note that the XMPPConnection passed in must be authenticated. If an unauthenticated connection is passed in an
-    exception will be thrown.
+    Note that the XMPPConnection passed in must be authenticated, as shown above. If an unauthenticated
+    connection is passed in an exception will be thrown.
 </p>
 
 <h2>Phone Events</h2>

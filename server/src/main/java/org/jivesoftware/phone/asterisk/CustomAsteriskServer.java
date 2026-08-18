@@ -34,6 +34,10 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
 
     private static final Logger Log = LoggerFactory.getLogger(CustomAsteriskServer.class);
 
+    private static final String SIP_TECHNOLOGY = "sip";
+    private static final String IAX2_TECHNOLOGY = "iax2";
+    private static final String PJSIP_TECHNOLOGY = "pjsip";
+
     private String hostname;
     private int port;
     private String username;
@@ -93,13 +97,16 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
     public List<String> getDevices() throws PhoneException {
         ArrayList<String> list = new ArrayList<>();
 
-        if (isChannelAvailable("sip")) {
-            list.addAll(getDevices("sip"));
+        // chan_sip is deprecated as of Asterisk 17 and was removed in Asterisk 21; chan_iax2 is
+        // optional. Each technology is therefore probed before it is queried, so that a server
+        // that lacks it simply contributes no devices instead of failing the whole lookup.
+        if (isChannelAvailable(SIP_TECHNOLOGY)) {
+            list.addAll(getDevices(SIP_TECHNOLOGY));
         }
-        if (isChannelAvailable("iax2")) {
-            list.addAll(getDevices("iax2"));
+        if (isChannelAvailable(IAX2_TECHNOLOGY)) {
+            list.addAll(getDevices(IAX2_TECHNOLOGY));
         }
-        if (isChannelAvailable("pjsip")) {
+        if (isChannelAvailable(PJSIP_TECHNOLOGY)) {
             list.addAll(getPJSIPDevices());
         }
 
@@ -213,8 +220,13 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
                 if (responseEvent instanceof EndpointList) {
                     EndpointList event = (EndpointList) responseEvent;
                     Log.trace("Received: {}, {}, {}, {}", event.getEvent(), event.getObjectName(), event.getObjectType(), event.getAor());
-                    if (event.getObjectType().equalsIgnoreCase("endpoint")) {
-                        result.add(event.getAor());
+                    if ("endpoint".equalsIgnoreCase(event.getObjectType())) {
+                        // Asterisk names PJSIP channels 'PJSIP/<endpoint>-<uniqueid>'. The device
+                        // identifier must be the 'PJSIP/<endpoint>' part, as that is what
+                        // AsteriskUtil#getDevice derives from a channel name, and what Originate
+                        // expects. Note that the endpoint name (ObjectName) is what appears in the
+                        // channel name; the AOR merely happens to share that name in most configs.
+                        result.add(PJSIP_TECHNOLOGY.toUpperCase() + "/" + event.getObjectName());
                     }
                 } else if (responseEvent instanceof EndpointListComplete) {
                     Log.trace("Completed {} for list {}", ((EndpointListComplete) responseEvent).getListItems(), ((EndpointListComplete) responseEvent).getEventList());
