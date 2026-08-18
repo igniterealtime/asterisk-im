@@ -34,6 +34,29 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
 
     private static final Logger Log = LoggerFactory.getLogger(CustomAsteriskServer.class);
 
+    /**
+     * The phrase Asterisk uses to report a dialplan context that does not exist, as in
+     * "There is no existence of 'from-internal' context". Verified against Asterisk 16, 18, 20, 22 and 23.
+     */
+    private static final String NO_SUCH_CONTEXT = "no existence of";
+
+    /**
+     * How Asterisk reports a device it does not have. chan_sip and chan_iax2 answer "Peer <name>
+     * not found."; res_pjsip answers "Unable to find object <name>.". Verified against Asterisk
+     * 16 to 23.
+     */
+    private static final String[] NO_SUCH_DEVICE = {"not found.", "Unable to find object"};
+
+    /**
+     * Asterisk's reply when the module that would answer is not loaded, which says nothing about
+     * whether the device exists.
+     */
+    private static final String NO_SUCH_COMMAND = "No such command";
+
+    private static final String SIP_TECHNOLOGY = "sip";
+    private static final String IAX2_TECHNOLOGY = "iax2";
+    private static final String PJSIP_TECHNOLOGY = "pjsip";
+
     private String hostname;
     private int port;
     private String username;
@@ -93,13 +116,16 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
     public List<String> getDevices() throws PhoneException {
         ArrayList<String> list = new ArrayList<>();
 
-        if (isChannelAvailable("sip")) {
-            list.addAll(getDevices("sip"));
+        // chan_sip is deprecated as of Asterisk 17 and was removed in Asterisk 21; chan_iax2 is
+        // optional. Each technology is therefore probed before it is queried, so that a server
+        // that lacks it simply contributes no devices instead of failing the whole lookup.
+        if (isChannelAvailable(SIP_TECHNOLOGY)) {
+            list.addAll(getDevices(SIP_TECHNOLOGY));
         }
-        if (isChannelAvailable("iax2")) {
-            list.addAll(getDevices("iax2"));
+        if (isChannelAvailable(IAX2_TECHNOLOGY)) {
+            list.addAll(getDevices(IAX2_TECHNOLOGY));
         }
-        if (isChannelAvailable("pjsip")) {
+        if (isChannelAvailable(PJSIP_TECHNOLOGY)) {
             list.addAll(getPJSIPDevices());
         }
 
@@ -122,6 +148,125 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
             return true;
         } catch (Exception e) {
             throw new PhoneException(e);
+        }
+    }
+
+    /**
+     * Reports whether this Asterisk server has a given device.
+     *
+     * <p>The device is looked up by name rather than by listing every device the server has, so
+     * that the check costs the same on a deployment with five phones and one with five thousand.
+     *
+     * @param device a device in the '&lt;technology&gt;/&lt;name&gt;' form the plugin stores, such
+     *               as "PJSIP/2001".
+     * @return true when the server has it, false when the server reports that it does not, and
+     *         null when the question could not be answered, including for a technology this
+     *         plugin does not know how to ask about.
+     */
+    public Boolean isDeviceAvailable(String device) {
+        if (device == null) {
+            return null;
+        }
+
+        int separator = device.indexOf('/');
+        if (separator < 1 || separator == device.length() - 1) {
+            return null;
+        }
+
+        String technology = device.substring(0, separator);
+        String name = device.substring(separator + 1);
+
+        final String command;
+        if (SIP_TECHNOLOGY.equalsIgnoreCase(technology)) {
+            command = "sip show peer " + name;
+        }
+        else if (IAX2_TECHNOLOGY.equalsIgnoreCase(technology)) {
+            command = "iax2 show peer " + name;
+        }
+        else if (PJSIP_TECHNOLOGY.equalsIgnoreCase(technology)) {
+            command = "pjsip show endpoint " + name;
+        }
+        else {
+            // DAHDI, Local and the rest: the plugin has no way to ask, so it does not judge.
+            Log.debug("No way to look up a '{}' device; not checking '{}'.", technology, device);
+            return null;
+        }
+
+        Log.debug("Verify if Asterisk server has device '{}'.", device);
+        try {
+            CommandAction action = new CommandAction();
+            action.setCommand(command);
+
+            // As with a missing dialplan context, a lookup that finds nothing fails the CLI
+            // command, so the answer arrives as an Error whose output carries the reason.
+            ManagerResponse managerResponse = getManagerConnection().sendAction(action);
+            String output = managerResponse.getOutput();
+            Log.trace("Device lookup for '{}' answered {}: {}", device,
+                    managerResponse.getResponse(), output);
+
+            if (output == null || output.isEmpty()) {
+                return null;
+            }
+
+            if (output.contains(NO_SUCH_COMMAND)) {
+                // The channel driver is not loaded, so this server cannot answer either way.
+                return null;
+            }
+
+            for (String marker : NO_SUCH_DEVICE) {
+                if (output.contains(marker)) {
+                    return false;
+                }
+            }
+
+            return managerResponse instanceof ManagerError ? null : true;
+        } catch (Exception e) {
+            Log.debug("Unable to look up device '{}'.", device, e);
+            return null;
+        }
+    }
+
+    /**
+     * Reports whether a dialplan context exists on this Asterisk server.
+     *
+     * <p>An originate into a context that does not exist fails, and the failure is easy to
+     * mistake for the plugin not working, so the administrator is better told when the value
+     * they have configured does not name a real context.
+     *
+     * @param context the dialplan context to look for, such as "from-internal".
+     * @return true when the context exists, false when Asterisk reports that it does not, and
+     *         null when the question could not be answered.
+     */
+    public Boolean isContextAvailable(String context) {
+        Log.debug("Verify if Asterisk server has dialplan context '{}'.", context);
+        try {
+            CommandAction action = new CommandAction();
+            action.setCommand("dialplan show " + context);
+
+            // A context that does not exist makes the CLI command fail, so Asterisk answers with
+            // an Error rather than a Success. The command output is carried either way, and it is
+            // the output that distinguishes "no such context" from any other reason the command
+            // did not run, such as the AMI account lacking the 'command' permission.
+            ManagerResponse managerResponse = getManagerConnection().sendAction(action);
+            String output = managerResponse.getOutput();
+            Log.trace("Dialplan lookup for '{}' answered {}: {}", context,
+                    managerResponse.getResponse(), output);
+
+            if (output != null && output.contains(NO_SUCH_CONTEXT)) {
+                return false;
+            }
+
+            if (managerResponse instanceof ManagerError) {
+                Log.debug("Unable to inspect the dialplan: {}", managerResponse.getMessage());
+                return null;
+            }
+
+            // A successful listing that says nothing about a missing context is the positive
+            // answer. Empty output means the question went unanswered rather than answered "no".
+            return output == null || output.isEmpty() ? null : true;
+        } catch (Exception e) {
+            Log.debug("Unable to inspect the dialplan for context '{}'.", context, e);
+            return null;
         }
     }
 
@@ -213,8 +358,13 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
                 if (responseEvent instanceof EndpointList) {
                     EndpointList event = (EndpointList) responseEvent;
                     Log.trace("Received: {}, {}, {}, {}", event.getEvent(), event.getObjectName(), event.getObjectType(), event.getAor());
-                    if (event.getObjectType().equalsIgnoreCase("endpoint")) {
-                        result.add(event.getAor());
+                    if ("endpoint".equalsIgnoreCase(event.getObjectType())) {
+                        // Asterisk names PJSIP channels 'PJSIP/<endpoint>-<uniqueid>'. The device
+                        // identifier must be the 'PJSIP/<endpoint>' part, as that is what
+                        // AsteriskUtil#getDevice derives from a channel name, and what Originate
+                        // expects. Note that the endpoint name (ObjectName) is what appears in the
+                        // channel name; the AOR merely happens to share that name in most configs.
+                        result.add(PJSIP_TECHNOLOGY.toUpperCase() + "/" + event.getObjectName());
                     }
                 } else if (responseEvent instanceof EndpointListComplete) {
                     Log.trace("Completed {} for list {}", ((EndpointListComplete) responseEvent).getListItems(), ((EndpointListComplete) responseEvent).getEventList());

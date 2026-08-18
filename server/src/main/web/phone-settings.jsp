@@ -7,6 +7,8 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="org.jivesoftware.phone.*" %>
+<%@ page import="org.jivesoftware.phone.asterisk.AsteriskPhoneManager" %>
+<%@ page import="org.jivesoftware.util.StringUtils" %>
 <%@ page import="org.slf4j.Logger" %>
 <%@ page import="org.slf4j.LoggerFactory" %>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
@@ -16,7 +18,7 @@
 
     // if we were not enabled before and we are now restart the plugin
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
-    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
+    PhonePlugin plugin = (PhonePlugin) pluginManager.getPluginByName("asterisk-im").orElse(null);
     if (plugin == null) {
         // Complain about not being able to get the plugin
         String msg = "Unable to acquire asterisk plugin instance!";
@@ -210,16 +212,24 @@ else if (errors.size() > 0) { %>
         %>
         <tr style="border-left: none;">
             <td width="16px">
-                <% switch (manager.getPhoneServerStatus(phoneServer.getID())) {
+                <% String connectionError = manager instanceof AsteriskPhoneManager
+                        ? ((AsteriskPhoneManager) manager).getConnectionError(phoneServer.getID())
+                        : null;
+                   switch (manager.getPhoneServerStatus(phoneServer.getID())) {
                     case connected: %>
                 <img src="images/connected.gif" alt="connected"/>
                 <% break;
                     default: %>
-                <img src="images/disconnected.gif" alt="disconnected"/>
+                <img src="images/disconnected.gif" alt="disconnected"
+                     title="<%=connectionError == null ? "disconnected" : StringUtils.escapeForXML(connectionError)%>"/>
                 <% break;
                 } %>
             </td>
-            <td><%=phoneServer.getName()%></td>
+            <td><%=phoneServer.getName()%>
+                <% if (connectionError != null) { %>
+                <br/><span class="jive-error-text"><%=StringUtils.escapeForXML(connectionError)%></span>
+                <% } %>
+            </td>
             <td><%=phoneServer.getHostname()%></td>
             <td><%=phoneServer.getPort()%></td>
             <td><%=phoneServer.getUsername()%></td>

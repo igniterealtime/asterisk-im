@@ -50,6 +50,53 @@
     Asterisk-IM Plugin Changelog
 </h1>
 
+<p><b>3.0.0</b> -- unreleased</p>
+<ul>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/18'>#18</a>] - Now requires
+        Openfire 5.0.0 or later, and Java 17 or later</li>
+    <li>Built against the Openfire 5 plugin parent (Jetty 12 / Jakarta EE8 JSP compilation)</li>
+    <li>Upgraded the Asterisk-Java library to 3.42.2, which supports Asterisk 10 through 23</li>
+    <li>Verified against every Asterisk major version from 16 through 23 over AMI</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/17'>#17</a>] - Corrected the
+        database schema scripts to use Openfire's <tt>ofVersion</tt> table, which replaced
+        <tt>jiveVersion</tt> in Openfire 3.7</li>
+    <li>Fixed PJSIP device discovery: devices are now reported as <tt>PJSIP/&lt;endpoint&gt;</tt>
+        rather than the bare AOR name, so that they match live channel names and can be dialled.
+        Mappings stored by 2.0.0 keep the old value and have to be re-selected under
+        <i>Phone Mappings</i>; see the readme</li>
+    <li>The plugin no longer bundles its own SLF4J/Log4j jars, which detached its log output
+        from Openfire's logging configuration</li>
+    <li>Upgraded Smack to 4.4.8 in the client library</li>
+    <li>Creating or editing a phone server while the plugin is disabled now reports the problem
+        instead of failing with a NullPointerException</li>
+    <li>Corrected the Smack 3 era client API example in this plugin's readme</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Editing a
+        phone server now reconnects with the edited details. Previously the change reached the
+        database while the connection built from the old details stayed in use, so it had no
+        effect until Openfire restarted, and details that did not work went unreported</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - A phone
+        server that cannot be connected to now says why on the settings page, rather than only
+        writing the reason to the log</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - The Asterisk
+        context is checked against the dialplan when it is saved. A context that does not exist
+        made every call fail with nothing to say why</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Phone
+        mappings are checked when they are saved. A phone must name its channel technology, as in
+        <tt>PJSIP/2001</tt>, since a bare device name never matches a call; and for the
+        technologies the plugin can enumerate, it must be one the server actually reports</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Telephony is
+        no longer offered to a client that cannot use it. The phone feature was advertised over
+        service discovery to any user with a phone mapping, whether or not they had a primary
+        phone and whether or not the phone server was connected, so clients presented a dial pad
+        for calls that could not be placed</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Dialling as
+        a user who has no phone mapping, or no primary phone, now returns an error to the client
+        instead of throwing a NullPointerException that left the request unanswered</li>
+    <li>The readme has gained an "Upgrading from 2.0.0" section, covering the Openfire 5 and
+        Java 17 requirement, the phone mappings that have to be re-selected, and confirmation
+        that the database needs nothing done to it</li>
+</ul>
+
 <p><b>2.0.0</b> -- November 29, 2021</p>
 <ul>
     <li>Now depends on Java 8</li>

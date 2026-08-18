@@ -9,6 +9,7 @@
                  java.util.Collection,
                  java.util.HashMap" %>
 <%@ page import="java.util.List" %>
+<%@ page import="org.jivesoftware.phone.asterisk.AsteriskPhoneManager" %>
 <%@ page import="org.slf4j.Logger" %>
 <%@ page import="org.slf4j.LoggerFactory" %>
 
@@ -26,7 +27,7 @@
     Logger Log = LoggerFactory.getLogger(getClass());
 
     PluginManager pluginManager = XMPPServer.getInstance().getPluginManager();
-    PhonePlugin plugin = (PhonePlugin) pluginManager.getPlugin("asterisk-im");
+    PhonePlugin plugin = (PhonePlugin) pluginManager.getPluginByName("asterisk-im").orElse(null);
     if (plugin == null) {
 	    // Complain about not being able to get the plugin
     	String msg = "Unable to acquire asterisk plugin instance!";
@@ -192,6 +193,31 @@
                 }
 
 
+            }
+
+            // A phone is only usable if it names a device the switch actually reports, in the
+            // '<technology>/<device>' form that channel names carry. A value that does not match
+            // is accepted by the switch's silence: no call event ever matches it and dialling it
+            // fails, which reads as the plugin not working.
+            if (!errors.containsKey("device") && device != null && !"".equals(device)) {
+                if (!device.contains("/")) {
+                    errors.put("device", "Phone must name the channel technology, as in"
+                            + " 'PJSIP/2001', 'SIP/1001' or 'IAX2/3001'. A bare device name never"
+                            + " matches a call.");
+                }
+                else if (phoneServer != null && phoneManager instanceof AsteriskPhoneManager) {
+                    // The device is looked up by name rather than by listing every device the
+                    // server has, so the check costs the same however large the deployment, and
+                    // it applies whether the phone was picked from the drop-down or typed in.
+                    // A null answer means the server could not be asked, or the technology is one
+                    // the plugin cannot ask about, so the value is left alone.
+                    Boolean known = ((AsteriskPhoneManager) phoneManager)
+                            .isDeviceAvailable(phoneServer.getID(), device);
+                    if (Boolean.FALSE.equals(known)) {
+                        errors.put("device", "The '" + phoneServer.getName() + "' server has no"
+                                + " device named '" + device + "'.");
+                    }
+                }
             }
 
             if (extension == null || "".equals(extension)) {

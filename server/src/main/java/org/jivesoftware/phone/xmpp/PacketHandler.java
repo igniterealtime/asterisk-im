@@ -103,13 +103,16 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
             send(reply);
 
         }
-        catch (PhoneException e) {
+        catch (Exception e) {
+            // Anything other than a reply leaves the client waiting on a dial that will never be
+            // answered, which reads as the plugin silently doing nothing. Every failure is
+            // reported back, whether or not it arrived as a PhoneException.
             Log.debug("Exception occurred while handling 'dial' IQ: {}", iq.toXML(), e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
             PacketError error = new PacketError(PacketError.Condition.undefined_condition,
                     PacketError.Type.cancel,
-                    e.getMessage());
+                    e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
             reply.setError(error);
             send(reply);
         }
@@ -219,10 +222,7 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
                 // This is a query against a specific user
                 try {
 
-                    PhoneUser user = phoneManager.getPhoneUserByUsername(node);
-
-                    // if there is a user they have support
-                    if (user != null) {
+                    if (canPlaceCalls(node)) {
 
                         // var http://jivesoftware.com/xmlns/phone
                         feature = queryElement.addElement("feature");
@@ -242,6 +242,42 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
         }
 
 
+    }
+
+    /**
+     * Reports whether telephony can actually be offered to a user.
+     *
+     * <p>This is what the disco reply promises, so it has to mean that a call would be placed and
+     * not merely that the user appears in the plugin's tables. A client shown the feature offers a
+     * dial pad; if the call then cannot be placed, the client looks broken. The user therefore
+     * needs a phone mapped, one of those phones marked primary, and the phone server it belongs to
+     * connected right now.
+     *
+     * @param username the user being asked about.
+     * @return true when a call could be placed for this user.
+     */
+    private boolean canPlaceCalls(String username) {
+        PhoneUser user = phoneManager.getPhoneUserByUsername(username);
+        if (user == null) {
+            Log.debug("Not offering telephony to '{}': no phone is mapped to them.", username);
+            return false;
+        }
+
+        PhoneDevice primaryDevice = phoneManager.getPrimaryDevice(user.getID());
+        if (primaryDevice == null) {
+            Log.debug("Not offering telephony to '{}': none of their phones is primary.", username);
+            return false;
+        }
+
+        PhoneManager.PhoneServerStatus status
+                = phoneManager.getPhoneServerStatus(primaryDevice.getServerID());
+        if (status != PhoneManager.PhoneServerStatus.connected) {
+            Log.debug("Not offering telephony to '{}': phone server {} is {}.", username,
+                    primaryDevice.getServerID(), status);
+            return false;
+        }
+
+        return true;
     }
 
     private void send(Packet packet) {
