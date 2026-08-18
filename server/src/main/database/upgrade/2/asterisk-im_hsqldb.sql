@@ -10,4 +10,4 @@ create table phoneServer (
 
 alter table phoneDevice add column serverID bigint not null;
 
-UPDATE jiveVersion SET version=2 WHERE name='asterisk-im';
+UPDATE ofVersion SET version=2 WHERE name='asterisk-im';

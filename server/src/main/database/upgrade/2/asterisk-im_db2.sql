@@ -12,4 +12,4 @@ alter table phoneDevice add column serverID bigint not null;
 
 alter table phoneDevice add constraint pD_serverID_fk foreign key (serverID) references phoneServer;
 
-UPDATE jiveVersion SET version=2 WHERE name='asterisk-im';
+UPDATE ofVersion SET version=2 WHERE name='asterisk-im';

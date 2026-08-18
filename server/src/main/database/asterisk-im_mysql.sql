@@ -25,4 +25,4 @@ create table phoneUser (
     primary key (userID)
 );
 
-INSERT INTO jiveVersion (name, version) VALUES ('asterisk-im', 2);
+INSERT INTO ofVersion (name, version) VALUES ('asterisk-im', 2);
