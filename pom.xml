@@ -14,7 +14,7 @@
     </organization>
     <properties>
         <smack-version>4.4.8</smack-version>
-        <openfire-version>5.1.1</openfire-version>
+        <openfire-version>5.0.0</openfire-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
     </properties>
