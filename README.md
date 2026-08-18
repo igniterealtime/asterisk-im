@@ -74,3 +74,62 @@ reports — for example `PJSIP/2001`, `SIP/1001` or `IAX2/3001`.
 is normally the only SIP technology available. The plugin probes each technology before
 querying it and silently skips the ones a given server does not provide, so a single build
 works across the whole supported range.
+
+
+## Upgrading from 2.0.0
+
+### Openfire 5 and Java 17 are required
+
+Openfire refuses to load a plugin whose `minServerVersion` is newer than the server, so upgrade
+Openfire to 5.0.0 or later, on Java 17 or later, before installing this release. A 4.x server
+keeps running the 2.0.0 plugin; it will not load this one.
+
+### PJSIP phone mappings have to be re-selected
+
+2.0.0 offered PJSIP devices by their AOR, so a mapping was stored as the bare name `2001`.
+Asterisk names PJSIP channels `PJSIP/<endpoint>-<uniqueid>`, so a bare name never matched a live
+channel: those mappings could not be dialled and produced no call events. This release reports
+the same device as `PJSIP/2001`, which does match.
+
+Existing PJSIP mappings are not migrated, because the endpoint a given AOR belongs to is not
+known from the stored value alone. Re-select the device for each affected user under
+*Asterisk-IM* &rarr; *Phone Mappings*. The affected rows are the ones with no technology prefix:
+
+```sql
+SELECT * FROM phoneDevice WHERE device NOT LIKE '%/%';
+```
+
+SIP and IAX2 mappings were already stored as `SIP/1001` and `IAX2/3001` and are unaffected.
+
+### Mappings that name a chan_sip device
+
+`chan_sip` was removed in Asterisk 21. If the Asterisk upgrade crosses that boundary, every
+`SIP/<device>` mapping has to be re-created as `PJSIP/<endpoint>` — the plugin can only offer
+the devices the server still reports.
+
+### The database schema is unchanged
+
+The schema stays at version 2, so there is no upgrade script to run and no table to alter. The
+install and upgrade scripts now name Openfire's `ofVersion` table rather than `jiveVersion`,
+which reads as a change but is not one: Openfire's `SchemaManager` has rewritten `jiveVersion`
+to `ofVersion` in plugin scripts since Openfire 3.7, so an existing installation already records
+its version in `ofVersion`. Confirm with:
+
+```sql
+SELECT name, version FROM ofVersion WHERE name = 'asterisk-im';
+```
+
+That should report version 2. If it reports nothing while the `phoneServer`, `phoneDevice` and
+`phoneUser` tables exist, an earlier install left the schema half-recorded and Openfire will try
+to create those tables again on the next start; record the version by hand instead:
+
+```sql
+INSERT INTO ofVersion (name, version) VALUES ('asterisk-im', 2);
+```
+
+### Plugin logging follows Openfire's configuration again
+
+The plugin no longer bundles its own SLF4J and Log4j jars, which had detached its output from
+the server's logging setup. Its log records now land in Openfire's own logs and honour the
+levels set under *Server* &rarr; *Logs*; anything that used to be configured against the
+bundled jars no longer applies.
