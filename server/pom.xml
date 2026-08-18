@@ -48,6 +48,23 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- Matches the execution defined by the Openfire plugin parent, so that
+                             this replaces its descriptor rather than adding a second assembly.
+                             Everything else about the execution is inherited. -->
+                        <id>make-assembly</id>
+                        <configuration>
+                            <!-- The shared descriptor reads the plugin metadata from inside this
+                                 module. In this project the metadata is at the repository root,
+                                 one level up, so the assembly is described here instead. -->
+                            <descriptorRefs combine.self="override"/>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/openfire-plugin-assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- Compiles the Openfire Admin Console JSP pages. -->
             <plugin>
