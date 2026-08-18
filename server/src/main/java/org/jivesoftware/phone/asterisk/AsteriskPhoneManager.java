@@ -41,6 +41,14 @@ public class AsteriskPhoneManager extends BasePhoneManager
 
     private final Map<Long, CustomAsteriskServer> asteriskServers
             = Collections.synchronizedMap(new HashMap<Long, CustomAsteriskServer>());
+
+    /**
+     * Why the last connection attempt to a given server failed, keyed by server ID. A server that
+     * is connected has no entry. The admin console reads this to explain a disconnected server,
+     * which the connected/disconnected indicator on its own cannot do.
+     */
+    private final Map<Long, String> connectionErrors
+            = Collections.synchronizedMap(new HashMap<Long, String>());
     AsteriskPlugin plugin;
     private Timer timer;
 
@@ -63,19 +71,7 @@ public class AsteriskPhoneManager extends BasePhoneManager
 
         for (PhoneServer server : servers)
         {
-            try
-            {
-                CustomAsteriskServer asteriskServer = connectToServer(server);
-
-                if (asteriskServer != null)
-                {
-                    asteriskServers.put(server.getID(), asteriskServer);
-                }
-            }
-            catch (Throwable t)
-            {
-                Log.error("Error connecting to asterisk server " + server.getName(), t);
-            }
+            openConnection(server);
         }
 
         this.plugin = plugin;
@@ -160,18 +156,8 @@ public class AsteriskPhoneManager extends BasePhoneManager
     @Override
     public void removePhoneServer(long serverID)
     {
-        CustomAsteriskServer asteriskServer = asteriskServers.remove(serverID);
-        if (asteriskServer != null)
-        {
-            try
-            {
-                asteriskServer.logoff();
-            }
-            catch (Throwable e)
-            {
-                Log.error("Error disconnecting from asterisk manager", e);
-            }
-        }
+        closeConnection(serverID);
+        connectionErrors.remove(serverID);
 
         super.removePhoneServer(serverID);
     }
@@ -230,7 +216,22 @@ public class AsteriskPhoneManager extends BasePhoneManager
     {
         //acquire the jidUser object for the originating caller
         PhoneUser user = getPhoneUserByUsername(username);
+        if (user == null)
+        {
+            // PacketHandler turns a PhoneException into an IQ error the caller can be shown.
+            // Anything else leaves the dial request unanswered, and the client waits for a reply
+            // that never arrives.
+            throw new PhoneException("No phone is mapped to user '" + username
+                    + "'. Add one under Asterisk-IM, Phone Mappings.");
+        }
+
         PhoneDevice primaryDevice = getPrimaryDevice(user.getID());
+        if (primaryDevice == null)
+        {
+            throw new PhoneException("User '" + username
+                    + "' has no primary phone. Mark one of their phones as primary under"
+                    + " Asterisk-IM, Phone Mappings.");
+        }
 
         // aquire the originating server
         CustomAsteriskServer asteriskServer = asteriskServers.get(primaryDevice.getServerID());
@@ -240,7 +241,10 @@ public class AsteriskPhoneManager extends BasePhoneManager
         }
         else
         {
-            throw new PhoneException("Not connected to originate phone server.");
+            String reason = getConnectionError(primaryDevice.getServerID());
+            throw new PhoneException("Not connected to the phone server that '"
+                    + primaryDevice.getDevice() + "' belongs to."
+                    + (reason == null ? "" : " " + reason));
         }
     }
 
@@ -276,20 +280,136 @@ public class AsteriskPhoneManager extends BasePhoneManager
                                          String username, String password)
     {
         PhoneServer server = super.createPhoneServer(name, serverAddress, port, username, password);
+        openConnection(server);
+        return server;
+    }
+
+    /**
+     * Applies an edited configuration and then reconnects with it.
+     *
+     * <p>Without this override the edited details reach the database while the connection built
+     * from the previous ones stays in use, so the change appears to have been accepted but has no
+     * effect until Openfire restarts, and details that do not work are never found out about.
+     */
+    @Override
+    public PhoneServer updatePhoneServer(long serverID, String serverName, String serverAddress,
+                                         int serverPort, String username, String password)
+    {
+        PhoneServer server = super.updatePhoneServer(serverID, serverName, serverAddress,
+                serverPort, username, password);
+        if (server != null)
+        {
+            openConnection(server);
+        }
+        return server;
+    }
+
+    /**
+     * Connects to a phone server, replacing any connection already held for it, and records
+     * whether that succeeded.
+     *
+     * <p>The outcome is not returned: a failure is left in {@link #connectionErrors}, where the
+     * admin console picks it up and shows it against the server it belongs to.
+     *
+     * @param server the server to connect to. May be null, in which case nothing happens.
+     */
+    private void openConnection(PhoneServer server)
+    {
+        if (server == null)
+        {
+            return;
+        }
+
+        closeConnection(server.getID());
+
         try
         {
             CustomAsteriskServer asteriskServer = connectToServer(server);
 
-            if (asteriskServer != null)
+            if (asteriskServer == null)
             {
-                asteriskServers.put(server.getID(), asteriskServer);
+                // connectToServer rejects an incomplete configuration by returning null.
+                connectionErrors.put(server.getID(), "The configuration is incomplete.");
+                return;
             }
+
+            asteriskServers.put(server.getID(), asteriskServer);
+            connectionErrors.remove(server.getID());
+        }
+        catch (AuthenticationFailedException e)
+        {
+            Log.warn("Rejected by the '{}' phone server: {}", server.getName(), e.getMessage());
+            connectionErrors.put(server.getID(), "The server rejected the username or password.");
+        }
+        catch (TimeoutException e)
+        {
+            Log.warn("Timed out connecting to the '{}' phone server: {}", server.getName(), e.getMessage());
+            connectionErrors.put(server.getID(), "Timed out connecting to " + server.getHostname()
+                    + ":" + server.getPort() + ".");
         }
         catch (Throwable t)
         {
-            Log.error("Error connecting to " + name + " phone server", t);
+            Log.error("Error connecting to the '" + server.getName() + "' phone server", t);
+            connectionErrors.put(server.getID(), t.getMessage() == null
+                    ? t.getClass().getSimpleName() : t.getMessage());
         }
-        return server;
+    }
+
+    /**
+     * Drops the connection held for a server, if there is one.
+     *
+     * @param serverID identifies the server.
+     */
+    private void closeConnection(long serverID)
+    {
+        CustomAsteriskServer previous = asteriskServers.remove(serverID);
+        if (previous != null)
+        {
+            try
+            {
+                previous.logoff();
+            }
+            catch (Throwable t)
+            {
+                Log.debug("Error while dropping the previous connection to server {}", serverID, t);
+            }
+        }
+    }
+
+    /**
+     * Reports whether a dialplan context exists on any connected phone server.
+     *
+     * @param context the dialplan context to look for.
+     * @return true when a connected server has it, false when every connected server reports that
+     *         it does not, and null when no connected server could answer.
+     */
+    public Boolean isContextAvailable(String context)
+    {
+        Boolean result = null;
+        for (CustomAsteriskServer asteriskServer : new ArrayList<>(asteriskServers.values()))
+        {
+            Boolean available = asteriskServer.isContextAvailable(context);
+            if (Boolean.TRUE.equals(available))
+            {
+                return true;
+            }
+            if (Boolean.FALSE.equals(available))
+            {
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns why the last connection attempt to a server failed.
+     *
+     * @param serverID identifies the server.
+     * @return the reason, or null when the server is connected or has never been tried.
+     */
+    public String getConnectionError(long serverID)
+    {
+        return connectionErrors.get(serverID);
     }
 
     private class ChannelStatusTask extends TimerTask

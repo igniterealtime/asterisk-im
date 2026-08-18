@@ -110,7 +110,35 @@ public class AsteriskPlugin extends PhonePlugin {
                         "connected devices and presents them in a drop down on the device page."),
                 new PhoneOption("Asterisk Context",
                         PhoneProperties.CONTEXT,
-                        "Context"),
+                        "Context") {
+                    /**
+                     * Checks the value against the dialplan of the connected servers. A context
+                     * that does not exist is accepted by this page but makes every call fail
+                     * later, with nothing to say why, so it is worth catching here.
+                     */
+                    @Override
+                    public String check(String value) {
+                        if (value == null || value.trim().isEmpty()) {
+                            // Left empty, the dial code falls back to a default context.
+                            return null;
+                        }
+                        if (asteriskPhoneManager == null) {
+                            return null;
+                        }
+                        Boolean available
+                                = asteriskPhoneManager.isContextAvailable(value.trim());
+                        if (Boolean.FALSE.equals(available)) {
+                            return "No context named '" + value.trim() + "' exists in the"
+                                    + " dialplan. Calls placed from a client will fail. Check"
+                                    + " 'dialplan show' on the Asterisk server; a common"
+                                    + " value is 'from-internal'.";
+                        }
+                        // A null answer means no connected server could be asked. Refusing the
+                        // value on that basis would block configuring the plugin before the
+                        // phone server is reachable.
+                        return null;
+                    }
+                },
                 new PhoneOption("Default Caller ID",
                         PhoneProperties.DEFAULT_CALLER_ID,
                         "DefaultCallerId"),

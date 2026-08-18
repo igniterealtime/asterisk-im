@@ -34,6 +34,12 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
 
     private static final Logger Log = LoggerFactory.getLogger(CustomAsteriskServer.class);
 
+    /**
+     * The phrase Asterisk uses to report a dialplan context that does not exist, as in
+     * "There is no existence of 'from-internal' context". Verified against Asterisk 16, 18, 20, 22 and 23.
+     */
+    private static final String NO_SUCH_CONTEXT = "no existence of";
+
     private static final String SIP_TECHNOLOGY = "sip";
     private static final String IAX2_TECHNOLOGY = "iax2";
     private static final String PJSIP_TECHNOLOGY = "pjsip";
@@ -129,6 +135,50 @@ public class CustomAsteriskServer extends DefaultAsteriskServer {
             return true;
         } catch (Exception e) {
             throw new PhoneException(e);
+        }
+    }
+
+    /**
+     * Reports whether a dialplan context exists on this Asterisk server.
+     *
+     * <p>An originate into a context that does not exist fails, and the failure is easy to
+     * mistake for the plugin not working, so the administrator is better told when the value
+     * they have configured does not name a real context.
+     *
+     * @param context the dialplan context to look for, such as "from-internal".
+     * @return true when the context exists, false when Asterisk reports that it does not, and
+     *         null when the question could not be answered.
+     */
+    public Boolean isContextAvailable(String context) {
+        Log.debug("Verify if Asterisk server has dialplan context '{}'.", context);
+        try {
+            CommandAction action = new CommandAction();
+            action.setCommand("dialplan show " + context);
+
+            // A context that does not exist makes the CLI command fail, so Asterisk answers with
+            // an Error rather than a Success. The command output is carried either way, and it is
+            // the output that distinguishes "no such context" from any other reason the command
+            // did not run, such as the AMI account lacking the 'command' permission.
+            ManagerResponse managerResponse = getManagerConnection().sendAction(action);
+            String output = managerResponse.getOutput();
+            Log.trace("Dialplan lookup for '{}' answered {}: {}", context,
+                    managerResponse.getResponse(), output);
+
+            if (output != null && output.contains(NO_SUCH_CONTEXT)) {
+                return false;
+            }
+
+            if (managerResponse instanceof ManagerError) {
+                Log.debug("Unable to inspect the dialplan: {}", managerResponse.getMessage());
+                return null;
+            }
+
+            // A successful listing that says nothing about a missing context is the positive
+            // answer. Empty output means the question went unanswered rather than answered "no".
+            return output == null || output.isEmpty() ? null : true;
+        } catch (Exception e) {
+            Log.debug("Unable to inspect the dialplan for context '{}'.", context, e);
+            return null;
         }
     }
 

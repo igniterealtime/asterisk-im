@@ -103,13 +103,16 @@ public class PacketHandler implements PhoneConstants, CallSessionListener {
             send(reply);
 
         }
-        catch (PhoneException e) {
+        catch (Exception e) {
+            // Anything other than a reply leaves the client waiting on a dial that will never be
+            // answered, which reads as the plugin silently doing nothing. Every failure is
+            // reported back, whether or not it arrived as a PhoneException.
             Log.debug("Exception occurred while handling 'dial' IQ: {}", iq.toXML(), e);
             IQ reply = IQ.createResultIQ(iq);
             reply.setType(IQ.Type.error);
             PacketError error = new PacketError(PacketError.Condition.undefined_condition,
                     PacketError.Type.cancel,
-                    e.getMessage());
+                    e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
             reply.setError(error);
             send(reply);
         }

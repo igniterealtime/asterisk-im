@@ -70,6 +70,19 @@
     <li>Creating or editing a phone server while the plugin is disabled now reports the problem
         instead of failing with a NullPointerException</li>
     <li>Corrected the Smack 3 era client API example in this plugin's readme</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Editing a
+        phone server now reconnects with the edited details. Previously the change reached the
+        database while the connection built from the old details stayed in use, so it had no
+        effect until Openfire restarted, and details that did not work went unreported</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - A phone
+        server that cannot be connected to now says why on the settings page, rather than only
+        writing the reason to the log</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - The Asterisk
+        context is checked against the dialplan when it is saved. A context that does not exist
+        made every call fail with nothing to say why</li>
+    <li>[<a href='https://github.com/igniterealtime/asterisk-im/issues/29'>#29</a>] - Dialling as
+        a user who has no phone mapping, or no primary phone, now returns an error to the client
+        instead of throwing a NullPointerException that left the request unanswered</li>
     <li>The readme has gained an "Upgrading from 2.0.0" section, covering the Openfire 5 and
         Java 17 requirement, the phone mappings that have to be re-selected, and confirmation
         that the database needs nothing done to it</li>
